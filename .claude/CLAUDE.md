@@ -118,22 +118,39 @@ The PrimeNG primary palette is mapped to the same green values (`{green.*}` in `
 ```
 src/app/
 ├── core/                          # Guards, interceptors, singleton services
+│   ├── guards/auth.guard.ts
+│   └── interceptors/auth.interceptor.ts
 ├── shared/
 │   ├── components/
-│   │   ├── alert-dialog/          # Reusable confirmation/alert dialog (4 types: error/success/warning/info)
-│   │   └── data-table/            # Reusable table + pagination component (see below)
+│   │   ├── data-table/            # Reusable table + pagination component (see below)
+│   │   ├── sidebar/               # Collapsible nav sidebar (see below)
+│   │   └── dialogs/               # All dialog components
+│   │       ├── alert-dialog/      # Info/success/warning/error notification dialog (1 button)
+│   │       ├── confirm-dialog/    # Two-button confirm/cancel dialog
+│   │       └── delete-confirm-dialog/ # Password-required deletion dialog
+│   ├── layouts/
+│   │   ├── auth-layout/           # Layout wrapper for auth pages (login, forgot-password, etc.)
+│   │   └── main-layout/           # Authenticated layout: sidebar + router-outlet
 │   ├── directives/
 │   └── pipes/
 └── features/
-    └── auth/                      # Auth feature (lazy-loaded)
-        ├── components/
-        │   ├── auth-layout/       # Layout wrapper for all auth pages
-        │   ├── login/
-        │   ├── forgot-password/
-        │   ├── check-email/
-        │   └── reset-password/
-        ├── store/                 # Signal-based feature store (auth.store.ts)
-        └── auth.routes.ts
+    ├── auth/                      # Auth feature (lazy-loaded at /auth)
+    │   ├── components/
+    │   │   ├── login/
+    │   │   ├── forgot-password/
+    │   │   ├── check-email/
+    │   │   └── reset-password/
+    │   ├── store/                 # Signal-based feature store (auth.store.ts)
+    │   └── auth.routes.ts
+    ├── dashboard/                 # /dashboard → MainLayoutComponent wrapper
+    │   └── dashboard.routes.ts    # children: my-tickets (default), more TBD
+    ├── my-tickets/                # /dashboard/my-tickets
+    │   ├── components/project-card/
+    │   ├── my-tickets.component.ts
+    │   └── my-tickets.routes.ts
+    └── user-management/           # /user-management → MainLayoutComponent wrapper
+        ├── components/user-list/
+        └── user-management.routes.ts
 ```
 
 ### Structure Conventions
@@ -143,16 +160,28 @@ src/app/
 - **Features**: Each feature is self-contained with its own components, services, and routes. Features are lazy-loaded via the router — never eagerly imported.
 - **File placement**: Place files in the folder matching their role. Do not create files at the wrong level of the hierarchy.
 
+### Route Structure
+
+`MainLayoutComponent` (sidebar + router-outlet) is the shell for authenticated routes. Both `/dashboard` and `/user-management` load it as a parent and nest their children inside it.
+
+```
+/               → redirectTo /auth
+/auth           → auth feature (uses AuthLayoutComponent)
+/dashboard      → MainLayoutComponent
+  /my-tickets   → MyTicketsComponent
+/user-management → MainLayoutComponent
+  /list          → UserListComponent
+```
+
 ## Reusable Shared Components
 
 ### `app-data-table` (`shared/components/data-table/`)
 
-Generic server-driven table with built-in pagination. All state (page, sort) is controlled externally.
+Generic server-driven table with built-in pagination. All state (page, sort) is controlled externally. Import from the barrel: `shared/components/data-table/index.ts`.
 
 ```typescript
-import { DataTableComponent, DataTableCellDirective, TableColumn } from '@app/shared/components/data-table';
+import { DataTableComponent, DataTableCellDirective, TableColumn } from '../shared/components/data-table';
 
-// Column definition
 columns: TableColumn[] = [
   { field: 'title', header: 'หัวข้องาน', sortable: true, width: '200px' },
   { field: 'status', header: 'สถานะ' },
@@ -171,6 +200,7 @@ columns: TableColumn[] = [
   (pageSizeChange)="pageSize.set($event)"
   (sortChange)="onSort($event)"
   (actionClick)="onAction($event)"
+  (rowClick)="onRowClick($event)"
 >
   <!-- Custom cell for any column -->
   <ng-template dataTableCell="status" let-value="value">
@@ -186,9 +216,70 @@ columns: TableColumn[] = [
 
 The `_actions` reserved field overrides the default ellipsis button. Each cell template receives `{ $implicit: row, value: cellValue }` as context.
 
-### `app-alert-dialog` (`shared/components/alert-dialog/`)
+### `app-alert-dialog` (`shared/components/dialogs/alert-dialog/`)
 
-Modal dialog for confirmations and notifications. Supports `error | success | warning | info` types. Uses `model()` for two-way `visible` binding.
+Single-button modal for notifications. Supports `error | success | warning | info` types. Uses `model()` for two-way `visible` binding.
+
+```html
+<app-alert-dialog
+  [(visible)]="showAlert"
+  type="success"
+  title="บันทึกสำเร็จ"
+  (closed)="onClosed()"
+/>
+```
+
+### `app-confirm-dialog` (`shared/components/dialogs/confirm-dialog/`)
+
+Two-button confirm/cancel dialog. Supports `warning | info | error` types. The `loading` input disables buttons while async work runs.
+
+```html
+<app-confirm-dialog
+  [(visible)]="showConfirm"
+  type="warning"
+  title="ยืนยันการลบ?"
+  confirmLabel="ลบ"
+  cancelLabel="ยกเลิก"
+  [loading]="deleting()"
+  (confirmed)="onConfirm()"
+  (cancelled)="onCancel()"
+/>
+```
+
+### `app-delete-confirm-dialog` (`shared/components/dialogs/delete-confirm-dialog/`)
+
+Deletion dialog that requires the user to type a password before confirming. The `confirmed` output emits the typed password string.
+
+```html
+<app-delete-confirm-dialog
+  [(visible)]="showDelete"
+  targetLabel="ผู้ใช้ สมชาย ใจดี"
+  [loading]="deleting()"
+  (confirmed)="onDelete($event)"
+  (cancelled)="onCancel()"
+/>
+```
+
+### `app-sidebar` (`shared/components/sidebar/`)
+
+Collapsible navigation sidebar used inside `MainLayoutComponent`. Accepts `personalNav` and `mainNav` arrays of `SidebarNavItem`. Supports nested children (auto-expands active parent on navigation). Import from `shared/components/sidebar/index.ts`.
+
+```typescript
+import { SidebarNavItem, SidebarUser } from '../shared/components/sidebar';
+
+const nav: SidebarNavItem[] = [
+  { label: 'แดชบอร์ด', icon: 'pi-chart-bar', route: '/dashboard/overview' },
+  {
+    label: 'จัดการผู้ใช้',
+    icon: 'pi-users',
+    children: [
+      { label: 'รายชื่อ', icon: '', route: '/user-management/list' },
+    ],
+  },
+];
+```
+
+The `badge` field on a nav item renders a numeric badge on the icon.
 
 ## Toasts
 

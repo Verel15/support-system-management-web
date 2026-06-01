@@ -23,10 +23,11 @@
           autocomplete="email"
           [attr.aria-invalid]="isEmailInvalid() ? 'true' : null"
           aria-describedby="email-error"
+          class="h-12"
         />
         @if (isEmailInvalid()) {
-          <small id="email-error" class="text-error-500" role="alert"
-            >กรุณากรอกอีเมลให้ถูกต้อง</small
+          <label id="email-error" class="text-error-500" role="alert"
+            >กรุณากรอกอีเมลให้ถูกต้อง</label
           >
         }
       </div>
@@ -41,6 +42,7 @@
           placeholder="กรุณากรอกข้อมูล"
           autocomplete="current-password"
           [attr.aria-invalid]="isPasswordInvalid() ? 'true' : null"
+          class="h-12"
         />
       </div>
 
