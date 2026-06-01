@@ -1,0 +1,68 @@
+@if (totalRecords() > 0 || loading()) {
+  <div class="flex items-center justify-between flex-wrap gap-3 px-4 py-3 bg-white">
+    <!-- Page size selector -->
+    <div class="flex items-center gap-2">
+      <label [for]="pageSizeSelectId" class="text-sm text-slate-600 whitespace-nowrap">
+        รายการต่อหน้า
+      </label>
+      <p-select
+        [inputId]="pageSizeSelectId"
+        [options]="pageSizeOptions"
+        [ngModel]="pageSize()"
+        optionLabel="label"
+        optionValue="value"
+        [style]="{ width: '5.5rem' }"
+        (onChange)="onPageSizeChange($event.value)"
+      ></p-select>
+    </div>
+    <div class="flex items-center space-x-4">
+      <!-- Record info -->
+      <span class="text-sm font-medium text-[var(--p-primary-500)] whitespace-nowrap">
+        รายการ {{ firstRecord() }}-{{ lastRecord() }} จาก {{ totalRecords() }}
+      </span>
+
+      <!-- Page navigation -->
+      <nav aria-label="การนำทางหน้า" class="flex items-center gap-1">
+        <button
+          type="button"
+          [disabled]="currentPage() === 1"
+          class="w-10 h-10 flex items-center justify-center rounded text-slate-600 text-sm transition-colors hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--p-primary-500)]"
+          aria-label="หน้าก่อนหน้า"
+          (click)="onPageChange(currentPage() - 1)"
+        >
+          <i class="pi pi-chevron-left text-xs" aria-hidden="true"></i>
+        </button>
+
+        @for (page of visiblePages(); track page) {
+          <button
+            type="button"
+            [class]="
+              page === currentPage()
+                ? 'w-10 h-10 flex items-center justify-center rounded text-sm font-medium transition-colors ' +
+                  'bg-[var(--p-primary-500)] text-white border border-[var(--p-primary-500)] ' +
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-[var(--p-primary-500)]'
+                : 'w-10 h-10 flex items-center justify-center rounded text-sm text-slate-700 ' +
+                  'bg-white border border-slate-200 transition-colors hover:bg-slate-50 hover:border-slate-300 ' +
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--p-primary-500)]'
+            "
+            [attr.aria-label]="'หน้า ' + page"
+            [attr.aria-current]="page === currentPage() ? 'page' : null"
+            (click)="onPageChange(page)"
+          >
+            {{ page }}
+          </button>
+        }
+
+        <button
+          type="button"
+          [disabled]="currentPage() === totalPages()"
+          class="w-10 h-10 flex items-center justify-center rounded text-slate-600 text-sm transition-colors hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--p-primary-500)]"
+          aria-label="หน้าถัดไป"
+          (click)="onPageChange(currentPage() + 1)"
+        >
+          <i class="pi pi-chevron-right text-xs" aria-hidden="true"></i>
+        </button>
+      </nav>
+    </div>
+  </div>
+}

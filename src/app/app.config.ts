@@ -4,6 +4,7 @@ import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import { routes } from './app.routes';
 import { providePrimeNG } from 'primeng/config';
+import { MessageService } from 'primeng/api';
 
 const AppTheme = definePreset(Aura, {
   semantic: {
@@ -21,12 +22,56 @@ const AppTheme = definePreset(Aura, {
       950: '{green.950}',
     },
   },
+  components: {
+    select: {
+      root: {
+        paddingY: '0.75rem',
+      },
+      dropdown: {
+        color: '{primary.700}',
+      },
+      clearIcon: {
+        color: '{primary.700}',
+      },
+    },
+    multiSelect: {
+      root: {
+        paddingY: '0.75rem',
+      },
+    },
+    autoComplete: {
+      root: {
+        paddingY: '0.75rem',
+      },
+    },
+    cascadeSelect: {
+      root: {
+        paddingY: '0.75rem',
+      },
+    },
+    treeSelect: {
+      root: {
+        paddingY: '0.75rem',
+      },
+    },
+    button: {
+      root: {
+        paddingY: '0.75rem',
+      },
+    },
+    inputText: {
+      root: {
+        paddingY: '0.75rem',
+      },
+    },
+  },
 });
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
+    MessageService,
     providePrimeNG({
       theme: {
         preset: AppTheme,

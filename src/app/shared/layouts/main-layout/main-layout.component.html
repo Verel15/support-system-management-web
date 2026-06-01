@@ -1,0 +1,12 @@
+<div class="flex h-screen overflow-hidden bg-white">
+  <app-sidebar
+    [(collapsed)]="sidebarCollapsed"
+    [personalNav]="personalNav"
+    [mainNav]="mainNav"
+    [user]="currentUser"
+  />
+
+  <main class="flex-1 overflow-y-auto" id="main-content">
+    <router-outlet />
+  </main>
+</div>

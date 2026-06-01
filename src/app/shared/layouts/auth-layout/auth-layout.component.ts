@@ -1,12 +1,11 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Toast } from 'primeng/toast';
 
 @Component({
-  selector: 'app-root',
-  imports: [RouterOutlet, Toast],
-  templateUrl: './app.html',
-  styleUrl: './app.css',
+  selector: 'app-auth-layout',
+  imports: [RouterOutlet],
+  templateUrl: './auth-layout.component.html',
+  styleUrl: './auth-layout.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class App {}
+export class AuthLayoutComponent {}

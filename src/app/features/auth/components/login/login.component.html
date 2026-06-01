@@ -1,0 +1,64 @@
+<div class="bg-white rounded-2xl shadow-2xl p-12 w-full min-w-[448px]">
+  <div class="flex justify-center mb-8">
+    <img
+      ngSrc="/logo/logo-sms.png"
+      alt="Support Management System Logo"
+      width="220"
+      height="220"
+      priority
+      class="object-contain"
+    />
+  </div>
+
+  <p-fluid>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
+      <div class="flex flex-col gap-2">
+        <label for="email" class="font-bold text-secondary-700">อีเมล</label>
+        <input
+          pInputText
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="กรุณากรอกข้อมูล"
+          autocomplete="email"
+          [attr.aria-invalid]="isEmailInvalid() ? 'true' : null"
+          aria-describedby="email-error"
+        />
+        @if (isEmailInvalid()) {
+          <small id="email-error" class="text-error-500" role="alert"
+            >กรุณากรอกอีเมลให้ถูกต้อง</small
+          >
+        }
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="password" class="font-bold text-secondary-700">รหัสผ่าน</label>
+        <p-password
+          inputId="password"
+          formControlName="password"
+          [toggleMask]="true"
+          [feedback]="false"
+          placeholder="กรุณากรอกข้อมูล"
+          autocomplete="current-password"
+          [attr.aria-invalid]="isPasswordInvalid() ? 'true' : null"
+        />
+      </div>
+
+      <p-button
+        type="submit"
+        label="เข้าสู่ระบบ"
+        [disabled]="form.invalid"
+        styleClass="w-full mt-2"
+      />
+    </form>
+  </p-fluid>
+
+  <div class="text-center mt-6">
+    <a
+      routerLink="/auth/forgot-password"
+      class="text-primary-600 hover:text-primary-700 text-sm font-medium"
+    >
+      ลืมรหัสผ่าน ?
+    </a>
+  </div>
+</div>

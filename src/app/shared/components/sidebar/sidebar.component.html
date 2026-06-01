@@ -1,0 +1,176 @@
+<!-- ─── Header ──────────────────────────────────────────── -->
+<div class="flex items-center gap-3 px-3 py-4 shrink-0">
+  <button
+    type="button"
+    class="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+    [attr.aria-label]="collapsed() ? 'ขยายเมนู' : 'ยุบเมนู'"
+    [attr.aria-expanded]="!collapsed()"
+    (click)="toggleCollapsed()"
+  >
+    <i class="pi pi-bars text-base" aria-hidden="true"></i>
+  </button>
+
+  @if (!collapsed()) {
+    <img
+      ngSrc="/logo/logo-sms.png"
+      width="100"
+      height="40"
+      alt="Support System Management"
+      priority
+      class="h-8 w-auto object-contain"
+    />
+  }
+</div>
+
+<!-- ─── Personal Navigation ─────────────────────────────── -->
+<nav aria-label="เมนูส่วนตัว" class="shrink-0">
+  <ul class="space-y-0.5" role="list">
+    @for (item of personalNav(); track item.label) {
+      <li>
+        <a
+          [routerLink]="item.route"
+          [class]="
+            'flex items-center gap-3 px-4 py-5 text-sm transition-colors ' +
+            (isLinkActive(item.route)
+              ? 'bg-primary-50 text-primary-700 font-medium'
+              : 'text-slate-700 hover:bg-slate-50')
+          "
+          [attr.aria-current]="isLinkActive(item.route) ? 'page' : null"
+          [attr.aria-label]="item.badge ? item.label + ', ' + item.badge + ' รายการใหม่' : item.label"
+        >
+          <i
+            [class]="'pi ' + item.icon + ' text-base w-5 text-center shrink-0 text-primary-500'"
+            aria-hidden="true"
+          ></i>
+          @if (!collapsed()) {
+            <span class="truncate">{{ item.label }}</span>
+            @if (item.badge) {
+              <span class="ml-auto text-slate-500" aria-hidden="true">({{ item.badge }})</span>
+            }
+          }
+        </a>
+      </li>
+    }
+  </ul>
+</nav>
+
+<hr class="mx-3 my-2 border-slate-200 shrink-0" />
+
+<!-- ─── Main Navigation ─────────────────────────────────── -->
+<nav aria-label="เมนูหลัก" class="flex-1 overflow-y-auto">
+  <ul class="space-y-0.5" role="list">
+    @for (item of mainNav(); track item.label) {
+      <li>
+        @if (item.children?.length) {
+          <!-- Expandable parent -->
+          <button
+            type="button"
+            [class]="
+              'w-full flex items-center gap-3 px-4 py-5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ' +
+              (activeParentLabels().has(item.label)
+                ? 'text-primary-600 font-semibold hover:bg-primary-50'
+                : 'text-slate-700 hover:bg-slate-50')
+            "
+            [attr.aria-expanded]="isExpanded(item.label)"
+            [attr.aria-label]="item.label"
+            (click)="toggleItem(item.label)"
+          >
+            <i
+              [class]="'pi ' + item.icon + ' text-primary-500 text-base w-5 text-center shrink-0'"
+              aria-hidden="true"
+            ></i>
+            @if (!collapsed()) {
+              <span class="flex-1 text-left truncate">{{ item.label }}</span>
+              <i
+                [class]="'pi text-xs ml-auto text-slate-400 ' + (isExpanded(item.label) ? 'pi-chevron-up' : 'pi-chevron-down')"
+                aria-hidden="true"
+              ></i>
+            }
+          </button>
+
+          @if (isExpanded(item.label) && !collapsed()) {
+            <ul class="mt-0.5 space-y-0.5" role="list">
+              @for (child of item.children; track child.label) {
+                <li>
+                  <a
+                    [routerLink]="child.route"
+                    [class]="
+                      'flex items-center pl-10 pr-3 py-5 text-sm transition-colors ' +
+                      (isLinkActive(child.route)
+                        ? 'bg-primary-50 text-primary-700 font-semibold border-l-2 border-primary-500'
+                        : 'text-slate-600 hover:bg-slate-50')
+                    "
+                    [attr.aria-current]="isLinkActive(child.route) ? 'page' : null"
+                  >
+                    {{ child.label }}
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+        } @else {
+          <!-- Regular nav item -->
+          <a
+            [routerLink]="item.route"
+            [class]="
+              'flex items-center gap-3 px-4 py-5 text-sm transition-colors ' +
+              (isLinkActive(item.route)
+                ? 'bg-primary-50 text-primary-700 font-semibold'
+                : 'text-slate-700 hover:bg-slate-50')
+            "
+            [attr.aria-current]="isLinkActive(item.route) ? 'page' : null"
+          >
+            <i
+              [class]="'pi ' + item.icon + ' text-primary-500 text-base w-5 text-center shrink-0'"
+              aria-hidden="true"
+            ></i>
+            @if (!collapsed()) {
+              <span class="truncate">{{ item.label }}</span>
+            }
+          </a>
+        }
+      </li>
+    }
+  </ul>
+</nav>
+
+<!-- ─── User Profile ────────────────────────────────────── -->
+<div class="shrink-0 border-t border-slate-200 px-3 py-4">
+  @if (!collapsed()) {
+    <div class="flex items-center gap-3 min-w-0">
+      @if (user().avatarUrl) {
+        <img
+          [src]="user().avatarUrl"
+          [alt]="user().name"
+          class="w-10 h-10 rounded-full object-cover shrink-0"
+        />
+      } @else {
+        <div
+          class="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-semibold shrink-0 select-none"
+          aria-hidden="true"
+        >
+          {{ getInitials(user().name) }}
+        </div>
+      }
+      <div class="min-w-0">
+        <p class="text-sm font-medium text-slate-800 truncate">{{ user().name }}</p>
+        <p class="text-xs text-primary-500 truncate">{{ user().role }}</p>
+      </div>
+    </div>
+  } @else {
+    @if (user().avatarUrl) {
+      <img
+        [src]="user().avatarUrl"
+        [alt]="user().name"
+        class="w-8 h-8 rounded-full object-cover mx-auto"
+      />
+    } @else {
+      <div
+        class="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-semibold mx-auto select-none"
+        [attr.aria-label]="user().name"
+      >
+        {{ getInitials(user().name) }}
+      </div>
+    }
+  }
+</div>
