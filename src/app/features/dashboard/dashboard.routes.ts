@@ -8,7 +8,12 @@ export const dashboardRoutes: Routes = [
         (m) => m.MainLayoutComponent,
       ),
     children: [
-      { path: '', pathMatch: 'full', children: [] },
+      {
+        path: 'my-tickets',
+        loadChildren: () =>
+          import('../my-tickets/my-tickets.routes').then((m) => m.myTicketsRoutes),
+      },
+      { path: '', pathMatch: 'full', redirectTo: 'my-tickets' },
     ],
   },
 ];

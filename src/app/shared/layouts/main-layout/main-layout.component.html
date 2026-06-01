@@ -1,12 +1,49 @@
-<div class="flex h-screen overflow-hidden bg-white">
-  <app-sidebar
-    [(collapsed)]="sidebarCollapsed"
-    [personalNav]="personalNav"
-    [mainNav]="mainNav"
-    [user]="currentUser"
-  />
+<!-- Mobile backdrop — ปิด drawer เมื่อแตะข้างนอก -->
+@if (mobileOpen()) {
+  <div
+    class="fixed inset-0 bg-black/40 z-20 lg:hidden"
+    (click)="mobileOpen.set(false)"
+    aria-hidden="true"
+  ></div>
+}
 
-  <main class="flex-1 overflow-y-auto" id="main-content">
-    <router-outlet />
-  </main>
+<div class="flex h-screen overflow-hidden bg-white">
+  <!-- Sidebar: fixed drawer บน mobile, flex child ปกติบน lg+ -->
+  <div [class]="sidebarDrawerClass()">
+    <app-sidebar
+      [(collapsed)]="sidebarCollapsed"
+      [personalNav]="personalNav"
+      [mainNav]="mainNav"
+      [user]="currentUser"
+    />
+  </div>
+
+  <div class="flex flex-col flex-1 min-w-0">
+    <!-- Mobile top bar (ซ่อนบน lg+) -->
+    <header
+      class="lg:hidden flex items-center gap-3 h-14 px-4 border-b border-slate-200 bg-white shrink-0"
+      aria-label="แถบนำทางด้านบน"
+    >
+      <button
+        type="button"
+        class="flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+        aria-label="เปิดเมนู"
+        (click)="mobileOpen.set(true)"
+      >
+        <i class="pi pi-bars text-lg" aria-hidden="true"></i>
+      </button>
+      <img
+        ngSrc="/logo/logo-sms.png"
+        width="100"
+        height="40"
+        alt="Support System Management"
+        priority
+        class="h-7 w-auto object-contain"
+      />
+    </header>
+
+    <main class="flex-1 overflow-y-auto" id="main-content">
+      <router-outlet />
+    </main>
+  </div>
 </div>

@@ -1,17 +1,24 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
-import { DataTableComponent, TableColumn, SortEvent } from '../../../../shared/components/data-table';
+import { Menu } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
+import { DataTableComponent, DataTableCellDirective, TableColumn, SortEvent } from '../../../../shared/components/data-table';
+import { DeleteConfirmDialogComponent } from '../../../../shared/components/dialogs';
 
 interface User {
   name: string;
   userType: string;
   email: string;
   phone: string;
+}
+
+interface ActionMenuItem extends MenuItem {
+  danger?: boolean;
 }
 
 @Component({
@@ -23,12 +30,28 @@ interface User {
     InputText,
     IconField,
     InputIcon,
+    Menu,
     DataTableComponent,
+    DataTableCellDirective,
+    DeleteConfirmDialogComponent,
   ],
   templateUrl: './user-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserListComponent {
+  protected readonly menu = viewChild.required<Menu>('actionMenu');
+  protected readonly activeRow = signal<Record<string, unknown> | null>(null);
+  protected readonly showDeleteDialog = signal(false);
+  protected readonly deletingUser = signal<User | null>(null);
+
+  protected readonly menuItems: ActionMenuItem[] = [
+    { label: 'ดูรายละเอียด', command: () => this.onViewUser() },
+    { label: 'แก้ไข', command: () => this.onEditUser() },
+    { label: 'เปลี่ยนรหัสผ่าน', command: () => this.onChangePassword() },
+    { separator: true },
+    { label: 'ลบ', danger: true, command: () => this.onDeleteUser() },
+  ];
+
   protected readonly columns: TableColumn[] = [
     { field: 'name', header: 'รายชื่อ', sortable: true },
     { field: 'userType', header: 'ประเภทผู้ใช้', sortable: true },
@@ -118,5 +141,27 @@ export class UserListComponent {
 
   protected onAddUser(): void {
     // TODO: open add user dialog
+  }
+
+  protected onMenuOpen(event: MouseEvent, row: Record<string, unknown>): void {
+    event.stopPropagation();
+    this.activeRow.set(row);
+    this.menu().toggle(event);
+  }
+
+  protected onViewUser(): void { }
+  protected onEditUser(): void { }
+  protected onChangePassword(): void { }
+
+  protected onDeleteUser(): void {
+    const row = this.activeRow();
+    if (!row) return;
+    this.deletingUser.set(row as unknown as User);
+    this.showDeleteDialog.set(true);
+  }
+
+  protected onDeleteConfirmed(_password: string): void {
+    // TODO: call delete API with this.deletingUser() and _password
+    this.deletingUser.set(null);
   }
 }

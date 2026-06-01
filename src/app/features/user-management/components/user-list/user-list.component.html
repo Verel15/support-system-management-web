@@ -68,5 +68,30 @@
     (pageChange)="onPageChange($event)"
     (pageSizeChange)="onPageSizeChange($event)"
     (sortChange)="onSort($event)"
-  />
+  >
+    <ng-template dataTableCell="_actions" let-row>
+      <button
+        type="button"
+        class="inline-flex items-center justify-center w-8 h-8 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
+        aria-label="การดำเนินการ"
+        (click)="onMenuOpen($event, row)"
+      >
+        <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+      </button>
+    </ng-template>
+  </app-data-table>
 </div>
+
+<app-delete-confirm-dialog
+  [(visible)]="showDeleteDialog"
+  [targetLabel]="deletingUser()?.email ?? ''"
+  (confirmed)="onDeleteConfirmed($event)"
+/>
+
+<p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
+  <ng-template #item let-item pTemplate="item">
+    <a class="p-menu-item-link" role="menuitem">
+      <span class="p-menu-item-label" [class.text-error-600]="item.danger">{{ item.label }}</span>
+    </a>
+  </ng-template>
+</p-menu>

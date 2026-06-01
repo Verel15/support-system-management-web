@@ -1,15 +1,34 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { NgOptimizedImage } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter } from 'rxjs';
 import { SidebarComponent, SidebarNavItem, SidebarUser } from '../../components/sidebar';
 
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterOutlet, SidebarComponent],
+  imports: [RouterOutlet, SidebarComponent, NgOptimizedImage],
   templateUrl: './main-layout.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainLayoutComponent {
   protected readonly sidebarCollapsed = signal(false);
+  protected readonly mobileOpen = signal(false);
+
+  private readonly router = inject(Router);
+
+  // On lg+ the sidebar is a normal flex child; on mobile it's a fixed drawer
+  protected readonly sidebarDrawerClass = computed(() =>
+    this.mobileOpen()
+      ? 'fixed inset-y-0 left-0 z-30 translate-x-0 transition-transform duration-300 lg:relative lg:inset-auto lg:z-auto lg:translate-x-0'
+      : 'fixed inset-y-0 left-0 z-30 -translate-x-full transition-transform duration-300 lg:relative lg:inset-auto lg:z-auto lg:translate-x-0'
+  );
+
+  constructor() {
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd), takeUntilDestroyed())
+      .subscribe(() => this.mobileOpen.set(false));
+  }
 
   protected readonly currentUser: SidebarUser = {
     name: 'ใจงาม สุดใจจริง',

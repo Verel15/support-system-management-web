@@ -16,7 +16,7 @@ import { SortDirection, SortEvent, TableColumn } from './data-table.types';
 
 @Component({
   selector: 'app-data-table',
-  imports: [NgTemplateOutlet, Skeleton, DataTableCellDirective, PaginationComponent],
+  imports: [NgTemplateOutlet, Skeleton, PaginationComponent],
   templateUrl: './data-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

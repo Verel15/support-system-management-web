@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
 import { Fluid } from 'primeng/fluid';
-import { AlertDialogComponent } from '../../../../shared/components/alert-dialog/alert-dialog.component';
+import { AlertDialogComponent } from '../../../../shared/components/dialogs';
 
 @Component({
   selector: 'app-forgot-password',
