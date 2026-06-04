@@ -22,5 +22,12 @@ export const userManagementRoutes: Routes = [
         (m) => m.UserDetailComponent,
       ),
   },
+  {
+    path: 'edit',
+    loadComponent: () =>
+      import('./components/edit-user/edit-user.component').then(
+        (m) => m.EditUserComponent,
+      ),
+  },
   { path: '', redirectTo: 'list', pathMatch: 'full' },
 ];

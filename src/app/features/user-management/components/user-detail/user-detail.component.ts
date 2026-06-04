@@ -7,7 +7,6 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { ChipComponent } from '../../../../shared/components/chip';
@@ -29,7 +28,7 @@ interface UserDetail {
 
 @Component({
   selector: 'app-user-detail',
-  imports: [Button, Menu, ChipComponent, DeleteConfirmDialogComponent],
+  imports: [Menu, ChipComponent, DeleteConfirmDialogComponent],
   templateUrl: './user-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -41,7 +40,6 @@ export class UserDetailComponent {
 
   protected readonly menuItems: MenuItem[] = [
     { label: 'แก้ไข', command: () => this.onEdit() },
-    { label: 'เปลี่ยนรหัสผ่าน', command: () => this.onChangePassword() },
     { separator: true },
     { label: 'ลบ', command: () => this.showDeleteDialog.set(true) },
   ];
@@ -77,8 +75,9 @@ export class UserDetailComponent {
     this.actionMenu().toggle(event);
   }
 
-  protected onEdit(): void {}
-  protected onChangePassword(): void {}
+  protected onEdit(): void {
+    this.router.navigate(['/user-management/edit']);
+  }
 
   protected onDeleteConfirmed(_password: string): void {
     this.deleting.set(true);

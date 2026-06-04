@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
@@ -8,7 +15,12 @@ import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { Menu } from 'primeng/menu';
 import { MenuItem, MessageService } from 'primeng/api';
-import { DataTableComponent, DataTableCellDirective, TableColumn, SortEvent } from '../../../../shared/components/data-table';
+import {
+  DataTableComponent,
+  DataTableCellDirective,
+  TableColumn,
+  SortEvent,
+} from '../../../../shared/components/data-table';
 import { DeleteConfirmDialogComponent } from '../../../../shared/components/dialogs';
 
 interface User {
@@ -46,11 +58,10 @@ export class UserListComponent {
   protected readonly activeRow = signal<Record<string, unknown> | null>(null);
   protected readonly showDeleteDialog = signal(false);
   protected readonly deletingUser = signal<User | null>(null);
-  
+
   protected readonly menuItems: ActionMenuItem[] = [
     { label: 'ดูรายละเอียด', command: () => this.onViewUser() },
     { label: 'แก้ไข', command: () => this.onEditUser() },
-    { label: 'เปลี่ยนรหัสผ่าน', command: () => this.onChangePassword() },
     { separator: true },
     { label: 'ลบ', danger: true, command: () => this.onDeleteUser() },
   ];
@@ -84,28 +95,56 @@ export class UserListComponent {
   protected readonly loading = signal(false);
 
   private readonly allUsers: User[] = [
-    { name: 'ใจงาม สุดใจจริง', userType: 'แอดมิน', email: 'Jaiknam@gmail.com', phone: '012-345-6789' },
-    { name: 'แสนดี ที่สุดเลย', userType: 'ลูกค้า', email: 'Sansee@gmail.com', phone: '012-345-6789' },
+    {
+      name: 'ใจงาม สุดใจจริง',
+      userType: 'แอดมิน',
+      email: 'Jaiknam@gmail.com',
+      phone: '012-345-6789',
+    },
+    {
+      name: 'แสนดี ที่สุดเลย',
+      userType: 'ลูกค้า',
+      email: 'Sansee@gmail.com',
+      phone: '012-345-6789',
+    },
     { name: 'มานี มีตา', userType: 'ผู้พัฒนา', email: 'Manee@gmail.com', phone: '012-345-6789' },
-    { name: 'ตุ๊กตุ๊ก ตุ๊กแก', userType: 'ผู้พัฒนา', email: 'Tuktuk@gmail.com', phone: '012-345-6789' },
+    {
+      name: 'ตุ๊กตุ๊ก ตุ๊กแก',
+      userType: 'ผู้พัฒนา',
+      email: 'Tuktuk@gmail.com',
+      phone: '012-345-6789',
+    },
     { name: 'สิริ สวัสดิ', userType: 'ผู้พัฒนา', email: 'Siri@gmail.com', phone: '012-345-6789' },
-    { name: 'มีดัง ต้นเตือน', userType: 'ผู้พัฒนา', email: 'Metung@gmail.com', phone: '012-345-6789' },
+    {
+      name: 'มีดัง ต้นเตือน',
+      userType: 'ผู้พัฒนา',
+      email: 'Metung@gmail.com',
+      phone: '012-345-6789',
+    },
     { name: 'ชูใจ ใจดี', userType: 'ผู้พัฒนา', email: 'Shujai@gmail.com', phone: '012-345-6789' },
     { name: 'ปิติ ยินดี', userType: 'ลูกค้า', email: 'Piti@gmail.com', phone: '012-345-6789' },
     { name: 'แก้ว ดิ้นน้ำ', userType: 'ผู้พัฒนา', email: 'Kwaw@gmail.com', phone: '012-345-6789' },
-    { name: 'มะลิลา ขึ้นต้นเป็นมะลิซ้อน', userType: 'ผู้พัฒนา', email: 'Malila@gmail.com', phone: '012-345-6789' },
+    {
+      name: 'มะลิลา ขึ้นต้นเป็นมะลิซ้อน',
+      userType: 'ผู้พัฒนา',
+      email: 'Malila@gmail.com',
+      phone: '012-345-6789',
+    },
     { name: 'สมชาย ใจดี', userType: 'แอดมิน', email: 'Somchai@gmail.com', phone: '012-345-6789' },
-    { name: 'วิภาวรรณ สวัสดี', userType: 'ลูกค้า', email: 'Wipawan@gmail.com', phone: '012-345-6789' },
+    {
+      name: 'วิภาวรรณ สวัสดี',
+      userType: 'ลูกค้า',
+      email: 'Wipawan@gmail.com',
+      phone: '012-345-6789',
+    },
   ];
 
   protected readonly filteredUsers = computed(() => {
     const query = this.searchQuery().toLowerCase();
     const type = this.selectedUserType();
-    return this.allUsers.filter(u => {
+    return this.allUsers.filter((u) => {
       const matchesSearch =
-        !query ||
-        u.name.toLowerCase().includes(query) ||
-        u.email.toLowerCase().includes(query);
+        !query || u.name.toLowerCase().includes(query) || u.email.toLowerCase().includes(query);
       const matchesType = !type || u.userType === type;
       return matchesSearch && matchesType;
     });
@@ -117,7 +156,7 @@ export class UserListComponent {
     const start = (this.currentPage() - 1) * this.pageSize();
     return this.filteredUsers()
       .slice(start, start + this.pageSize())
-      .map(u => ({ ...u }));
+      .map((u) => ({ ...u }));
   });
 
   protected onSearch(value: string): void {
@@ -155,8 +194,9 @@ export class UserListComponent {
   protected onViewUser(): void {
     this.router.navigate(['/user-management/detail']);
   }
-  protected onEditUser(): void { }
-  protected onChangePassword(): void { }
+  protected onEditUser(): void {
+    this.router.navigate(['/user-management/edit']);
+  }
 
   protected onDeleteUser(): void {
     const row = this.activeRow();
@@ -174,6 +214,5 @@ export class UserListComponent {
       life: 4000,
     });
     this.deletingUser.set(null);
-
   }
 }

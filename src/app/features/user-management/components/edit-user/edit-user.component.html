@@ -1,0 +1,239 @@
+<!-- Page header -->
+<div class="flex items-center gap-3 p-4 border-b border-slate-200">
+  <button
+    type="button"
+    class="inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
+    aria-label="ย้อนกลับ"
+    (click)="onBack()"
+  >
+    <i class="pi pi-arrow-left text-slate-700" aria-hidden="true"></i>
+  </button>
+  <h1 class="flex-1 text-center text-xl font-semibold text-slate-800 pr-9">แก้ไขข้อมูลผู้ใช้</h1>
+</div>
+
+<div class="p-6 flex flex-col gap-6 max-w-2xl mx-auto">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="flex flex-col gap-6">
+
+    <!-- Avatar -->
+    <div class="flex justify-center pt-2">
+      <label class="relative cursor-pointer group" aria-label="เปลี่ยนรูปโปรไฟล์">
+        <div
+          class="w-28 h-28 rounded-full bg-yellow-400 overflow-hidden flex items-center justify-center border-2 border-transparent group-hover:border-primary-400 transition-colors"
+        >
+          @if (avatarPreview()) {
+            <img [src]="avatarPreview()" alt="รูปโปรไฟล์" class="w-full h-full object-cover" />
+          } @else {
+            <i class="pi pi-user text-white text-5xl" aria-hidden="true"></i>
+          }
+        </div>
+        <span
+          class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center shadow-md"
+          aria-hidden="true"
+        >
+          <i class="pi pi-pencil text-white text-sm"></i>
+        </span>
+        <input
+          type="file"
+          accept="image/*"
+          class="sr-only"
+          aria-label="เลือกรูปโปรไฟล์"
+          (change)="onAvatarChange($event)"
+        />
+      </label>
+    </div>
+
+    <!-- การเข้าถึง -->
+    <section aria-labelledby="access-heading">
+      <h2
+        id="access-heading"
+        class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3 mb-4"
+      >
+        การเข้าถึง
+      </h2>
+      <div class="flex flex-col gap-1">
+        <label for="userType" class="text-sm font-medium text-slate-700">ประเภทผู้ใช้</label>
+        <p-select
+          inputId="userType"
+          formControlName="userType"
+          [options]="userTypeOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="กรุณาเลือกประเภทผู้ใช้"
+          class="w-full"
+          [class.ng-invalid]="isInvalid('userType')"
+          aria-required="true"
+        />
+        @if (isInvalid('userType')) {
+          <small class="text-error-600 text-xs">กรุณาเลือกประเภทผู้ใช้</small>
+        }
+      </div>
+    </section>
+
+    <!-- ข้อมูลส่วนตัว -->
+    <section aria-labelledby="personal-heading">
+      <h2
+        id="personal-heading"
+        class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3 mb-4"
+      >
+        ข้อมูลส่วนตัว
+      </h2>
+      <div class="flex flex-col gap-4">
+        <!-- ชื่อ -->
+        <div class="flex flex-col gap-1">
+          <label for="firstName" class="text-sm font-medium text-slate-700">ชื่อ</label>
+          <input
+            pInputText
+            id="firstName"
+            formControlName="firstName"
+            placeholder="กรุณากรอกชื่อ"
+            class="w-full"
+            [class.ng-invalid]="isInvalid('firstName')"
+            aria-required="true"
+          />
+          @if (isInvalid('firstName')) {
+            <small class="text-error-600 text-xs">กรุณากรอกชื่อ</small>
+          }
+        </div>
+
+        <!-- นามสกุล -->
+        <div class="flex flex-col gap-1">
+          <label for="lastName" class="text-sm font-medium text-slate-700">นามสกุล</label>
+          <input
+            pInputText
+            id="lastName"
+            formControlName="lastName"
+            placeholder="กรุณากรอกนามสกุล"
+            class="w-full"
+            [class.ng-invalid]="isInvalid('lastName')"
+            aria-required="true"
+          />
+          @if (isInvalid('lastName')) {
+            <small class="text-error-600 text-xs">กรุณากรอกนามสกุล</small>
+          }
+        </div>
+
+        <!-- เบอร์โทรศัพท์ -->
+        <div class="flex flex-col gap-1">
+          <label for="phone" class="text-sm font-medium text-slate-700">
+            เบอร์โทรศัพท์
+            <span class="text-slate-400 font-normal">(ไม่บังคับ)</span>
+          </label>
+          <input
+            pInputText
+            id="phone"
+            formControlName="phone"
+            placeholder="กรุณากรอกเบอร์โทรศัพท์"
+            class="w-full"
+            type="tel"
+          />
+        </div>
+
+        <!-- แผนก -->
+        <div class="flex flex-col gap-1">
+          <label for="department" class="text-sm font-medium text-slate-700">แผนก</label>
+          <p-select
+            inputId="department"
+            formControlName="department"
+            [options]="departmentOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="กรุณาเลือกแผนก"
+            class="w-full"
+            [class.ng-invalid]="isInvalid('department')"
+            aria-required="true"
+          />
+          @if (isInvalid('department')) {
+            <small class="text-error-600 text-xs">กรุณาเลือกแผนก</small>
+          }
+        </div>
+
+        <!-- ตำแหน่ง -->
+        <div class="flex flex-col gap-1">
+          <label for="position" class="text-sm font-medium text-slate-700">ตำแหน่ง</label>
+          <p-select
+            inputId="position"
+            formControlName="position"
+            [options]="positionOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="กรุณาเลือกตำแหน่ง"
+            class="w-full"
+            [class.ng-invalid]="isInvalid('position')"
+            aria-required="true"
+          />
+          @if (isInvalid('position')) {
+            <small class="text-error-600 text-xs">กรุณาเลือกตำแหน่ง</small>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ความปลอดภัย -->
+    <section aria-labelledby="security-heading">
+      <h2
+        id="security-heading"
+        class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3 mb-4"
+      >
+        ความปลอดภัย
+      </h2>
+      <div class="flex flex-col gap-1">
+        <label for="email" class="text-sm font-medium text-slate-700">อีเมล</label>
+        <input
+          pInputText
+          id="email"
+          formControlName="email"
+          class="w-full opacity-60 cursor-not-allowed"
+          type="email"
+          aria-readonly="true"
+        />
+      </div>
+    </section>
+
+    <!-- โครงการที่รับผิดชอบ -->
+    <section aria-labelledby="projects-heading">
+      <h2
+        id="projects-heading"
+        class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3 mb-4"
+      >
+        โครงการที่รับผิดชอบ
+      </h2>
+      <div class="overflow-hidden rounded-lg border border-slate-200">
+        <table class="w-full text-sm" aria-label="โครงการที่รับผิดชอบ">
+          <thead>
+            <tr>
+              <th
+                scope="col"
+                class="bg-primary-500 text-white px-4 py-3 text-left font-medium"
+              >
+                <span class="inline-flex items-center gap-1.5">
+                  ชื่อโครงการ
+                  <i class="pi pi-arrow-down text-xs opacity-70" aria-hidden="true"></i>
+                </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (project of projects(); track project.name; let even = $even) {
+              <tr [class]="even ? 'bg-white' : 'bg-slate-50'">
+                <td class="px-4 py-3 text-slate-700">{{ project.name }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Submit -->
+    <div class="pt-2 pb-4">
+      <p-button
+        type="submit"
+        label="บันทึก"
+        severity="primary"
+        fluid
+        [loading]="submitting()"
+        [disabled]="submitting()"
+      />
+    </div>
+
+  </form>
+</div>
