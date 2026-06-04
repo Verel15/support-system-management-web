@@ -11,8 +11,8 @@
   </div>
 
   <p-fluid>
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5">
-      <div class="flex flex-col gap-2">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col">
+      <div class="flex flex-col gap-2 mb-4">
         <label for="email" class="font-bold text-secondary-700">อีเมล</label>
         <input
           pInputText
@@ -32,7 +32,7 @@
         }
       </div>
 
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-2 mb-12">
         <label for="password" class="font-bold text-secondary-700">รหัสผ่าน</label>
         <p-password
           inputId="password"
@@ -46,16 +46,11 @@
         />
       </div>
 
-      <p-button
-        type="submit"
-        label="เข้าสู่ระบบ"
-        [disabled]="form.invalid"
-        styleClass="w-full mt-2"
-      />
+      <p-button type="submit" label="เข้าสู่ระบบ" [disabled]="form.invalid" styleClass="w-full" />
     </form>
   </p-fluid>
-
-  <div class="text-center mt-6">
+  <p-divider layout="horizontal"></p-divider>
+  <div class="text-center">
     <a
       routerLink="/auth/forgot-password"
       class="text-primary-600 hover:text-primary-700 text-sm font-medium"

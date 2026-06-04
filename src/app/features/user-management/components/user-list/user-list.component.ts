@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
@@ -6,7 +7,7 @@ import { InputText } from 'primeng/inputtext';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { Menu } from 'primeng/menu';
-import { MenuItem } from 'primeng/api';
+import { MenuItem, MessageService } from 'primeng/api';
 import { DataTableComponent, DataTableCellDirective, TableColumn, SortEvent } from '../../../../shared/components/data-table';
 import { DeleteConfirmDialogComponent } from '../../../../shared/components/dialogs';
 
@@ -39,11 +40,13 @@ interface ActionMenuItem extends MenuItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserListComponent {
+  private readonly router = inject(Router);
+  private messageService = inject(MessageService);
   protected readonly menu = viewChild.required<Menu>('actionMenu');
   protected readonly activeRow = signal<Record<string, unknown> | null>(null);
   protected readonly showDeleteDialog = signal(false);
   protected readonly deletingUser = signal<User | null>(null);
-
+  
   protected readonly menuItems: ActionMenuItem[] = [
     { label: 'ดูรายละเอียด', command: () => this.onViewUser() },
     { label: 'แก้ไข', command: () => this.onEditUser() },
@@ -140,7 +143,7 @@ export class UserListComponent {
   }
 
   protected onAddUser(): void {
-    // TODO: open add user dialog
+    this.router.navigate(['/user-management/add']);
   }
 
   protected onMenuOpen(event: MouseEvent, row: Record<string, unknown>): void {
@@ -149,7 +152,9 @@ export class UserListComponent {
     this.menu().toggle(event);
   }
 
-  protected onViewUser(): void { }
+  protected onViewUser(): void {
+    this.router.navigate(['/user-management/detail']);
+  }
   protected onEditUser(): void { }
   protected onChangePassword(): void { }
 
@@ -162,6 +167,13 @@ export class UserListComponent {
 
   protected onDeleteConfirmed(_password: string): void {
     // TODO: call delete API with this.deletingUser() and _password
+    this.messageService.add({
+      severity: 'success',
+      summary: 'เพิ่มผู้ใช้สำเร็จ',
+      detail: 'สร้างผู้ใช้ใหม่เรียบร้อยแล้ว',
+      life: 4000,
+    });
     this.deletingUser.set(null);
+
   }
 }

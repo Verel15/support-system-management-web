@@ -1,0 +1,157 @@
+<!-- Page header -->
+<div class="flex items-center gap-3 p-4 border-b border-slate-200">
+  <button
+    type="button"
+    class="inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
+    aria-label="ย้อนกลับ"
+    (click)="onBack()"
+  >
+    <i class="pi pi-arrow-left text-slate-700" aria-hidden="true"></i>
+  </button>
+  <h1 class="flex-1 text-center text-xl font-semibold text-slate-800">รายละเอียดผู้ใช้</h1>
+  <button
+    type="button"
+    class="inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
+    aria-label="ตัวเลือกเพิ่มเติม"
+    aria-haspopup="true"
+    (click)="onMoreMenu($event)"
+  >
+    <i class="pi pi-ellipsis-h text-slate-600" aria-hidden="true"></i>
+  </button>
+</div>
+
+<!-- Content -->
+<div class="p-6 flex flex-col gap-8 max-w-2xl mx-auto">
+
+  <!-- Avatar + Name -->
+  <div class="flex flex-col items-center gap-3 pt-2">
+    <div
+      class="w-28 h-28 rounded-full overflow-hidden bg-yellow-400 flex items-center justify-center shrink-0"
+      aria-hidden="true"
+    >
+      @if (user().avatarUrl) {
+        <img
+          [src]="user().avatarUrl"
+          [alt]="fullName()"
+          class="w-full h-full object-cover"
+        />
+      } @else {
+        <span class="text-4xl font-bold text-white select-none">
+          {{ user().firstName[0] }}
+        </span>
+      }
+    </div>
+    <div class="text-center">
+      <p class="text-xl font-bold text-slate-800">{{ fullName() }}</p>
+      <p class="text-sm text-slate-500 uppercase tracking-widest mt-0.5">{{ user().company }}</p>
+    </div>
+  </div>
+
+  <!-- ข้อมูลส่วนตัว -->
+  <section aria-labelledby="personal-heading">
+    <h2
+      id="personal-heading"
+      class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3 mb-4"
+    >
+      ข้อมูลส่วนตัว
+    </h2>
+    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+      <div class="flex gap-3 items-start">
+        <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">ชื่อ</dt>
+        <dd class="text-sm font-medium text-slate-800">{{ user().firstName }}</dd>
+      </div>
+      <div class="flex gap-3 items-start">
+        <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">นามสกุล</dt>
+        <dd class="text-sm font-medium text-slate-800">{{ user().lastName }}</dd>
+      </div>
+      <div class="flex gap-3 items-start">
+        <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">ประเภทผู้ใช้</dt>
+        <dd class="text-sm font-medium text-slate-800">{{ user().userType }}</dd>
+      </div>
+      <div class="flex gap-3 items-start">
+        <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">เบอร์โทรศัพท์</dt>
+        <dd class="text-sm font-medium text-slate-800">{{ user().phone }}</dd>
+      </div>
+      <div class="flex gap-3 items-start sm:col-span-2">
+        <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">วันที่สร้าง</dt>
+        <dd class="text-sm font-medium text-slate-800">{{ user().createdAt }}</dd>
+      </div>
+      <div class="flex gap-3 items-center">
+        <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">แผนก</dt>
+        <dd><app-chip [label]="user().department" color="primary" /></dd>
+      </div>
+      <div class="flex gap-3 items-center">
+        <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">ตำแหน่ง</dt>
+        <dd><app-chip [label]="user().position" color="primary" /></dd>
+      </div>
+    </dl>
+  </section>
+
+  <!-- ความปลอดภัย -->
+  <section aria-labelledby="security-heading">
+    <h2
+      id="security-heading"
+      class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3 mb-4"
+    >
+      ความปลอดภัย
+    </h2>
+    <dl class="flex gap-3 items-start">
+      <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">อีเมล</dt>
+      <dd class="text-sm font-medium text-slate-800">{{ user().email }}</dd>
+    </dl>
+  </section>
+
+  <!-- โครงการที่รับผิดชอบ -->
+  <section aria-labelledby="projects-heading">
+    <h2
+      id="projects-heading"
+      class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3 mb-4"
+    >
+      โครงการที่รับผิดชอบ
+    </h2>
+    <div class="overflow-hidden rounded-lg border border-slate-200">
+      <table class="w-full text-sm" aria-label="โครงการที่รับผิดชอบ">
+        <thead>
+          <tr>
+            <th
+              scope="col"
+              class="bg-primary-500 text-white px-4 py-3 text-left font-medium"
+            >
+              <span class="inline-flex items-center gap-1.5">
+                ชื่อโครงการ
+                <i class="pi pi-arrow-down text-xs opacity-70" aria-hidden="true"></i>
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (project of user().projects; track project.name; let even = $even) {
+            <tr [class]="even ? 'bg-white' : 'bg-slate-50'">
+              <td class="px-4 py-3 text-slate-700">{{ project.name }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<!-- More menu -->
+<p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
+  <ng-template #item let-item pTemplate="item">
+    <a class="p-menu-item-link" role="menuitem">
+      <span
+        class="p-menu-item-label"
+        [class.text-error-600]="item.label === 'ลบ'"
+      >{{ item.label }}</span>
+    </a>
+  </ng-template>
+</p-menu>
+
+<app-delete-confirm-dialog
+  [(visible)]="showDeleteDialog"
+  [targetLabel]="fullName()"
+  [loading]="deleting()"
+  (confirmed)="onDeleteConfirmed($event)"
+/>

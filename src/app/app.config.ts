@@ -64,6 +64,11 @@ const AppTheme = definePreset(Aura, {
         paddingY: '0.75rem',
       },
     },
+    divider: {
+      root: {
+        borderColor: '{form.field.border.color}',
+      },
+    },
   },
 });
 

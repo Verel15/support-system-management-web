@@ -7,10 +7,11 @@ import { Password } from 'primeng/password';
 import { Button } from 'primeng/button';
 import { Fluid } from 'primeng/fluid';
 import { MessageService } from 'primeng/api';
+import { Divider } from 'primeng/divider';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink, NgOptimizedImage, InputText, Password, Button, Fluid],
+  imports: [ReactiveFormsModule, RouterLink, NgOptimizedImage, InputText, Password, Button, Fluid, Divider],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

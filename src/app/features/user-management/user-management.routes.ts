@@ -8,5 +8,19 @@ export const userManagementRoutes: Routes = [
         (m) => m.UserListComponent,
       ),
   },
+  {
+    path: 'add',
+    loadComponent: () =>
+      import('./components/add-user/add-user.component').then(
+        (m) => m.AddUserComponent,
+      ),
+  },
+  {
+    path: 'detail',
+    loadComponent: () =>
+      import('./components/user-detail/user-detail.component').then(
+        (m) => m.UserDetailComponent,
+      ),
+  },
   { path: '', redirectTo: 'list', pathMatch: 'full' },
 ];
