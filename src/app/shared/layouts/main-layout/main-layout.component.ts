@@ -51,7 +51,7 @@ export class MainLayoutComponent {
       icon: 'pi-users',
       children: [
         { label: 'รายชื่อผู้ใช้ทั้งหมด', icon: '', route: '/user-management/list' },
-        { label: 'ประเภทผู้ใช้', icon: '', route: '/user-management/types' },
+        { label: 'ประเภทผู้ใช้', icon: '', route: '/user-type-management/list' },
       ],
     },
     { label: 'จัดการบริษัท', icon: 'pi-building', route: '/dashboard/companies' },
