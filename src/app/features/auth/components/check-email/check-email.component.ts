@@ -7,7 +7,6 @@ import { map } from 'rxjs';
   selector: 'app-check-email',
   imports: [RouterLink],
   templateUrl: './check-email.component.html',
-  styleUrl: './check-email.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CheckEmailComponent {

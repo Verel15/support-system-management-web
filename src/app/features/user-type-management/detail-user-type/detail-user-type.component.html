@@ -1,0 +1,69 @@
+<div class="flex flex-col min-h-full">
+  <!-- Page Header -->
+  <header class="sticky top-0 z-10 bg-white flex items-center px-6 py-4 border-b border-slate-200">
+    <button
+      type="button"
+      (click)="onBack()"
+      class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+      aria-label="กลับ"
+    >
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+    </button>
+    <h1 class="flex-1 text-center text-xl font-semibold text-slate-800">รายละเอียดประเภทผู้ใช้</h1>
+    <button
+      type="button"
+      (click)="onToggleMenu($event)"
+      class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+      aria-label="เมนูเพิ่มเติม"
+      aria-haspopup="true"
+    >
+      <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+    </button>
+    <p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
+      <ng-template #item let-item pTemplate="item">
+        <a class="p-menu-item-link" role="menuitem">
+          <span class="p-menu-item-label" [class.text-error-600]="item.danger">{{ item.label }}</span>
+        </a>
+      </ng-template>
+    </p-menu>
+  </header>
+
+  <!-- Content -->
+  <div class="p-6">
+    @if (userType()) {
+      <h2 class="text-lg font-semibold text-slate-800 mb-4">ประเภทผู้ใช้ : {{ typeName() }}</h2>
+
+      <app-data-table
+        [columns]="columns"
+        [data]="permissionRows()"
+        [totalRecords]="permissionRows().length"
+        [pageSize]="9"
+        [currentPage]="1"
+        [showActions]="false"
+      />
+    } @else {
+      <p class="text-slate-500">ไม่พบข้อมูลประเภทผู้ใช้</p>
+    }
+  </div>
+</div>
+
+<!-- Step 1: Confirm intent -->
+<app-confirm-dialog
+  [(visible)]="showConfirmDeleteDialog"
+  type="warning"
+  title="ยืนยันการลบประเภทผู้ใช้"
+  (confirmed)="onConfirmDelete()"
+>
+  หากลบสิทธิ์การเข้าถึงนี้ อาจส่งผลกระทบต่อการเข้าถึงของผู้ใช้ที่มีสิทธิ์นี้อยู่
+  คุณแน่ใจที่จะลบสิทธิ์การเข้าถึงนี้หรือไม่?
+</app-confirm-dialog>
+
+<!-- Step 2: Confirm with password -->
+<app-delete-confirm-dialog
+  [(visible)]="showDeleteDialog"
+  title="ยืนยันการลบประเภทผู้ใช้"
+  descriptionPrefix="คุณกำลังจะลบประเภทผู้ใช้"
+  [targetLabel]="typeName()"
+  [loading]="deleting()"
+  (confirmed)="onDeleteConfirmed($event)"
+/>

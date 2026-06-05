@@ -10,7 +10,6 @@ import { AlertDialogComponent } from '../../../../shared/components/dialogs';
   selector: 'app-forgot-password',
   imports: [ReactiveFormsModule, InputText, Button, Fluid, AlertDialogComponent],
   templateUrl: './forgot-password.component.html',
-  styleUrl: './forgot-password.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ForgotPasswordComponent {

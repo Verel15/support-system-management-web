@@ -15,5 +15,19 @@ export const userTypeManagementRoutes: Routes = [
         (m) => m.AddUserTypeComponent,
       ),
   },
+  {
+    path: 'detail/:typeName',
+    loadComponent: () =>
+      import('./detail-user-type/detail-user-type.component').then(
+        (m) => m.DetailUserTypeComponent,
+      ),
+  },
+  {
+    path: 'edit/:typeName',
+    loadComponent: () =>
+      import('./edit-user-type/edit-user-type.component').then(
+        (m) => m.EditUserTypeComponent,
+      ),
+  },
   { path: '', redirectTo: 'list', pathMatch: 'full' },
 ];

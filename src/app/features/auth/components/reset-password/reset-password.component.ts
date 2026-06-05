@@ -28,7 +28,6 @@ function passwordsMatchValidator(group: AbstractControl): ValidationErrors | nul
   selector: 'app-reset-password',
   imports: [ReactiveFormsModule, Password, Button, Fluid],
   templateUrl: './reset-password.component.html',
-  styleUrl: './reset-password.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResetPasswordComponent {

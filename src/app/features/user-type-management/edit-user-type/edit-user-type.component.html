@@ -1,0 +1,245 @@
+<div class="flex flex-col min-h-full">
+  <!-- Page Header -->
+  <header class="sticky top-0 z-10 bg-white flex items-center px-6 py-4 border-b border-slate-200">
+    <button
+      type="button"
+      (click)="onBack()"
+      class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+      aria-label="กลับ"
+    >
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+    </button>
+    <h1 class="flex-1 text-center text-xl font-semibold text-slate-800">แก้ไขประเภทผู้ใช้</h1>
+    <div class="w-9" aria-hidden="true"></div>
+  </header>
+
+  <!-- Content -->
+  <div class="p-6">
+    @if (userType()) {
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="max-w-2xl mx-auto flex flex-col gap-3">
+        <!-- ประเภทผู้ใช้ -->
+        <section class="flex flex-col gap-3">
+          <h2 class="font-semibold text-slate-800 pl-3 border-l-4 border-primary-500">
+            ประเภทผู้ใช้
+          </h2>
+          <input
+            pInputText
+            formControlName="typeName"
+            placeholder="กรุณากรอกประเภทผู้ใช้"
+            class="w-full"
+            aria-label="ประเภทผู้ใช้"
+            aria-required="true"
+          />
+        </section>
+
+        <p-divider />
+
+        <!-- สิทธิ์การเข้าถึง Tickets ของฉัน -->
+        <section class="flex flex-col gap-3">
+          <h2 class="font-semibold text-slate-800 pl-3 border-l-4 border-primary-500">
+            สิทธิ์การเข้าถึง Tickets ของฉัน
+          </h2>
+          <div class="flex flex-wrap gap-6" role="radiogroup" aria-label="สิทธิ์การเข้าถึง Tickets ของฉัน">
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="myTickets" formControlName="myTickets" value="customer" inputId="myTickets_customer" />
+              <label for="myTickets_customer" class="text-slate-700 cursor-pointer">สำหรับลูกค้า</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="myTickets" formControlName="myTickets" value="admin" inputId="myTickets_admin" />
+              <label for="myTickets_admin" class="text-slate-700 cursor-pointer">สำหรับแอดมิน</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="myTickets" formControlName="myTickets" value="none" inputId="myTickets_none" />
+              <label for="myTickets_none" class="text-slate-700 cursor-pointer">ไม่มีสิทธิ์</label>
+            </div>
+          </div>
+        </section>
+
+        <p-divider />
+
+        <!-- สิทธิ์การเข้าถึงโครงการทั้งหมด -->
+        <section class="flex flex-col gap-3">
+          <h2 class="font-semibold text-slate-800 pl-3 border-l-4 border-primary-500">
+            สิทธิ์การเข้าถึงโครงการทั้งหมด
+          </h2>
+          <div class="flex flex-wrap gap-6" role="radiogroup" aria-label="สิทธิ์การเข้าถึงโครงการทั้งหมด">
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="allProjects" formControlName="allProjects" value="yes" inputId="allProjects_yes" />
+              <label for="allProjects_yes" class="text-slate-700 cursor-pointer">มีสิทธิ์</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="allProjects" formControlName="allProjects" value="none" inputId="allProjects_none" />
+              <label for="allProjects_none" class="text-slate-700 cursor-pointer">ไม่มีสิทธิ์</label>
+            </div>
+          </div>
+        </section>
+
+        <p-divider />
+
+        <!-- สิทธิ์การเข้าถึงการแจ้งเตือน -->
+        <section class="flex flex-col gap-3">
+          <h2 class="font-semibold text-slate-800 pl-3 border-l-4 border-primary-500">
+            สิทธิ์การเข้าถึงการแจ้งเตือน
+          </h2>
+          <div class="flex flex-wrap gap-6" role="radiogroup" aria-label="สิทธิ์การเข้าถึงการแจ้งเตือน">
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="notifications" formControlName="notifications" value="yes" inputId="notifications_yes" />
+              <label for="notifications_yes" class="text-slate-700 cursor-pointer">มีสิทธิ์</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="notifications" formControlName="notifications" value="none" inputId="notifications_none" />
+              <label for="notifications_none" class="text-slate-700 cursor-pointer">ไม่มีสิทธิ์</label>
+            </div>
+          </div>
+        </section>
+
+        <p-divider />
+
+        <!-- สิทธิ์การเข้าถึงแดชบอร์ด -->
+        <section class="flex flex-col gap-3">
+          <h2 class="font-semibold text-slate-800 pl-3 border-l-4 border-primary-500">
+            สิทธิ์การเข้าถึงแดชบอร์ด
+          </h2>
+          <div class="flex flex-wrap gap-6" role="radiogroup" aria-label="สิทธิ์การเข้าถึงแดชบอร์ด">
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="dashboard" formControlName="dashboard" value="yes" inputId="dashboard_yes" />
+              <label for="dashboard_yes" class="text-slate-700 cursor-pointer">มีสิทธิ์</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="dashboard" formControlName="dashboard" value="none" inputId="dashboard_none" />
+              <label for="dashboard_none" class="text-slate-700 cursor-pointer">ไม่มีสิทธิ์</label>
+            </div>
+          </div>
+        </section>
+
+        <p-divider />
+
+        <!-- สิทธิ์การเข้าถึง Ticket ทั้งหมด -->
+        <section class="flex flex-col gap-3">
+          <h2 class="font-semibold text-slate-800 pl-3 border-l-4 border-primary-500">
+            สิทธิ์การเข้าถึง Ticket ทั้งหมด
+          </h2>
+          <div class="flex flex-wrap gap-6" role="radiogroup" aria-label="สิทธิ์การเข้าถึง Ticket ทั้งหมด">
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="allTickets" formControlName="allTickets" value="yes" inputId="allTickets_yes" />
+              <label for="allTickets_yes" class="text-slate-700 cursor-pointer">มีสิทธิ์</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="allTickets" formControlName="allTickets" value="none" inputId="allTickets_none" />
+              <label for="allTickets_none" class="text-slate-700 cursor-pointer">ไม่มีสิทธิ์</label>
+            </div>
+          </div>
+        </section>
+
+        <p-divider />
+
+        <!-- สิทธิ์การเข้าถึงจัดการโครงการ -->
+        <section class="flex flex-col gap-3">
+          <h2 class="font-semibold text-slate-800 pl-3 border-l-4 border-primary-500">
+            สิทธิ์การเข้าถึงจัดการโครงการ
+          </h2>
+          <div class="flex flex-wrap gap-6" role="radiogroup" aria-label="สิทธิ์การเข้าถึงจัดการโครงการ">
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="projectManagement" formControlName="projectManagement" value="yes" inputId="projectManagement_yes" />
+              <label for="projectManagement_yes" class="text-slate-700 cursor-pointer">มีสิทธิ์</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="projectManagement" formControlName="projectManagement" value="none" inputId="projectManagement_none" />
+              <label for="projectManagement_none" class="text-slate-700 cursor-pointer">ไม่มีสิทธิ์</label>
+            </div>
+          </div>
+        </section>
+
+        <p-divider />
+
+        <!-- สิทธิ์การเข้าถึงจัดการผู้ใช้ -->
+        <section class="flex flex-col gap-3">
+          <h2 class="font-semibold text-slate-800 pl-3 border-l-4 border-primary-500">
+            สิทธิ์การเข้าถึงจัดการผู้ใช้
+          </h2>
+          <div class="flex flex-wrap gap-6" role="radiogroup" aria-label="สิทธิ์การเข้าถึงจัดการผู้ใช้">
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="userManagement" formControlName="userManagement" value="yes" inputId="userManagement_yes" />
+              <label for="userManagement_yes" class="text-slate-700 cursor-pointer">มีสิทธิ์</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="userManagement" formControlName="userManagement" value="none" inputId="userManagement_none" />
+              <label for="userManagement_none" class="text-slate-700 cursor-pointer">ไม่มีสิทธิ์</label>
+            </div>
+          </div>
+        </section>
+
+        <p-divider />
+
+        <!-- สิทธิ์การเข้าถึงจัดการบริษัท -->
+        <section class="flex flex-col gap-3">
+          <h2 class="font-semibold text-slate-800 pl-3 border-l-4 border-primary-500">
+            สิทธิ์การเข้าถึงจัดการบริษัท
+          </h2>
+          <div class="flex flex-wrap gap-6" role="radiogroup" aria-label="สิทธิ์การเข้าถึงจัดการบริษัท">
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="companyManagement" formControlName="companyManagement" value="yes" inputId="companyManagement_yes" />
+              <label for="companyManagement_yes" class="text-slate-700 cursor-pointer">มีสิทธิ์</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="companyManagement" formControlName="companyManagement" value="none" inputId="companyManagement_none" />
+              <label for="companyManagement_none" class="text-slate-700 cursor-pointer">ไม่มีสิทธิ์</label>
+            </div>
+          </div>
+        </section>
+
+        <p-divider />
+
+        <!-- สิทธิ์การเข้าถึงจัดการข้อมูล -->
+        <section class="flex flex-col gap-3 mb-10">
+          <h2 class="font-semibold text-slate-800 pl-3 border-l-4 border-primary-500">
+            สิทธิ์การเข้าถึงจัดการข้อมูล
+          </h2>
+          <div class="flex flex-wrap gap-6" role="radiogroup" aria-label="สิทธิ์การเข้าถึงจัดการข้อมูล">
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="dataManagement" formControlName="dataManagement" value="yes" inputId="dataManagement_yes" />
+              <label for="dataManagement_yes" class="text-slate-700 cursor-pointer">มีสิทธิ์</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-radiobutton name="dataManagement" formControlName="dataManagement" value="none" inputId="dataManagement_none" />
+              <label for="dataManagement_none" class="text-slate-700 cursor-pointer">ไม่มีสิทธิ์</label>
+            </div>
+          </div>
+        </section>
+
+        <!-- Save button -->
+        <p-button
+          type="submit"
+          label="บันทึก"
+          severity="primary"
+          [disabled]="form.invalid || saving()"
+          [loading]="saving()"
+          fluid
+        />
+      </form>
+    } @else {
+      <p class="text-slate-500 text-center mt-10">ไม่พบข้อมูลประเภทผู้ใช้</p>
+    }
+  </div>
+</div>
+
+<!-- Step 1: Confirm intent -->
+<app-confirm-dialog
+  [(visible)]="showConfirmDialog"
+  type="warning"
+  title="ยืนยันการแก้ไขสิทธิ์การเข้าถึง"
+  (confirmed)="onConfirmEdit()"
+>
+  หากแก้ไขสิทธิ์การเข้าถึงนี้ อาจส่งผลกระทบต่อการเข้าถึงของผู้ใช้ที่มีสิทธิ์นี้อยู่
+  คุณแน่ใจที่จะแก้ไขสิทธิ์การเข้าถึงนี้หรือไม่?
+</app-confirm-dialog>
+
+<!-- Step 2: Confirm with password -->
+<app-delete-confirm-dialog
+  [(visible)]="showPasswordDialog"
+  title="ยืนยันการแก้ไขสิทธิ์การเข้าถึง"
+  descriptionPrefix="คุณกำลังจะแก้ไขประเภทผู้ใช้"
+  [targetLabel]="typeName()"
+  [loading]="saving()"
+  (confirmed)="onPasswordConfirmed($event)"
+/>

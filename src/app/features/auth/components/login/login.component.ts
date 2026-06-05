@@ -13,7 +13,6 @@ import { Divider } from 'primeng/divider';
   selector: 'app-login',
   imports: [ReactiveFormsModule, RouterLink, NgOptimizedImage, InputText, Password, Button, Fluid, Divider],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent {

@@ -20,6 +20,8 @@ import { Password } from 'primeng/password';
 })
 export class DeleteConfirmDialogComponent {
   visible = model(false);
+  title = input('ยืนยันการลบข้อมูล');
+  descriptionPrefix = input('คุณกำลังจะลบข้อมูล');
   targetLabel = input.required<string>();
   loading = input(false);
 

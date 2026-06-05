@@ -93,7 +93,7 @@
               role="row"
             >
               @for (col of columns(); track col.field) {
-                <td class="px-4 py-2 text-sm text-slate-700" role="gridcell">
+                <td class="px-4 py-4 text-sm text-slate-700" role="gridcell">
                   @if (col.cellTemplate; as tpl) {
                     <ng-container
                       [ngTemplateOutlet]="tpl"

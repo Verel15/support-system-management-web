@@ -7,7 +7,7 @@ import { InputText } from 'primeng/inputtext';
 import { Menu } from 'primeng/menu';
 import { Select } from 'primeng/select';
 import { DataTableCellDirective, DataTableComponent, TableColumn } from '../../../shared/components/data-table';
-import { DeleteConfirmDialogComponent } from '../../../shared/components/dialogs';
+import { ConfirmDialogComponent, DeleteConfirmDialogComponent } from '../../../shared/components/dialogs';
 import { MenuItem, MessageService, SortEvent } from 'primeng/api';
 import { Router } from '@angular/router';
 
@@ -36,6 +36,7 @@ interface ActionMenuItem extends MenuItem {
     Menu,
     DataTableComponent,
     DataTableCellDirective,
+    ConfirmDialogComponent,
     DeleteConfirmDialogComponent,
   ],
   templateUrl: './user-type-list.component.html',
@@ -45,6 +46,7 @@ export class UserTypeListComponent {
   private messageService = inject(MessageService);
   protected readonly menu = viewChild.required<Menu>('actionMenu');
   protected readonly activeRow = signal<Record<string, unknown> | null>(null);
+  protected readonly showConfirmDeleteDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly deletingUser = signal<UserType | null>(null);
 
@@ -194,16 +196,25 @@ export class UserTypeListComponent {
   }
 
   protected onViewUser(): void {
-    this.router.navigate(['/user-management/detail']);
+    const row = this.activeRow();
+    if (!row) return;
+    this.router.navigate(['/user-type-management/detail', row['typeName']]);
   }
   protected onEditUser(): void {
-    this.router.navigate(['/user-management/edit']);
+    const row = this.activeRow();
+    if (!row) return;
+    this.router.navigate(['/user-type-management/edit', row['typeName']]);
   }
 
   protected onDeleteUser(): void {
     const row = this.activeRow();
     if (!row) return;
     this.deletingUser.set(row as unknown as UserType);
+    this.showConfirmDeleteDialog.set(true);
+  }
+
+  protected onConfirmDelete(): void {
+    this.showConfirmDeleteDialog.set(false);
     this.showDeleteDialog.set(true);
   }
 
