@@ -10,7 +10,10 @@ import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
 import { MenuItem, MessageService } from 'primeng/api';
 import { Tooltip } from 'primeng/tooltip';
-import { DeleteConfirmDialogComponent } from '../../../../shared/components/dialogs';
+import {
+  ConfirmDialogComponent,
+  DeleteConfirmDialogComponent,
+} from '../../../../shared/components/dialogs';
 
 interface StatusDetail {
   name: string;
@@ -25,7 +28,7 @@ interface ActionMenuItem extends MenuItem {
 
 @Component({
   selector: 'app-status-detail',
-  imports: [Button, Menu, Tooltip, DeleteConfirmDialogComponent],
+  imports: [Button, Menu, Tooltip, ConfirmDialogComponent, DeleteConfirmDialogComponent],
   templateUrl: './status-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -33,6 +36,7 @@ export class StatusDetailComponent {
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
   protected readonly menu = viewChild.required<Menu>('actionMenu');
+  protected readonly showConfirmDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly deleting = signal(false);
 
@@ -47,7 +51,7 @@ export class StatusDetailComponent {
   protected readonly menuItems: ActionMenuItem[] = [
     { label: 'แก้ไข', command: () => this.onEdit() },
     { separator: true },
-    { label: 'ลบ', danger: true, command: () => this.showDeleteDialog.set(true) },
+    { label: 'ลบ', danger: true, command: () => this.showConfirmDialog.set(true) },
   ];
 
   protected onBack(): void {
@@ -60,6 +64,11 @@ export class StatusDetailComponent {
 
   protected onEdit(): void {
     this.router.navigate(['/status-management/edit']);
+  }
+
+  protected onDeleteFirstStepConfirmed(): void {
+    this.showConfirmDialog.set(false);
+    this.showDeleteDialog.set(true);
   }
 
   protected onDeleteConfirmed(_password: string): void {

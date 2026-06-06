@@ -21,7 +21,10 @@ import {
   TableColumn,
   SortEvent,
 } from '../../../../shared/components/data-table';
-import { DeleteConfirmDialogComponent } from '../../../../shared/components/dialogs';
+import {
+  ConfirmDialogComponent,
+  DeleteConfirmDialogComponent,
+} from '../../../../shared/components/dialogs';
 
 interface Status {
   name: string;
@@ -46,6 +49,7 @@ interface ActionMenuItem extends MenuItem {
     Menu,
     DataTableComponent,
     DataTableCellDirective,
+    ConfirmDialogComponent,
     DeleteConfirmDialogComponent,
   ],
   templateUrl: './status-list.component.html',
@@ -56,6 +60,7 @@ export class StatusListComponent {
   private readonly messageService = inject(MessageService);
   protected readonly menu = viewChild.required<Menu>('actionMenu');
   protected readonly activeRow = signal<Record<string, unknown> | null>(null);
+  protected readonly showConfirmDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly deletingStatus = signal<Status | null>(null);
 
@@ -176,6 +181,11 @@ export class StatusListComponent {
     const row = this.activeRow();
     if (!row) return;
     this.deletingStatus.set(row as unknown as Status);
+    this.showConfirmDialog.set(true);
+  }
+
+  protected onDeleteFirstStepConfirmed(): void {
+    this.showConfirmDialog.set(false);
     this.showDeleteDialog.set(true);
   }
 

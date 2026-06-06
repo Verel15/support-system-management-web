@@ -135,6 +135,22 @@
   </div>
 </div>
 
+<app-confirm-dialog
+  [(visible)]="showConfirmDialog"
+  type="warning"
+  title="ยืนยันการลบสถานะ"
+  confirmLabel="ยืนยัน"
+  cancelLabel="ยกเลิก"
+  (confirmed)="onDeleteFirstStepConfirmed()"
+>
+  ขณะนี้สถานะ
+  <strong class="text-primary-600">{{ status().name }}</strong>
+  มี tickets ที่ดำเนินการสถานะนี้อยู่จำนวน
+  <strong class="text-primary-600">{{ status().ticketCount }} tickets</strong>
+  หากทำการนำสถานะนี้ออก tickets ที่ใช้สถานะนี้จะถูกลบออกด้วย
+  คุณแน่ใจที่จะลบสถานะนี้ออกหรือไม่?
+</app-confirm-dialog>
+
 <app-delete-confirm-dialog
   [(visible)]="showDeleteDialog"
   [targetLabel]="status().name"
