@@ -33,5 +33,16 @@ export const routes: Routes = [
         (m) => m.userTypeManagementRoutes,
       ),
   },
+  {
+    path: 'company-management',
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/company-management/company-management.routes').then(
+        (m) => m.companyManagementRoutes,
+      ),
+  },
   { path: '', redirectTo: 'auth', pathMatch: 'full' },
 ];

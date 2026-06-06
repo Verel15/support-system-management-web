@@ -1,0 +1,91 @@
+<div class="p-6 flex flex-col gap-5">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-semibold text-slate-800">รายชื่อบริษัท</h1>
+    <div class="w-full sm:w-auto md:w-44">
+      <p-button
+        label="เพิ่มบริษัท"
+        icon="pi pi-plus"
+        (onClick)="onAddCompany()"
+        severity="primary"
+        fluid
+      />
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+    <!-- Search -->
+    <div class="flex items-center gap-3 w-full sm:w-80 sm:ml-auto">
+      <p-icon-field class="w-full">
+        <p-inputicon class="pi pi-search" />
+        <input
+          pInputText
+          type="search"
+          placeholder="ค้นหา"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)"
+          class="w-full h-12 appearance-none"
+          aria-label="ค้นหาบริษัท"
+        />
+      </p-icon-field>
+    </div>
+  </div>
+
+  <!-- Action menu (shared across all rows) -->
+  <p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
+    <ng-template #item let-item pTemplate="item">
+      <a
+        class="p-menu-item-link"
+        role="menuitem"
+        (click)="item.command?.({ originalEvent: $event, item: item })"
+      >
+        <span class="p-menu-item-label" [class.text-error-600]="item.danger">{{ item.label }}</span>
+      </a>
+    </ng-template>
+  </p-menu>
+
+  <!-- Table -->
+  <app-data-table
+    [columns]="columns"
+    [data]="pagedCompanies()"
+    [totalRecords]="totalRecords()"
+    [currentPage]="currentPage()"
+    [pageSize]="pageSize()"
+    [loading]="loading()"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (sortChange)="onSort($event)"
+  >
+    <ng-template dataTableCell="_actions" let-row>
+      <button
+        type="button"
+        class="inline-flex items-center justify-center w-8 h-8 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
+        aria-label="การดำเนินการ"
+        (click)="onMenuOpen($event, row)"
+      >
+        <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+      </button>
+    </ng-template>
+  </app-data-table>
+</div>
+
+<!-- Step 1: Confirm intent -->
+<app-confirm-dialog
+  [(visible)]="showConfirmDeleteDialog"
+  type="warning"
+  title="ยืนยันการลบบริษัท"
+  (confirmed)="onConfirmDelete()"
+>
+  หากลบบริษัทนี้ อาจส่งผลกระทบต่อโครงการและสมาชิกที่เกี่ยวข้อง
+  คุณแน่ใจที่จะลบบริษัทนี้หรือไม่?
+</app-confirm-dialog>
+
+<!-- Step 2: Confirm with password -->
+<app-delete-confirm-dialog
+  [(visible)]="showDeleteDialog"
+  title="ยืนยันการลบบริษัท"
+  descriptionPrefix="คุณกำลังจะลบบริษัท"
+  [targetLabel]="deletingCompany()?.companyName ?? ''"
+  (confirmed)="onDeleteConfirmed($event)"
+/>

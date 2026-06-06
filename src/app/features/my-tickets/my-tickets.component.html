@@ -28,7 +28,7 @@
     </div>
     <div class="flex gap-4 overflow-x-auto pb-2" role="list" aria-label="โครงการล่าสุด">
       @for (project of recentProjects; track project.name) {
-        <div role="listitem">
+        <div role="listitem" class="w-56 shrink-0">
           <app-project-card [project]="project" />
         </div>
       }

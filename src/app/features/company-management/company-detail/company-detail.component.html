@@ -1,0 +1,147 @@
+<!-- Header -->
+<header class="flex items-center gap-3 border-b px-6 py-4 border-slate-200">
+  <p-button
+    icon="pi pi-arrow-left"
+    [text]="true"
+    severity="secondary"
+    aria-label="ย้อนกลับ"
+    (onClick)="onBack()"
+  />
+  <h1 class="flex-1 text-center text-2xl font-semibold text-slate-800">{{ companyName }}</h1>
+
+  <!-- Action menu -->
+  <p-menu #actionMenu [model]="menuItems" [popup]="true" appendTo="body">
+    <ng-template #item let-item pTemplate="item">
+      <a class="p-menu-item-link" role="menuitem">
+        <span class="p-menu-item-label" [class.text-error-600]="item.danger">
+          {{ item.label }}
+        </span>
+      </a>
+    </ng-template>
+  </p-menu>
+  <p-button
+    icon="pi pi-ellipsis-h"
+    [text]="true"
+    severity="secondary"
+    aria-label="เมนูเพิ่มเติม"
+    (onClick)="onMenuOpen($event)"
+  />
+</header>
+<div class="flex flex-col p-6 gap-6">
+  <!-- Company info stats -->
+  <section aria-labelledby="company-info-heading">
+    <h2
+      id="company-info-heading"
+      class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3 mb-4"
+    >
+      ข้อมูลบริษัท
+    </h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <!-- Members count -->
+      <div
+        class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col items-center gap-2 shadow-sm"
+      >
+        <i class="pi pi-users text-2xl text-primary-500" aria-hidden="true"></i>
+        <span class="text-2xl font-bold text-slate-800">{{ companyStats.memberCount }} ผู้ใช้</span>
+        <span class="text-sm text-slate-500">จำนวนสมาชิกทั้งหมด</span>
+      </div>
+      <!-- Projects count -->
+      <div
+        class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col items-center gap-2 shadow-sm"
+      >
+        <i class="pi pi-folder text-2xl text-primary-500" aria-hidden="true"></i>
+        <span class="text-2xl font-bold text-slate-800">{{ companyStats.projectCount }} โครงการ</span>
+        <span class="text-sm text-slate-500">จำนวนโครงการทั้งหมด</span>
+      </div>
+      <!-- Created date -->
+      <div
+        class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col items-center gap-2 shadow-sm"
+      >
+        <i class="pi pi-calendar text-2xl text-primary-500" aria-hidden="true"></i>
+        <span class="text-2xl font-bold text-slate-800">{{ companyStats.createdAt }}</span>
+        <span class="text-sm text-slate-500">วันที่สร้าง</span>
+      </div>
+    </div>
+  </section>
+
+  <p-divider class="my-6" />
+
+  <!-- Members -->
+  <section aria-labelledby="members-heading">
+    <div class="flex items-center justify-between mb-4">
+      <h2
+        id="members-heading"
+        class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3"
+      >
+        สมาชิก
+      </h2>
+      <div class="w-64">
+        <p-icon-field class="w-full">
+          <p-inputicon class="pi pi-search" />
+          <input
+            pInputText
+            type="search"
+            placeholder="ค้นหา"
+            [ngModel]="memberSearchQuery()"
+            (ngModelChange)="onMemberSearch($event)"
+            class="w-full h-10 appearance-none"
+            aria-label="ค้นหาสมาชิก"
+          />
+        </p-icon-field>
+      </div>
+    </div>
+
+    <app-data-table
+      [columns]="memberColumns"
+      [data]="pagedMembers()"
+      [totalRecords]="totalMemberRecords()"
+      [currentPage]="memberPage()"
+      [pageSize]="memberPageSize()"
+      [showActions]="false"
+      (pageChange)="onMemberPageChange($event)"
+      (pageSizeChange)="onMemberPageSizeChange($event)"
+    />
+  </section>
+
+  <p-divider />
+
+  <!-- All projects -->
+  <section aria-labelledby="projects-heading" class="mb-12">
+    <h2
+      id="projects-heading"
+      class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3 mb-4"
+    >
+      โครงการทั้งหมด
+    </h2>
+    <div
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+      role="list"
+      aria-label="โครงการทั้งหมด"
+    >
+      @for (project of projects; track project.name) {
+        <div role="listitem">
+          <app-project-card [project]="project" />
+        </div>
+      }
+    </div>
+  </section>
+</div>
+
+<!-- Step 1: Confirm intent -->
+<app-confirm-dialog
+  [(visible)]="showConfirmDeleteDialog"
+  type="warning"
+  title="ยืนยันการลบบริษัท"
+  (confirmed)="onConfirmDelete()"
+>
+  หากลบบริษัทนี้ อาจส่งผลกระทบต่อโครงการและสมาชิกที่เกี่ยวข้อง คุณแน่ใจที่จะลบบริษัทนี้หรือไม่?
+</app-confirm-dialog>
+
+<!-- Step 2: Confirm with password -->
+<app-delete-confirm-dialog
+  [(visible)]="showDeleteDialog"
+  title="ยืนยันการลบบริษัท"
+  descriptionPrefix="คุณกำลังจะลบบริษัท"
+  [targetLabel]="companyName"
+  (confirmed)="onDeleteConfirmed($event)"
+/>

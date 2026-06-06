@@ -54,12 +54,14 @@ export class MainLayoutComponent {
         { label: 'ประเภทผู้ใช้', icon: '', route: '/user-type-management/list' },
       ],
     },
-    { label: 'จัดการบริษัท', icon: 'pi-building', route: '/dashboard/companies' },
+    { label: 'จัดการบริษัท', icon: 'pi-building', route: '/company-management/list' },
     {
       label: 'จัดการข้อมูล',
       icon: 'pi-database',
       children: [
-        { label: 'ข้อมูลทั่วไป', icon: '', route: '/dashboard/data/general' },
+        { label: 'สถานะ', icon: '', route: '/status-management/list' },
+        { label: 'ประเภท Ticket', icon: '', route: '/ticket-type-management/list' },
+        { label: 'ระดับความสำคัญ', icon: '', route: '/ticket-priority-management/list' },
       ],
     },
   ];

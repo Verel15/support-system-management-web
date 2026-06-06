@@ -1,0 +1,53 @@
+<div class="flex flex-col min-h-full">
+  <!-- Page Header -->
+  <header class="sticky top-0 z-10 bg-white flex items-center px-6 py-4 border-b border-slate-200">
+    <button
+      type="button"
+      (click)="onBack()"
+      class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+      aria-label="กลับ"
+    >
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+    </button>
+    <h1 class="flex-1 text-center text-xl font-semibold text-slate-800">เพิ่มบริษัท</h1>
+    <div class="w-9" aria-hidden="true"></div>
+  </header>
+
+  <!-- Content -->
+  <div class="p-6">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="max-w-2xl mx-auto flex flex-col gap-6">
+        <!-- ชื่อบริษัท -->
+        <div class="flex flex-col gap-1 mb-12">
+          <label for="companyName" class="text-sm font-medium text-slate-700">
+            ชื่อบริษัท <span class="text-error-500" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="companyName"
+            pInputText
+            formControlName="companyName"
+            placeholder="กรุณากรอกชื่อบริษัท"
+            class="w-full"
+            [class.ng-invalid]="isInvalid('companyName')"
+            [class.ng-dirty]="isInvalid('companyName')"
+            aria-required="true"
+            [attr.aria-describedby]="isInvalid('companyName') ? 'companyName-error' : null"
+          />
+          @if (isInvalid('companyName')) {
+            <span id="companyName-error" class="text-xs text-error-600" role="alert">
+              @if (form.controls.companyName.hasError('required')) { กรุณากรอกชื่อบริษัท }
+              @else if (form.controls.companyName.hasError('maxlength')) { ชื่อบริษัทต้องไม่เกิน 200 ตัวอักษร }
+            </span>
+          }
+        </div>
+
+      <!-- Action Buttons -->
+      <p-button
+        type="submit"
+        label="บันทึก"
+        severity="primary"
+        [loading]="saving()"
+        fluid
+      />
+    </form>
+  </div>
+</div>

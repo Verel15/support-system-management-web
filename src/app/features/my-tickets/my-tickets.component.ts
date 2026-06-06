@@ -14,7 +14,7 @@ import {
   TableColumn,
   SortEvent,
 } from '../../shared/components/data-table';
-import { ProjectCardComponent, Project } from './components/project-card/project-card.component';
+import { ProjectCardComponent, Project } from '../../shared/components/project-card';
 
 type TicketStatus = 'In Progress' | 'Done' | 'Todo' | 'Blocked';
 type TicketPriority = 'high' | 'medium' | 'low';
