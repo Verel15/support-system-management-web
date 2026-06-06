@@ -1,0 +1,174 @@
+<div class="flex flex-col min-h-full">
+  <!-- Header -->
+  <div class="relative flex items-center px-6 py-4 border-b border-slate-200">
+    <p-button
+      type="button"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      variant="text"
+      [rounded]="true"
+      (onClick)="onBack()"
+      aria-label="กลับ"
+    />
+    <h1
+      class="absolute inset-0 flex items-center justify-center text-xl font-semibold text-slate-800 pointer-events-none"
+    >
+      เพิ่มสถานะ
+    </h1>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 overflow-y-auto p-6">
+    <form
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+      class="max-w-xl mx-auto flex flex-col gap-6"
+    >
+      <!-- Status Name -->
+      <div class="flex flex-col gap-1.5">
+        <label for="statusName" class="text-sm font-semibold text-slate-800">ชื่อสถานะ</label>
+        <input
+          pInputText
+          id="statusName"
+          formControlName="name"
+          placeholder="กรุณากรอกข้อมูล"
+          class="w-full"
+          [class.ng-invalid]="isNameInvalid()"
+          [class.ng-dirty]="isNameInvalid()"
+          aria-required="true"
+          [attr.aria-invalid]="isNameInvalid()"
+          aria-describedby="nameError"
+        />
+        @if (isNameInvalid()) {
+          <span id="nameError" class="text-sm text-error-600">กรุณากรอกชื่อสถานะ</span>
+        }
+      </div>
+
+      <!-- Status Steps -->
+      <div class="flex flex-col gap-5">
+        <h2 class="text-sm font-semibold text-slate-800">ขั้นตอนสถานะ</h2>
+
+        <!-- Initial Status -->
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm font-medium text-slate-700">สถานะเริ่มต้น</span>
+            <i
+              class="pi pi-info-circle text-sm text-slate-400"
+              pTooltip="สำหรับงานที่เปิดเข้ามา โดยเป็นสถานะเริ่มต้นของระบบ"
+              tooltipPosition="right"
+              aria-label="สำหรับงานที่เปิดเข้ามา โดยเป็นสถานะเริ่มต้นของระบบ"
+            ></i>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
+            <span class="w-3 h-3 rounded-full bg-blue-500 shrink-0" aria-hidden="true"></span>
+            <span class="font-medium text-blue-600">Open</span>
+          </div>
+        </div>
+
+        <!-- Processing Status -->
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm font-medium text-slate-700">สถานะดำเนินการ</span>
+            <i
+              class="pi pi-info-circle text-sm text-slate-400"
+              pTooltip="สำหรับงานที่เริ่มดำเนินการแล้ว"
+              tooltipPosition="right"
+              aria-label="สำหรับงานที่เริ่มดำเนินการแล้ว"
+            ></i>
+          </div>
+          <!-- Static In Progress -->
+          <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
+            <span class="w-3 h-3 rounded-full bg-orange-400 shrink-0" aria-hidden="true"></span>
+            <span class="font-medium text-orange-500">In Progress</span>
+          </div>
+          <!-- Dynamic statuses -->
+          @for (ctrl of processingStatusControls.controls; track $index) {
+            <div
+              class="flex items-center gap-3 px-4 py-3 rounded-lg border bg-white"
+              [class.border-error-300]="isStatusInvalid($index)"
+              [class.border-slate-200]="!isStatusInvalid($index)"
+            >
+              <span class="w-3 h-3 rounded-full bg-orange-400 shrink-0" aria-hidden="true"></span>
+              <input
+                type="text"
+                [formControl]="getStatusControl($index)"
+                placeholder="กรุณากรอกชื่อสถานะ"
+                class="flex-1 border-0 outline-none ring-0 shadow-none p-0 bg-transparent font-medium text-orange-500 placeholder:text-slate-400 placeholder:font-normal"
+                [attr.aria-label]="'ชื่อสถานะดำเนินการที่ ' + ($index + 2)"
+                [attr.aria-invalid]="isStatusInvalid($index)"
+              />
+              <button
+                type="button"
+                (click)="removeProcessingStatus($index)"
+                class="shrink-0 w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-error-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-300"
+                [attr.aria-label]="'ลบสถานะดำเนินการที่ ' + ($index + 2)"
+              >
+                <i class="pi pi-times text-xs" aria-hidden="true"></i>
+              </button>
+            </div>
+          }
+          <!-- Add Processing Status Button -->
+          <p-button
+            type="button"
+            label="เพิ่มสถานะ"
+            variant="outlined"
+            fluid
+            (onClick)="addProcessingStatus()"
+          />
+        </div>
+
+        <!-- End Status -->
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm font-medium text-slate-700">สถานะสิ้นสุด</span>
+            <i
+              class="pi pi-info-circle text-sm text-slate-400"
+              pTooltip="สำหรับงานที่ทำเสร็จแล้ว และไม่มีการแก้ไขงานอีก"
+              tooltipPosition="right"
+              aria-label="สำหรับงานที่ทำเสร็จแล้ว และไม่มีการแก้ไขงานอีก"
+            ></i>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
+            <span class="w-3 h-3 rounded-full bg-green-500 shrink-0" aria-hidden="true"></span>
+            <span class="font-medium text-green-600">Done</span>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
+            <span class="w-3 h-3 rounded-full bg-slate-400 shrink-0" aria-hidden="true"></span>
+            <span class="font-medium text-slate-500">Close</span>
+          </div>
+        </div>
+
+        <!-- Failed Status -->
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm font-medium text-slate-700">สถานะล้มเหลว</span>
+            <i
+              class="pi pi-info-circle text-sm text-slate-400"
+              pTooltip="สำหรับงานที่มีการตีกลับ หรือ มีการปฏิเสธการดำเนินงาน"
+              tooltipPosition="right"
+              aria-label="สำหรับงานที่มีการตีกลับ หรือ มีการปฏิเสธการดำเนินงาน"
+            ></i>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
+            <span class="w-3 h-3 rounded-full bg-red-500 shrink-0" aria-hidden="true"></span>
+            <span class="font-medium text-red-500">Reject</span>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
+            <span class="w-3 h-3 rounded-full bg-red-500 shrink-0" aria-hidden="true"></span>
+            <span class="font-medium text-red-500">Return</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <p-button
+        type="submit"
+        label="บันทึก"
+        severity="primary"
+        fluid
+        [disabled]="form.invalid"
+        [loading]="submitting()"
+      />
+    </form>
+  </div>
+</div>

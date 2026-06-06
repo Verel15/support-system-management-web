@@ -44,5 +44,16 @@ export const routes: Routes = [
         (m) => m.companyManagementRoutes,
       ),
   },
+  {
+    path: 'status-management',
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/status-management/status-management.routes').then(
+        (m) => m.statusManagementRoutes,
+      ),
+  },
   { path: '', redirectTo: 'auth', pathMatch: 'full' },
 ];

@@ -1,0 +1,86 @@
+<div class="p-6 flex flex-col gap-5">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-semibold text-slate-800">รายการสถานะทั้งหมด</h1>
+    <div class="w-full sm:w-auto md:w-44">
+      <p-button
+        label="เพิ่มสถานะ"
+        icon="pi pi-plus"
+        (onClick)="onAddStatus()"
+        severity="primary"
+        fluid
+      />
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+    <!-- Left: date filter -->
+    <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 shrink-0">
+      <p-select
+        [options]="dateOptions"
+        [ngModel]="selectedDate()"
+        (ngModelChange)="selectedDate.set($event); onFilterChange()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="วันที่แก้ไข"
+        class="w-full sm:w-auto sm:min-w-44"
+        aria-label="กรองตามวันที่แก้ไข"
+      />
+    </div>
+
+    <!-- Right: search -->
+    <div class="flex items-center gap-3 w-full sm:w-80 sm:ml-auto">
+      <p-icon-field class="w-full">
+        <p-inputicon class="pi pi-search" />
+        <input
+          pInputText
+          type="search"
+          placeholder="ค้นหาชื่อสถานะ"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)"
+          class="w-full h-12 appearance-none"
+          aria-label="ค้นหาชื่อสถานะ"
+        />
+      </p-icon-field>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <app-data-table
+    [columns]="columns"
+    [data]="pagedStatuses()"
+    [totalRecords]="totalRecords()"
+    [currentPage]="currentPage()"
+    [pageSize]="pageSize()"
+    [loading]="loading()"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (sortChange)="onSort($event)"
+  >
+    <ng-template dataTableCell="_actions" let-row>
+      <button
+        type="button"
+        class="inline-flex items-center justify-center w-8 h-8 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
+        aria-label="การดำเนินการ"
+        (click)="onMenuOpen($event, row)"
+      >
+        <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+      </button>
+    </ng-template>
+  </app-data-table>
+</div>
+
+<app-delete-confirm-dialog
+  [(visible)]="showDeleteDialog"
+  [targetLabel]="deletingStatus()?.name ?? ''"
+  (confirmed)="onDeleteConfirmed($event)"
+/>
+
+<p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
+  <ng-template #item let-item pTemplate="item">
+    <a class="p-menu-item-link" role="menuitem">
+      <span class="p-menu-item-label" [class.text-error-600]="item.danger">{{ item.label }}</span>
+    </a>
+  </ng-template>
+</p-menu>
