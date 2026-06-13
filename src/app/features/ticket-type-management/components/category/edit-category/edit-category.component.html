@@ -1,0 +1,151 @@
+<div class="flex flex-col min-h-full">
+  <!-- Header -->
+  <div class="relative flex items-center px-6 py-4 border-b border-slate-200">
+    <p-button
+      type="button"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      variant="text"
+      [rounded]="true"
+      (onClick)="onBack()"
+      aria-label="กลับ"
+    />
+    <h1
+      class="absolute inset-0 flex items-center justify-center text-xl font-semibold text-slate-800 pointer-events-none"
+    >
+      แก้ไข Category
+    </h1>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 overflow-y-auto p-6">
+    <form
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+      class="max-w-xl mx-auto flex flex-col gap-6"
+    >
+      <!-- ชื่อ Category -->
+      <div class="flex flex-col gap-1.5">
+        <label for="categoryName" class="text-sm font-semibold text-slate-800">ชื่อ Category</label>
+        <input
+          pInputText
+          id="categoryName"
+          formControlName="name"
+          placeholder="กรุณากรอกข้อมูล"
+          class="w-full"
+          [class.ng-invalid]="isNameInvalid()"
+          [class.ng-dirty]="isNameInvalid()"
+          aria-required="true"
+          [attr.aria-invalid]="isNameInvalid()"
+          aria-describedby="nameError"
+        />
+        @if (isNameInvalid()) {
+          <span id="nameError" class="text-sm text-error-600">กรุณากรอกชื่อ Category</span>
+        }
+      </div>
+
+      <!-- สถานะ -->
+      <div class="flex flex-col gap-1.5">
+        <label for="categoryStatus" class="text-sm font-semibold text-slate-800">สถานะ</label>
+        <p-select
+          inputId="categoryStatus"
+          formControlName="status"
+          [options]="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="เลือกสถานะ"
+          styleClass="w-full"
+          [class.ng-invalid]="isStatusInvalid()"
+          [class.ng-dirty]="isStatusInvalid()"
+          aria-required="true"
+          [attr.aria-invalid]="isStatusInvalid()"
+          aria-describedby="statusError"
+        />
+        @if (isStatusInvalid()) {
+          <span id="statusError" class="text-sm text-error-600">กรุณาเลือกสถานะ</span>
+        }
+      </div>
+
+      <!-- Sub-Category -->
+      <div class="flex flex-col gap-3">
+        <h2 class="text-sm font-semibold text-slate-800 pl-3 border-l-4 border-primary-500">
+          Sub-Category
+        </h2>
+
+        @if (selectedSubCategories().length > 0) {
+          <ul class="flex flex-col gap-2" aria-label="Sub-Category ที่เลือกแล้ว">
+            @for (sub of selectedSubCategories(); track sub.value) {
+              <li
+                class="flex items-center justify-between px-4 py-2.5 rounded-lg border border-slate-200 bg-white"
+              >
+                <span class="text-sm text-slate-700">{{ sub.label }}</span>
+                <button
+                  type="button"
+                  class="w-6 h-6 flex items-center justify-center rounded text-slate-400 hover:text-error-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-300"
+                  [attr.aria-label]="'ลบ ' + sub.label"
+                  (click)="removeSubCategory(sub.value)"
+                >
+                  <i class="pi pi-times text-xs" aria-hidden="true"></i>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+
+        <p-button
+          type="button"
+          label="เลือก Sub-Category"
+          severity="primary"
+          [outlined]="true"
+          fluid
+          (onClick)="showSubCategoryDialog.set(true)"
+          aria-haspopup="dialog"
+        />
+      </div>
+
+      <!-- Submit -->
+      <p-button
+        type="submit"
+        label="บันทึก"
+        severity="primary"
+        fluid
+        [disabled]="!canSubmit()"
+        [loading]="submitting()"
+      />
+    </form>
+  </div>
+</div>
+
+<!-- Step 1: Confirm intent -->
+<app-confirm-dialog
+  [(visible)]="showConfirmDialog"
+  type="warning"
+  title="ยืนยันการแก้ไข Category"
+  confirmLabel="ยืนยัน"
+  cancelLabel="ยกเลิก"
+  (confirmed)="onConfirmStep1()"
+>
+  คุณแน่ใจที่จะแก้ไข Category
+  <strong class="text-primary-600">{{ currentName() }}</strong>
+  ใช่หรือไม่?
+</app-confirm-dialog>
+
+<!-- Step 2: Password confirmation -->
+<app-delete-confirm-dialog
+  [(visible)]="showPasswordDialog"
+  title="ยืนยันการแก้ไขด้วยรหัสผ่าน"
+  descriptionPrefix="คุณกำลังจะแก้ไขข้อมูล Category"
+  [targetLabel]="currentName()"
+  [loading]="submitting()"
+  (confirmed)="onSaveConfirmed($event)"
+/>
+
+<!-- Sub-Category selector -->
+<app-select-items-dialog
+  [(visible)]="showSubCategoryDialog"
+  title="Sub-Category"
+  subtitle="เลือก Sub-Category ที่เกี่ยวข้อง"
+  [items]="subCategoryOptions"
+  [selected]="selectedSubCategoryValues()"
+  (confirmed)="onSubCategoryConfirmed($event)"
+/>

@@ -1,0 +1,85 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [closable]="false"
+  [style]="{ width: '576px' }"
+  [contentStyle]="{ padding: '0' }"
+>
+  <ng-template #header>
+    <div class="flex flex-col p-1 gap-0.5 w-full">
+      <h2 class="text-lg font-bold text-slate-900">{{ dialogTitle() }}</h2>
+      @if (subtitle()) {
+        <p class="text-sm text-slate-500">{{ subtitle() }}</p>
+      }
+    </div>
+  </ng-template>
+
+  <div class="flex flex-col gap-0 px-6 py-4">
+    <!-- Search -->
+    <div class="flex items-center gap-3 mb-4">
+      <p-icon-field class="flex-1">
+        <p-inputicon class="pi pi-search" />
+        <input
+          pInputText
+          type="search"
+          placeholder="ค้นหา"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          class="w-full"
+          aria-label="ค้นหารายการ"
+        />
+      </p-icon-field>
+      <button
+        type="button"
+        class="shrink-0 text-sm text-primary-600 hover:text-primary-700 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
+        (click)="clearAll()"
+      >
+        ล้างทั้งหมด
+      </button>
+    </div>
+
+    <!-- Items list -->
+    <ul class="flex flex-col gap-1 max-h-64 overflow-y-auto" role="listbox" [attr.aria-label]="title()">
+      @for (item of filteredItems(); track item.value) {
+        <li>
+          <label
+            [for]="'select-item-' + item.value"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
+          >
+            <p-checkbox
+              [binary]="true"
+              [ngModel]="isSelected(item.value)"
+              (ngModelChange)="toggleItem(item.value)"
+              [inputId]="'select-item-' + item.value"
+            />
+            <span class="text-sm text-slate-700 select-none">{{ item.label }}</span>
+          </label>
+        </li>
+      }
+      @empty {
+        <li class="py-6 text-center text-sm text-slate-400">ไม่พบรายการ</li>
+      }
+    </ul>
+  </div>
+
+  <ng-template #footer>
+    <div class="flex gap-3 w-full sm:justify-end">
+      <p-button
+        label="ยกเลิก"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="onCancel()"
+        class="flex-1 sm:flex-none"
+        styleClass="w-full sm:w-40"
+      />
+      <p-button
+        label="ยืนยัน"
+        severity="primary"
+        (onClick)="onConfirm()"
+        class="flex-1 sm:flex-none"
+        styleClass="w-full sm:w-40"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

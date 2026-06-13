@@ -1,0 +1,167 @@
+<div class="flex flex-col min-h-full">
+  <!-- Header -->
+  <div class="relative flex items-center px-6 py-4 border-b border-slate-200">
+    <p-button
+      type="button"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      variant="text"
+      [rounded]="true"
+      (onClick)="onBack()"
+      aria-label="กลับ"
+    />
+    <h1
+      class="absolute inset-0 flex items-center justify-center text-xl font-semibold text-slate-800 pointer-events-none"
+    >
+      เพิ่มลำดับความสำคัญ
+    </h1>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 overflow-y-auto p-6">
+    <form
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+      class="max-w-xl mx-auto flex flex-col gap-6"
+    >
+      <!-- Section header -->
+      <h2 class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
+        ข้อมูลลำดับความสำคัญ
+      </h2>
+
+      <!-- Priority name with icon+color picker -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm font-semibold text-slate-800" id="priorityNameLabel">
+          ลำดับความสำคัญ
+        </label>
+        <div
+          class="flex items-stretch h-12 rounded-lg border overflow-hidden transition-colors focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500"
+          [class.border-error-400]="isNameInvalid()"
+          [class.border-slate-300]="!isNameInvalid()"
+        >
+          <!-- Icon picker trigger -->
+          <button
+            type="button"
+            class="flex items-center gap-1.5 px-3 bg-slate-50 border-r border-slate-200 hover:bg-slate-100 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
+            (click)="openIconPicker($event)"
+            aria-label="เลือกสัญลักษณ์และสี"
+            aria-haspopup="true"
+          >
+            <i
+              [class]="iconClass(selectedIcon())"
+              class="text-sm shrink-0"
+              [style.color]="colorHex(selectedColor())"
+              aria-hidden="true"
+            ></i>
+            <i class="pi pi-chevron-down text-xs text-slate-400" aria-hidden="true"></i>
+          </button>
+          <!-- Name input -->
+          <input
+            type="text"
+            formControlName="name"
+            placeholder="กรุณากรอกชื่อลำดับความสำคัญ"
+            class="flex-1 h-full px-3 outline-none bg-white text-sm text-slate-800 placeholder:text-slate-400"
+            aria-required="true"
+            aria-labelledby="priorityNameLabel"
+            [attr.aria-invalid]="isNameInvalid()"
+            aria-describedby="nameError"
+          />
+        </div>
+        @if (isNameInvalid()) {
+          <span id="nameError" class="text-sm text-error-600">กรุณากรอกชื่อลำดับความสำคัญ</span>
+        }
+      </div>
+
+      <!-- Duration -->
+      <div class="flex flex-col gap-1.5">
+        <label for="duration" class="text-sm font-semibold text-slate-800">ระยะเวลา</label>
+        <p-select
+          inputId="duration"
+          formControlName="duration"
+          [options]="durationOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="เลือกระยะเวลา"
+          class="w-full"
+          aria-required="true"
+          [attr.aria-invalid]="isDurationInvalid()"
+          aria-describedby="durationError"
+        />
+        @if (isDurationInvalid()) {
+          <span id="durationError" class="text-sm text-error-600">กรุณาเลือกระยะเวลา</span>
+        }
+      </div>
+
+      <!-- Description (optional) -->
+      <div class="flex flex-col gap-1.5">
+        <label for="description" class="text-sm font-semibold text-slate-800">
+          รายละเอียดเพิ่มเติม
+          <span class="text-slate-400 font-normal">(ไม่บังคับ)</span>
+        </label>
+        <textarea
+          pTextarea
+          id="description"
+          formControlName="description"
+          placeholder="กรุณากรอกข้อมูล"
+          rows="4"
+          class="w-full resize-none"
+          aria-label="รายละเอียดเพิ่มเติม"
+        ></textarea>
+      </div>
+
+      <!-- Submit -->
+      <p-button
+        type="submit"
+        label="บันทึก"
+        severity="primary"
+        fluid
+        [loading]="submitting()"
+      />
+    </form>
+  </div>
+</div>
+
+<!-- Icon + Color picker popover -->
+<p-popover #iconPicker [appendTo]="'body'">
+  <div class="flex flex-col gap-3 p-1 min-w-max">
+    <!-- Icon row -->
+    <div class="flex gap-1" role="group" aria-label="เลือกสัญลักษณ์">
+      @for (icon of iconKeys; track icon) {
+        <button
+          type="button"
+          class="w-9 h-9 flex items-center justify-center rounded-md text-base font-bold hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+          [class.bg-slate-100]="selectedIcon() === icon"
+          [class.ring-2]="selectedIcon() === icon"
+          [class.ring-primary-400]="selectedIcon() === icon"
+          [style.color]="colorHex(selectedColor())"
+          (click)="selectIcon(icon)"
+          [attr.aria-label]="'สัญลักษณ์ ' + icon"
+          [attr.aria-pressed]="selectedIcon() === icon"
+        >
+          <i
+            [class]="iconClass(icon)"
+            class="text-sm shrink-0"
+            [style.color]="colorHex(selectedColor())"
+            aria-hidden="true"
+          ></i>
+        </button>
+      }
+    </div>
+    <!-- Color row -->
+    <div class="flex gap-2 px-0.5" role="group" aria-label="เลือกสี">
+      @for (color of colorKeys; track color) {
+        <button
+          type="button"
+          class="w-6 h-6 rounded-full transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-slate-400"
+          [class.ring-2]="selectedColor() === color"
+          [class.ring-offset-2]="selectedColor() === color"
+          [class.ring-slate-500]="selectedColor() === color"
+          [style.background-color]="colorHex(color)"
+          (click)="selectColor(color)"
+          [attr.aria-label]="'สี ' + color"
+          [attr.aria-pressed]="selectedColor() === color"
+        ></button>
+      }
+    </div>
+  </div>
+</p-popover>

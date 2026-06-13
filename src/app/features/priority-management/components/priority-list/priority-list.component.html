@@ -1,0 +1,119 @@
+<div class="p-6 flex flex-col gap-5">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-semibold text-slate-800">ลำดับความสำคัญ</h1>
+    <div class="w-full sm:w-auto md:w-56">
+      <p-button
+        label="เพิ่มลำดับความสำคัญ"
+        icon="pi pi-plus"
+        (onClick)="onAdd()"
+        severity="primary"
+        fluid
+      />
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+    <div class="shrink-0">
+      <p-select
+        [options]="dateOptions"
+        [ngModel]="selectedDate()"
+        (ngModelChange)="selectedDate.set($event); onFilterChange()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="วันที่สร้าง"
+        class="w-full sm:w-auto sm:min-w-44"
+        aria-label="กรองตามวันที่สร้าง"
+      />
+    </div>
+
+    <div class="flex items-center gap-3 w-full sm:w-80 sm:ml-auto">
+      <p-icon-field class="w-full">
+        <p-inputicon class="pi pi-search" />
+        <input
+          pInputText
+          type="search"
+          placeholder="ค้นหา"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)"
+          class="w-full h-12 appearance-none"
+          aria-label="ค้นหาลำดับความสำคัญ"
+        />
+      </p-icon-field>
+      <p-button
+        icon="pi pi-sliders-h"
+        severity="secondary"
+        variant="outlined"
+        class="shrink-0"
+        aria-label="ตัวกรอง"
+      />
+    </div>
+  </div>
+
+  <!-- Table -->
+  <app-data-table
+    [columns]="columns"
+    [data]="pagedPriorities()"
+    [totalRecords]="totalRecords()"
+    [currentPage]="currentPage()"
+    [pageSize]="pageSize()"
+    [loading]="loading()"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (sortChange)="onSort($event)"
+  >
+    <ng-template dataTableCell="name" let-value="value" let-row>
+      <div class="flex items-center gap-2">
+        <i
+          [class]="iconClass(row['icon'])"
+          class="text-sm shrink-0"
+          [style.color]="colorHex(row['color'])"
+          aria-hidden="true"
+        ></i>
+        <span>{{ value }}</span>
+      </div>
+    </ng-template>
+
+    <ng-template dataTableCell="_actions" let-row>
+      <button
+        type="button"
+        class="inline-flex items-center justify-center w-8 h-8 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
+        aria-label="การดำเนินการ"
+        (click)="onMenuOpen($event, row)"
+      >
+        <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+      </button>
+    </ng-template>
+  </app-data-table>
+</div>
+
+<app-confirm-dialog
+  [(visible)]="showConfirmDialog"
+  type="warning"
+  title="ยืนยันการลบลำดับความสำคัญ"
+  confirmLabel="ยืนยัน"
+  cancelLabel="ยกเลิก"
+  (confirmed)="onDeleteFirstStepConfirmed()"
+>
+  ขณะนี้ลำดับความสำคัญ
+  <strong class="text-primary-600">{{ deletingPriority()?.name }}</strong>
+  มี tickets ที่ใช้ลำดับความสำคัญนี้อยู่จำนวน
+  <strong class="text-primary-600">{{ deletingPriority()?.ticketCount }} tickets</strong>
+  หากทำการนำลำดับความสำคัญนี้ออก tickets ที่ใช้ลำดับนี้จะถูกลบออกด้วย
+  คุณแน่ใจที่จะลบลำดับความสำคัญนี้ออกหรือไม่?
+</app-confirm-dialog>
+
+<app-delete-confirm-dialog
+  [(visible)]="showDeleteDialog"
+  [targetLabel]="deletingPriority()?.name ?? ''"
+  (confirmed)="onDeleteConfirmed($event)"
+/>
+
+<p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
+  <ng-template #item let-item pTemplate="item">
+    <a class="p-menu-item-link" role="menuitem">
+      <span class="p-menu-item-label" [class.text-error-600]="item.danger">{{ item.label }}</span>
+    </a>
+  </ng-template>
+</p-menu>

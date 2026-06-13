@@ -1,0 +1,110 @@
+<div class="flex flex-col min-h-full">
+  <!-- Header -->
+  <div class="relative flex items-center px-6 py-4 border-b border-slate-200">
+    <p-button
+      type="button"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      variant="text"
+      [rounded]="true"
+      (onClick)="onBack()"
+      aria-label="กลับ"
+    />
+    <h1
+      class="absolute inset-0 flex items-center justify-center text-xl font-semibold text-slate-800 pointer-events-none"
+    >
+      {{ subCategory().name }}
+    </h1>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 p-6 grid grid-cols-12 gap-5 items-start">
+    <!-- Left: Tickets table -->
+    <div class="col-span-12 md:col-span-8 flex flex-col gap-4">
+      <h2 class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
+        Ticket ที่ใช้
+      </h2>
+
+      <app-data-table
+        [columns]="ticketColumns"
+        [data]="tickets()"
+        [totalRecords]="totalRecords()"
+        [currentPage]="currentPage()"
+        [pageSize]="pageSize()"
+        [loading]="loading()"
+        (pageChange)="currentPage.set($event)"
+        (pageSizeChange)="pageSize.set($event)"
+      >
+        <ng-template dataTableCell="status" let-value="value">
+          <p-tag [value]="$any(value)" [severity]="statusSeverity($any(value))" />
+        </ng-template>
+      </app-data-table>
+    </div>
+
+    <!-- Right: Info card -->
+    <div class="col-span-12 md:col-span-4 rounded-xl border border-slate-200 bg-white overflow-hidden">
+      <!-- Card header -->
+      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+        <h3 class="font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">ข้อมูล</h3>
+        <button
+          type="button"
+          class="w-8 h-8 flex items-center justify-center rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+          aria-label="การดำเนินการ"
+          aria-haspopup="true"
+          (click)="onMenuOpen($event)"
+        >
+          <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <dl class="grid grid-cols-[auto_1fr]">
+        <!-- วันที่สร้าง -->
+        <dt class="px-3 py-3 text-sm text-slate-500 whitespace-nowrap">วันที่สร้าง:</dt>
+        <dd class="px-3 py-3 text-sm font-medium text-slate-800 leading-relaxed">
+          {{ subCategory().createdDate }}<br>
+          <span class="text-slate-500 font-normal">เวลา {{ subCategory().createdTime }} น.</span>
+        </dd>
+
+        <!-- ลำดับความสำคัญ -->
+        <dt class="px-3 py-3 text-sm text-slate-500 whitespace-nowrap">ลำดับความสำคัญ:</dt>
+        <dd class="px-3 py-3 text-sm font-medium text-slate-800">{{ subCategory().priority }}</dd>
+
+        <!-- ตำแหน่งที่เกี่ยวข้อง -->
+        <dt class="px-3 py-3 text-sm text-slate-500 whitespace-nowrap">ตำแหน่งที่เกี่ยวข้อง:</dt>
+        <dd class="px-3 py-3 text-sm font-medium text-slate-800">{{ subCategory().relatedPosition }}</dd>
+
+        <!-- สร้างโดย -->
+        <dt class="px-3 py-3 text-sm text-slate-500 whitespace-nowrap">สร้างโดย:</dt>
+        <dd class="px-3 py-3 text-sm font-medium text-slate-800">{{ subCategory().createdBy }}</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<app-confirm-dialog
+  [(visible)]="showConfirmDialog"
+  type="warning"
+  title="ยืนยันการลบ Sub-Category"
+  confirmLabel="ยืนยัน"
+  cancelLabel="ยกเลิก"
+  (confirmed)="onDeleteFirstStepConfirmed()"
+>
+  คุณแน่ใจที่จะลบ Sub-Category
+  <strong class="text-primary-600">{{ subCategory().name }}</strong>
+  ออกหรือไม่?
+</app-confirm-dialog>
+
+<app-delete-confirm-dialog
+  [(visible)]="showDeleteDialog"
+  [targetLabel]="subCategory().name"
+  [loading]="deleting()"
+  (confirmed)="onDeleteConfirmed($event)"
+/>
+
+<p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
+  <ng-template #item let-item pTemplate="item">
+    <a class="p-menu-item-link" role="menuitem">
+      <span class="p-menu-item-label" [class.text-error-600]="item.danger">{{ item.label }}</span>
+    </a>
+  </ng-template>
+</p-menu>

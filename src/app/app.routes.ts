@@ -55,5 +55,27 @@ export const routes: Routes = [
         (m) => m.statusManagementRoutes,
       ),
   },
+  {
+    path: 'ticket-type-management',
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/ticket-type-management/ticket-type-management.routes').then(
+        (m) => m.ticketTypeManagementRoutes,
+      ),
+  },
+  {
+    path: 'ticket-priority-management',
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/priority-management/priority-management.routes').then(
+        (m) => m.priorityManagementRoutes,
+      ),
+  },
   { path: '', redirectTo: 'auth', pathMatch: 'full' },
 ];

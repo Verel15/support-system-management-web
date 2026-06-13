@@ -1,0 +1,125 @@
+<div class="flex flex-col min-h-full">
+  <!-- Header -->
+  <div class="relative flex items-center px-6 py-4 border-b border-slate-200">
+    <p-button
+      type="button"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      variant="text"
+      [rounded]="true"
+      (onClick)="onBack()"
+      aria-label="กลับ"
+    />
+    <h1
+      class="absolute inset-0 flex items-center justify-center text-xl font-semibold text-slate-800 pointer-events-none"
+    >
+      แก้ไข Sub-Category
+    </h1>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 overflow-y-auto p-6">
+    <form
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+      class="max-w-xl mx-auto flex flex-col gap-6"
+    >
+      <!-- ชื่อ Sub-Category -->
+      <div class="flex flex-col gap-1.5">
+        <label for="subCategoryName" class="text-sm font-semibold text-slate-800">ชื่อ Sub-Category</label>
+        <input
+          pInputText
+          id="subCategoryName"
+          formControlName="name"
+          placeholder="กรุณากรอกข้อมูล"
+          class="w-full"
+          [class.ng-invalid]="isNameInvalid()"
+          [class.ng-dirty]="isNameInvalid()"
+          aria-required="true"
+          [attr.aria-invalid]="isNameInvalid()"
+          aria-describedby="nameError"
+        />
+        @if (isNameInvalid()) {
+          <span id="nameError" class="text-sm text-error-600">กรุณากรอกชื่อ Sub-Category</span>
+        }
+      </div>
+
+      <!-- ระดับความสำคัญ -->
+      <div class="flex flex-col gap-1.5">
+        <label for="priority" class="text-sm font-semibold text-slate-800">ระดับความสำคัญ</label>
+        <p-select
+          inputId="priority"
+          formControlName="priority"
+          [options]="priorityOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="เลือกระดับความสำคัญ"
+          styleClass="w-full"
+          [class.ng-invalid]="isPriorityInvalid()"
+          [class.ng-dirty]="isPriorityInvalid()"
+          aria-required="true"
+          [attr.aria-invalid]="isPriorityInvalid()"
+          aria-describedby="priorityError"
+        />
+        @if (isPriorityInvalid()) {
+          <span id="priorityError" class="text-sm text-error-600">กรุณาเลือกระดับความสำคัญ</span>
+        }
+      </div>
+
+      <!-- ตำแหน่งที่เกี่ยวข้อง -->
+      <div class="flex flex-col gap-1.5">
+        <label for="relatedPosition" class="text-sm font-semibold text-slate-800">ตำแหน่งที่เกี่ยวข้อง</label>
+        <p-select
+          inputId="relatedPosition"
+          formControlName="relatedPosition"
+          [options]="relatedPositionOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="เลือกตำแหน่งที่เกี่ยวข้อง"
+          styleClass="w-full"
+          [class.ng-invalid]="isRelatedPositionInvalid()"
+          [class.ng-dirty]="isRelatedPositionInvalid()"
+          aria-required="true"
+          [attr.aria-invalid]="isRelatedPositionInvalid()"
+          aria-describedby="relatedPositionError"
+        />
+        @if (isRelatedPositionInvalid()) {
+          <span id="relatedPositionError" class="text-sm text-error-600">กรุณาเลือกตำแหน่งที่เกี่ยวข้อง</span>
+        }
+      </div>
+      <!-- Submit -->
+      <p-button
+        type="submit"
+        label="บันทึก"
+        severity="primary"
+        fluid
+        [disabled]="!canSubmit()"
+        [loading]="submitting()"
+      />
+    </form>
+  </div>
+</div>
+
+<!-- Step 1: Confirm intent -->
+<app-confirm-dialog
+  [(visible)]="showConfirmDialog"
+  type="warning"
+  title="ยืนยันการแก้ไข Sub-Category"
+  confirmLabel="ยืนยัน"
+  cancelLabel="ยกเลิก"
+  (confirmed)="onConfirmStep1()"
+>
+  คุณแน่ใจที่จะแก้ไข Sub-Category
+  <strong class="text-primary-600">{{ currentName() }}</strong>
+  ใช่หรือไม่?
+</app-confirm-dialog>
+
+<!-- Step 2: Password confirmation -->
+<app-delete-confirm-dialog
+  [(visible)]="showPasswordDialog"
+  title="ยืนยันการแก้ไขด้วยรหัสผ่าน"
+  descriptionPrefix="คุณกำลังจะแก้ไขข้อมูล Sub-Category"
+  [targetLabel]="currentName()"
+  [loading]="submitting()"
+  (confirmed)="onSaveConfirmed($event)"
+/>

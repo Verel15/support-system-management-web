@@ -1,0 +1,130 @@
+<div class="flex flex-col min-h-full">
+  <!-- Header -->
+  <div class="relative flex items-center px-6 py-4 border-b border-slate-200">
+    <p-button
+      type="button"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      variant="text"
+      [rounded]="true"
+      (onClick)="onBack()"
+      aria-label="กลับ"
+    />
+    <h1
+      class="absolute inset-0 flex items-center justify-center text-xl font-semibold text-slate-800 pointer-events-none"
+    >
+      {{ priority().name }}
+    </h1>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 p-6 grid grid-cols-12 gap-5 items-start">
+
+    <!-- Left: Tickets table (col 8) -->
+    <div class="col-span-12 md:col-span-8 flex flex-col gap-4">
+      <h2 class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
+        Ticket ที่ใช้
+      </h2>
+
+      <app-data-table
+        [columns]="ticketColumns"
+        [data]="pagedTickets()"
+        [totalRecords]="totalTickets()"
+        [currentPage]="currentPage()"
+        [pageSize]="pageSize()"
+        [loading]="false"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      >
+        <!-- Ticket title with priority icon -->
+        <ng-template dataTableCell="title" let-value="value">
+          <div class="flex items-center gap-2">
+            <i
+              [class]="iconClass(priority().icon)"
+              class="text-sm shrink-0"
+              [style.color]="colorHex(priority().color)"
+              aria-hidden="true"
+            ></i>
+            <span>{{ value }}</span>
+          </div>
+        </ng-template>
+
+        <!-- Status badge -->
+        <ng-template dataTableCell="status" let-value="value">
+          <span
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+            [style.background-color]="statusBgColor(value)"
+            [style.color]="statusTextColor(value)"
+          >{{ value }}</span>
+        </ng-template>
+      </app-data-table>
+    </div>
+
+    <!-- Right: Info card (col 4) -->
+    <div class="col-span-12 md:col-span-4 rounded-xl border border-slate-200 bg-white overflow-hidden">
+      <!-- Card Header -->
+      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+        <h3 class="font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">ข้อมูล</h3>
+        <button
+          type="button"
+          class="w-8 h-8 flex items-center justify-center rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+          aria-label="การดำเนินการ"
+          aria-haspopup="true"
+          (click)="onMenuOpen($event)"
+        >
+          <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <!-- Card Info -->
+      <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 items-center p-4">
+        <span class="text-sm text-slate-500 whitespace-nowrap">สัญลักษณ์</span>
+        <div
+          class="w-8 h-8 rounded-full flex items-center justify-center text-white shrink-0"
+          [style.background-color]="colorHex(priority().color)"
+          [attr.aria-label]="'สัญลักษณ์ ' + priority().name"
+        >
+          <i [class]="iconClass(priority().icon)" class="text-white text-xs" aria-hidden="true"></i>
+        </div>
+
+        <span class="text-sm text-slate-500 whitespace-nowrap">ระยะเวลา</span>
+        <span class="text-sm font-medium text-slate-800">{{ priority().duration }}</span>
+
+        <span class="text-sm text-slate-500 whitespace-nowrap">สร้างโดย</span>
+        <span class="text-sm font-medium text-slate-800">{{ priority().createdBy }}</span>
+
+        <span class="text-sm text-slate-500 whitespace-nowrap">วันที่สร้าง</span>
+        <span class="text-sm font-medium text-slate-800">{{ priority().createdDate }}</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<app-confirm-dialog
+  [(visible)]="showConfirmDialog"
+  type="warning"
+  title="ยืนยันการลบลำดับความสำคัญ"
+  confirmLabel="ยืนยัน"
+  cancelLabel="ยกเลิก"
+  (confirmed)="onDeleteFirstStepConfirmed()"
+>
+  คุณแน่ใจที่จะลบลำดับความสำคัญ
+  <strong class="text-primary-600">{{ priority().name }}</strong>
+  ออกหรือไม่? tickets ที่ใช้ลำดับนี้จะถูกกระทบด้วย
+</app-confirm-dialog>
+
+<app-delete-confirm-dialog
+  [(visible)]="showDeleteDialog"
+  [targetLabel]="priority().name"
+  [loading]="deleting()"
+  (confirmed)="onDeleteConfirmed($event)"
+/>
+
+<p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
+  <ng-template #item let-item pTemplate="item">
+    <a class="p-menu-item-link" role="menuitem">
+      <span class="p-menu-item-label" [class.text-error-600]="item.danger">{{ item.label }}</span>
+    </a>
+  </ng-template>
+</p-menu>
