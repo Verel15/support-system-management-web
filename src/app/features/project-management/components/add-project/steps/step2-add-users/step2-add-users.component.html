@@ -1,0 +1,131 @@
+<div class="flex flex-col gap-6 pt-6">
+  <!-- Customers section -->
+  <section aria-labelledby="customers-heading">
+    <h2
+      id="customers-heading"
+      class="text-base font-bold text-secondary-800 border-l-4 border-primary-500 pl-3 mb-4"
+    >
+      ลูกค้า
+    </h2>
+    @if (store.selectedCustomers().length > 0) {
+      <ul class="flex flex-col gap-3 mb-3 list-none p-0 m-0" role="list">
+        @for (user of store.selectedCustomers(); track user.id) {
+          <li
+            class="flex items-center gap-3 px-4 py-3 bg-white border border-secondary-200 rounded-xl"
+          >
+            <div
+              class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+              [style.background-color]="user.color"
+              aria-hidden="true"
+            >
+              {{ user.initials }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-secondary-800 truncate">{{ user.name }}</p>
+              <p class="text-xs text-secondary-400">{{ user.role }}</p>
+            </div>
+            <p-button
+              icon="pi pi-times"
+              [text]="true"
+              severity="secondary"
+              size="small"
+              [attr.aria-label]="'ลบ ' + user.name"
+              (onClick)="store.removeCustomer(user.id)"
+            />
+          </li>
+        }
+      </ul>
+    }
+    <p-button
+      label="เพิ่มลูกค้า"
+      [outlined]="true"
+      severity="primary"
+      styleClass="w-full"
+      (onClick)="showCustomerDialog.set(true)"
+    />
+  </section>
+
+  <!-- Managers section -->
+  <section aria-labelledby="managers-heading">
+    <h2
+      id="managers-heading"
+      class="text-base font-bold text-secondary-800 border-l-4 border-primary-500 pl-3 mb-4"
+    >
+      ผู้ดูแล
+    </h2>
+    @if (store.selectedManagers().length > 0) {
+      <ul class="flex flex-col gap-3 mb-3 list-none p-0 m-0" role="list">
+        @for (user of store.selectedManagers(); track user.id) {
+          <li
+            class="flex items-center gap-3 px-4 py-3 bg-white border border-secondary-200 rounded-xl"
+          >
+            <div
+              class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+              [style.background-color]="user.color"
+              aria-hidden="true"
+            >
+              {{ user.initials }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-secondary-800 truncate">{{ user.name }}</p>
+              <p class="text-xs text-secondary-400">{{ user.role }}</p>
+            </div>
+            <p-button
+              icon="pi pi-times"
+              [text]="true"
+              severity="secondary"
+              size="small"
+              [attr.aria-label]="'ลบ ' + user.name"
+              (onClick)="store.removeManager(user.id)"
+            />
+          </li>
+        }
+      </ul>
+    }
+    <p-button
+      label="เพิ่มผู้ดูแล"
+      [outlined]="true"
+      severity="primary"
+      styleClass="w-full"
+      (onClick)="showManagerDialog.set(true)"
+    />
+  </section>
+
+  <!-- Navigation -->
+  <div class="grid grid-cols-2 gap-6 pt-12">
+    <p-button
+      label="ย้อนกลับ: ข้อมูลโครงการ"
+      icon="pi pi-arrow-left"
+      [text]="true"
+      severity="secondary"
+      (onClick)="prev.emit()"
+      styleClass="w-full"
+    />
+    <p-button
+      label="ถัดไป: ตรวจสอบ"
+      icon="pi pi-arrow-right"
+      iconPos="right"
+      (onClick)="next.emit()"
+      styleClass="w-full"
+    />
+  </div>
+</div>
+
+<!-- Dialogs -->
+<app-select-items-dialog
+  [(visible)]="showCustomerDialog"
+  title="เพิ่มลูกค้า"
+  [subtitle]="'เพิ่มรายชื่อลูกค้าของโครงการ ' + store.projectName()"
+  [items]="store.customerOptions"
+  [selected]="store.selectedCustomerIds()"
+  (confirmed)="store.selectedCustomerIds.set($event)"
+/>
+
+<app-select-items-dialog
+  [(visible)]="showManagerDialog"
+  title="เพิ่มผู้ดูแล"
+  [subtitle]="'เพิ่มรายชื่อผู้ดูแลของโครงการ ' + store.projectName()"
+  [items]="store.managerOptions"
+  [selected]="store.selectedManagerIds()"
+  (confirmed)="store.selectedManagerIds.set($event)"
+/>

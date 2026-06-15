@@ -45,7 +45,7 @@ export class MainLayoutComponent {
   protected readonly mainNav: SidebarNavItem[] = [
     { label: 'แดชบอร์ด', icon: 'pi-chart-bar', route: '/dashboard/overview' },
     { label: 'จัดการ Tickets', icon: 'pi-list-check', route: '/dashboard/tickets' },
-    { label: 'จัดการโครงการ', icon: 'pi-folder-open', route: '/dashboard/projects' },
+    { label: 'จัดการโครงการ', icon: 'pi-folder-open', route: '/project-management/list' },
     {
       label: 'จัดการผู้ใช้',
       icon: 'pi-users',

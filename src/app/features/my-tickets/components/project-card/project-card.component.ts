@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { Tag } from 'primeng/tag';
+import { StatusChipComponent } from '../../../../shared/components/status-chip';
 
 export interface Project {
   name: string;
@@ -15,7 +15,7 @@ export interface Project {
 
 @Component({
   selector: 'app-project-card',
-  imports: [Tag],
+  imports: [StatusChipComponent],
   templateUrl: './project-card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },

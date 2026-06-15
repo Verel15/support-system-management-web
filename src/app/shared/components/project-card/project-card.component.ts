@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { Tag } from 'primeng/tag';
+import { StatusChipComponent } from '../status-chip';
 
 export interface Project {
   name: string;
@@ -8,15 +8,16 @@ export interface Project {
   owner: string;
   totalTickets: number;
   completedTickets: number;
-  members: { initials: string; color: string }[];
+  members: { initials: string; color: string; avatarUrl?: string }[];
   highCount: number;
   normalCount: number;
   accentColor?: string;
+  attachmentCount?: number;
 }
 
 @Component({
   selector: 'app-project-card',
-  imports: [Tag],
+  imports: [StatusChipComponent],
   templateUrl: './project-card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },

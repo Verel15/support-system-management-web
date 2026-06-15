@@ -77,5 +77,16 @@ export const routes: Routes = [
         (m) => m.priorityManagementRoutes,
       ),
   },
+  {
+    path: 'project-management',
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/project-management/project-management.routes').then(
+        (m) => m.projectManagementRoutes,
+      ),
+  },
   { path: '', redirectTo: 'auth', pathMatch: 'full' },
 ];

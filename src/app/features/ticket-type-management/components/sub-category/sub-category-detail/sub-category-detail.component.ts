@@ -9,8 +9,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
-import { Select } from 'primeng/select';
-import { Tag } from 'primeng/tag';
+import { StatusChipComponent } from '../../../../../shared/components/status-chip';
 import { MenuItem, MessageService } from 'primeng/api';
 import {
   DataTableComponent,
@@ -43,16 +42,13 @@ interface ActionMenuItem extends MenuItem {
   danger?: boolean;
 }
 
-type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | undefined;
-
 @Component({
   selector: 'app-sub-category-detail',
   imports: [
     FormsModule,
     Button,
     Menu,
-    Select,
-    Tag,
+    StatusChipComponent,
     DataTableComponent,
     DataTableCellDirective,
     ConfirmDialogComponent,
@@ -118,20 +114,6 @@ export class SubCategoryDetailComponent {
   protected readonly currentPage = signal(1);
   protected readonly pageSize = signal(10);
   protected readonly loading = signal(false);
-
-  protected statusSeverity(status: string): TagSeverity {
-    const map: Record<string, TagSeverity> = {
-      Open: 'info',
-      Pending: 'warn',
-      Return: 'warn',
-      'In Progress': 'warn',
-      'In Review': 'info',
-      Done: 'success',
-      Reject: 'danger',
-      Close: 'secondary',
-    };
-    return map[status] ?? 'secondary';
-  }
 
   protected onBack(): void {
     this.router.navigate(['/ticket-type-management/list']);

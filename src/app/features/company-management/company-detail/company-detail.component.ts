@@ -120,16 +120,18 @@ export class CompanyDetailComponent {
       totalTickets: 12,
       completedTickets: 10,
       members: [
-        { initials: 'อ', color: '#f59e0b' },
-        { initials: 'ส', color: '#3b82f6' },
-        { initials: 'ม', color: '#10b981' },
-        { initials: 'ป', color: '#8b5cf6' },
-        { initials: 'ก', color: '#ef4444' },
+        { initials: 'อ', color: '#f59e0b', avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150' },
+        { initials: 'ส', color: '#3b82f6', avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150' },
+        { initials: 'ม', color: '#10b981', avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150' },
+        { initials: 'ป', color: '#8b5cf6', avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150' },
+        { initials: 'ก', color: '#ef4444', avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150' },
         { initials: 'ข', color: '#f97316' },
+        { initials: 'ค', color: '#607d8b' },
       ],
       highCount: 2,
       normalCount: 2,
       accentColor: '#3b82f6',
+      attachmentCount: 2,
     },
     {
       name: 'Book Bank System',
@@ -149,6 +151,7 @@ export class CompanyDetailComponent {
       highCount: 2,
       normalCount: 2,
       accentColor: '#ef4444',
+      attachmentCount: 2,
     },
     {
       name: 'Life Insurance System',
@@ -168,6 +171,7 @@ export class CompanyDetailComponent {
       highCount: 2,
       normalCount: 2,
       accentColor: '#22c55e',
+      attachmentCount: 2,
     },
     {
       name: 'Rent a car System',
@@ -187,6 +191,7 @@ export class CompanyDetailComponent {
       highCount: 2,
       normalCount: 2,
       accentColor: '#f59e0b',
+      attachmentCount: 2,
     },
     {
       name: 'Library Management System',
@@ -206,6 +211,7 @@ export class CompanyDetailComponent {
       highCount: 2,
       normalCount: 2,
       accentColor: '#3b82f6',
+      attachmentCount: 2,
     },
     {
       name: 'Room Service System',
@@ -225,6 +231,7 @@ export class CompanyDetailComponent {
       highCount: 2,
       normalCount: 2,
       accentColor: '#ef4444',
+      attachmentCount: 2,
     },
     {
       name: 'Tour Ticket Booking System',
@@ -244,6 +251,7 @@ export class CompanyDetailComponent {
       highCount: 2,
       normalCount: 2,
       accentColor: '#22c55e',
+      attachmentCount: 2,
     },
     {
       name: 'Manage Pharmacy System',
@@ -263,6 +271,7 @@ export class CompanyDetailComponent {
       highCount: 2,
       normalCount: 2,
       accentColor: '#f59e0b',
+      attachmentCount: 2,
     },
   ];
 

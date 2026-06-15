@@ -6,7 +6,7 @@ import { Select } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
-import { Tag } from 'primeng/tag';
+import { StatusChipComponent } from '../../shared/components/status-chip';
 import { Tabs, TabList, Tab } from 'primeng/tabs';
 import {
   DataTableComponent,
@@ -38,7 +38,7 @@ interface Ticket {
     InputText,
     IconField,
     InputIcon,
-    Tag,
+    StatusChipComponent,
     Tabs,
     TabList,
     Tab,
@@ -96,6 +96,8 @@ export class MyTicketsComponent {
       ],
       highCount: 8,
       normalCount: 2,
+      accentColor: '#3b82f6',
+      attachmentCount: 2,
     },
     {
       name: 'Book Bank System',
@@ -112,6 +114,8 @@ export class MyTicketsComponent {
       ],
       highCount: 6,
       normalCount: 2,
+      accentColor: '#ef4444',
+      attachmentCount: 2,
     },
     {
       name: 'Life Insurance System',
@@ -128,6 +132,8 @@ export class MyTicketsComponent {
       ],
       highCount: 8,
       normalCount: 3,
+      accentColor: '#22c55e',
+      attachmentCount: 3,
     },
     {
       name: 'Rent a car System',
@@ -144,6 +150,8 @@ export class MyTicketsComponent {
       ],
       highCount: 8,
       normalCount: 3,
+      accentColor: '#f59e0b',
+      attachmentCount: 3,
     },
   ];
 
@@ -268,18 +276,6 @@ export class MyTicketsComponent {
       .slice(start, start + this.pageSize())
       .map((t) => ({ ...t }));
   });
-
-  protected getStatusSeverity(
-    status: string,
-  ): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
-    const map: Record<string, 'success' | 'info' | 'warn' | 'danger' | 'secondary'> = {
-      'In Progress': 'warn',
-      Done: 'success',
-      Todo: 'secondary',
-      Blocked: 'danger',
-    };
-    return map[status] ?? 'secondary';
-  }
 
   protected getPriorityDotClass(priority: string): string {
     const map: Record<string, string> = {

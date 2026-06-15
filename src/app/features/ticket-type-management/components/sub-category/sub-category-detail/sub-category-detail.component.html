@@ -36,7 +36,7 @@
         (pageSizeChange)="pageSize.set($event)"
       >
         <ng-template dataTableCell="status" let-value="value">
-          <p-tag [value]="$any(value)" [severity]="statusSeverity($any(value))" />
+          <app-status-chip [status]="$any(value)" />
         </ng-template>
       </app-data-table>
     </div>

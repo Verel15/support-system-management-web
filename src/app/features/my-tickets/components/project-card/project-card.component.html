@@ -5,7 +5,7 @@
   <!-- Date + Status -->
   <div class="flex items-center justify-between">
     <time class="text-xs text-slate-400">{{ project().date }}</time>
-    <p-tag value="Open" severity="success" />
+    <app-status-chip [status]="project().status" />
   </div>
 
   <!-- Name + Owner -->

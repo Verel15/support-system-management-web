@@ -1,76 +1,84 @@
 <article
-  class="bg-white rounded-xl border border-slate-200 p-4 w-full flex flex-col gap-3 shadow-sm relative overflow-hidden"
+  class="bg-white rounded-2xl border border-slate-200 shadow-sm relative flex overflow-hidden w-full"
   [attr.aria-label]="project().name"
 >
-  @if (project().accentColor) {
-    <span
-      class="absolute inset-y-0 left-0 w-1.5"
-      [style.background-color]="project().accentColor"
-      aria-hidden="true"
-    ></span>
-  }
+  <!-- Left accent strip -->
+  <div
+    class="w-6 shrink-0 self-stretch"
+    [style.background-color]="project().accentColor || '#3b82f6'"
+    aria-hidden="true"
+  ></div>
 
-  <!-- Date + Status -->
-  <div class="flex items-center justify-between">
-    <time class="text-xs text-slate-400">{{ project().date }}</time>
-    <p-tag
-      [value]="project().status"
-      [severity]="project().status === 'Open' ? 'success' : 'secondary'"
-    />
-  </div>
-
-  <!-- Name + Owner -->
-  <div>
-    <h3 class="font-semibold text-slate-800 text-sm leading-snug line-clamp-2">
-      {{ project().name }}
-    </h3>
-    <p class="text-xs text-slate-400 mt-1 truncate">{{ project().owner }}</p>
-  </div>
-
-  <!-- Ticket counts -->
-  <div class="flex flex-col gap-1.5 border-t border-b border-slate-100 py-3">
-    <div class="flex items-center justify-between text-xs">
-      <span class="text-slate-500">Tickets ทั้งหมด</span>
-      <span class="font-semibold text-secondary-700">{{ project().totalTickets }}</span>
+  <!-- Right content area -->
+  <div class="flex-1 p-5 flex flex-col gap-4 min-w-0">
+    <!-- Date + Status -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-1.5 text-slate-400 text-sm">
+        <i class="pi pi-calendar text-base" aria-hidden="true"></i>
+        <time class="font-medium text-slate-400">{{ project().date }}</time>
+      </div>
+      <app-status-chip [status]="project().status" />
     </div>
-    <div class="flex items-center justify-between text-xs">
-      <span class="text-slate-500">Tickets ที่เสร็จสิ้น</span>
-      <span class="font-semibold text-error-500">{{ project().completedTickets }}</span>
-    </div>
-  </div>
 
-  <!-- Members + counts -->
-  <div class="flex items-center justify-between">
-    <div class="flex -space-x-2" role="list" aria-label="สมาชิก">
-      @for (member of project().members.slice(0, 4); track $index) {
-        <div
-          class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold border-2 border-white"
-          [style.background-color]="member.color"
-          role="listitem"
-          [attr.aria-label]="member.initials"
-        >
-          {{ member.initials }}
-        </div>
-      }
-      @if (project().members.length > 4) {
-        <div
-          class="w-7 h-7 rounded-full flex items-center justify-center bg-slate-200 text-slate-600 text-xs font-semibold border-2 border-white"
-          role="listitem"
-          [attr.aria-label]="'+' + (project().members.length - 4) + ' สมาชิกเพิ่มเติม'"
-        >
-          +{{ project().members.length - 4 }}
-        </div>
-      }
+    <!-- Name + Owner -->
+    <div class="min-w-0">
+      <h3 class="font-bold text-slate-900 text-xl leading-snug truncate" [title]="project().name">
+        {{ project().name }}
+      </h3>
+      <p class="text-[15px] text-slate-400 font-medium mt-1 truncate" [title]="project().owner">
+        {{ project().owner }}
+      </p>
     </div>
-    <div class="flex items-center gap-3 text-xs text-slate-400">
-      <span class="flex items-center gap-1">
-        <i class="pi pi-bell" aria-hidden="true"></i>
-        {{ project().highCount }}
-      </span>
-      <span class="flex items-center gap-1">
-        <i class="pi pi-users" aria-hidden="true"></i>
-        {{ project().normalCount }}
-      </span>
+
+    <!-- Ticket counts -->
+    <div class="flex flex-col gap-3.5 my-1">
+      <div class="flex items-center justify-between text-base font-medium text-slate-800">
+        <span class="text-slate-800">Tickets ทั้งหมด</span>
+        <span class="px-3.5 py-0.5 bg-slate-100 text-slate-900 rounded-full font-bold text-sm min-w-9 text-center">
+          {{ project().totalTickets }}
+        </span>
+      </div>
+      <div class="flex items-center justify-between text-base font-medium text-slate-800">
+        <span class="text-slate-800">Tickets ที่เสร็จสิ้น</span>
+        <span class="px-3.5 py-0.5 bg-[#DCFCE7] text-[#15803d] rounded-full font-bold text-sm min-w-9 text-center">
+          {{ project().completedTickets }}
+        </span>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-100 my-1"></div>
+
+    <!-- Members + counts -->
+    <div class="flex items-center justify-between">
+      <div class="flex -space-x-2.5 overflow-hidden" role="list" aria-label="สมาชิก">
+        @for (member of project().members.slice(0, 5); track $index) {
+          <div
+            class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold border-2 border-white overflow-hidden shrink-0"
+            [style.background-color]="member.avatarUrl ? 'transparent' : member.color"
+            role="listitem"
+            [attr.aria-label]="member.initials"
+          >
+            @if (member.avatarUrl) {
+              <img [src]="member.avatarUrl" alt="" class="w-full h-full object-cover" />
+            } @else {
+              {{ member.initials }}
+            }
+          </div>
+        }
+        @if (project().members.length > 5) {
+          <div
+            class="w-8 h-8 rounded-full flex items-center justify-center bg-[#CFD8DC] text-[#37474F] text-xs font-bold border-2 border-white shrink-0"
+            role="listitem"
+            [attr.aria-label]="'+' + (project().members.length - 5) + ' สมาชิกเพิ่มเติม'"
+          >
+            +{{ project().members.length - 5 }}
+          </div>
+        }
+      </div>
+      <div class="flex items-center gap-1.5 text-slate-400 text-sm font-semibold">
+        <i class="pi pi-paperclip text-base" aria-hidden="true"></i>
+        <span>{{ project().attachmentCount ?? project().normalCount }}</span>
+      </div>
     </div>
   </div>
 </article>

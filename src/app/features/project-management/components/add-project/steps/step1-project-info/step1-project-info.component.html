@@ -1,0 +1,152 @@
+<div class="flex flex-col gap-6 pt-6" [formGroup]="store.step1Form">
+  <!-- Color + Name -->
+  <div class="flex flex-col gap-1.5">
+    <label class="text-sm font-bold text-secondary-700" for="projectName">
+      สี และชื่อโครงการ
+    </label>
+    <div
+      class="flex items-stretch h-12 rounded-lg border overflow-hidden transition-colors focus-within:ring-1"
+      [class]="
+        controls.projectName.invalid && controls.projectName.touched
+          ? 'border-error-500 focus-within:border-error-500 focus-within:ring-error-500'
+          : 'border-secondary-300 focus-within:border-primary-500 focus-within:ring-primary-500'
+      "
+    >
+      <button
+        type="button"
+        class="flex items-center gap-1.5 px-3 bg-secondary-50 border-r border-secondary-200 hover:bg-secondary-100 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
+        (click)="openColorPicker($event)"
+        aria-label="เลือกสีโครงการ"
+        aria-haspopup="true"
+      >
+        <div
+          class="w-4 h-4 rounded-full shrink-0"
+          [style.background-color]="store.projectColor()"
+          aria-hidden="true"
+        ></div>
+        <i class="pi pi-chevron-down text-xs text-secondary-400" aria-hidden="true"></i>
+      </button>
+      <input
+        type="text"
+        id="projectName"
+        formControlName="projectName"
+        class="flex-1 h-full px-3 outline-none bg-white text-sm text-secondary-800 placeholder:text-secondary-400"
+        placeholder="ชื่อโครงการ"
+        aria-required="true"
+      />
+    </div>
+    @if (controls.projectName.invalid && controls.projectName.touched) {
+      <span class="text-xs text-error-500" role="alert">กรุณากรอกชื่อโครงการ</span>
+    }
+  </div>
+
+  <!-- Company -->
+  <div class="flex flex-col gap-1.5">
+    <label class="text-sm font-bold text-secondary-700" for="company">บริษัท</label>
+    <input
+      pInputText
+      id="company"
+      formControlName="company"
+      class="w-full"
+      placeholder="ชื่อบริษัท"
+      [class]="
+        controls.company.invalid && controls.company.touched ? 'ng-invalid ng-dirty' : ''
+      "
+      aria-required="true"
+    />
+    @if (controls.company.invalid && controls.company.touched) {
+      <span class="text-xs text-error-500" role="alert">กรุณากรอกชื่อบริษัท</span>
+    }
+  </div>
+
+  <!-- Start date -->
+  <div class="flex flex-col gap-1.5">
+    <label class="text-sm font-bold text-secondary-700" for="startDate">เริ่มต้นโครงการ</label>
+    <p-datepicker
+      inputId="startDate"
+      formControlName="startDate"
+      dateFormat="dd/mm/yy"
+      placeholder="DD/MM/YYYY"
+      [showIcon]="true"
+      iconDisplay="input"
+      [minDate]="today"
+      styleClass="w-full"
+    />
+    @if (controls.startDate.invalid && controls.startDate.touched) {
+      <span class="text-xs text-error-500" role="alert">กรุณาเลือกวันเริ่มต้นโครงการ</span>
+    }
+  </div>
+
+  <!-- End date -->
+  <div class="flex flex-col gap-1.5">
+    <label class="text-sm font-bold text-secondary-700" for="endDate">ระยะสิ้นสุดโครงการ</label>
+    <p-datepicker
+      inputId="endDate"
+      formControlName="endDate"
+      dateFormat="dd/mm/yy"
+      placeholder="DD/MM/YYYY"
+      [showIcon]="true"
+      iconDisplay="input"
+      [minDate]="store.startDate() ?? undefined"
+      styleClass="w-full"
+    />
+    @if (controls.endDate.invalid && controls.endDate.touched) {
+      <span class="text-xs text-error-500" role="alert">กรุณาเลือกวันสิ้นสุดโครงการ</span>
+    }
+  </div>
+
+  <!-- Project status (computed) -->
+  @if (store.projectStatus()) {
+    <div class="flex flex-col gap-1.5">
+      <span class="text-sm font-bold text-secondary-700">สถานะโครงการ</span>
+      <div
+        class="flex items-center gap-2 px-4 py-3 rounded-lg text-sm"
+        [class]="store.statusBoxClass()"
+      >
+        <i class="pi pi-info-circle shrink-0"></i>
+        <span class="font-medium">{{ store.projectStatus()!.label }}</span>
+        <span class="text-xs opacity-80">{{ store.projectStatus()!.detail }}</span>
+      </div>
+    </div>
+  }
+
+  <!-- File upload -->
+  <div class="flex flex-col gap-1.5">
+    <span class="text-sm font-medium text-secondary-700">อัปโหลดเอกสาร</span>
+    <app-file-upload
+      accept=".png,.jpg,.jpeg,.pdf,.doc,.docx"
+      subtitle="เลือกไฟล์เพื่อนำเข้าเอกสาร หรือ ลากและวางไฟล์ที่นี่"
+      (filesChange)="onFilesChange($event)"
+    />
+  </div>
+
+  <!-- Next button -->
+  <div class="pt-12">
+    <p-button
+      label="ถัดไป: เพิ่มผู้ใช้"
+      icon="pi pi-arrow-right"
+      iconPos="right"
+      (onClick)="onNext()"
+      styleClass="w-full"
+    />
+  </div>
+</div>
+
+<!-- Color picker popover -->
+<p-popover #colorPicker [appendTo]="'body'">
+  <div class="flex gap-2 p-1" role="group" aria-label="เลือกสีโครงการ">
+    @for (opt of store.colorOptions; track opt.value) {
+      <button
+        type="button"
+        class="w-6 h-6 rounded-full transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-secondary-400"
+        [class.ring-2]="store.projectColor() === opt.value"
+        [class.ring-offset-2]="store.projectColor() === opt.value"
+        [class.ring-secondary-500]="store.projectColor() === opt.value"
+        [style.background-color]="opt.value"
+        (click)="selectColor(opt.value)"
+        [attr.aria-label]="'สี ' + opt.label"
+        [attr.aria-pressed]="store.projectColor() === opt.value"
+      ></button>
+    }
+  </div>
+</p-popover>

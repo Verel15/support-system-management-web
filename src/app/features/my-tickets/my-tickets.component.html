@@ -112,7 +112,7 @@
 
       <!-- Status tag -->
       <ng-template dataTableCell="status" let-value="value">
-        <p-tag [value]="value" [severity]="getStatusSeverity(value)" />
+        <app-status-chip [status]="value" />
       </ng-template>
     </app-data-table>
   </section>

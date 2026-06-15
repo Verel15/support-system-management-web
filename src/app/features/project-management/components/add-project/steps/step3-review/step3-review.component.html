@@ -1,0 +1,163 @@
+<div class="flex flex-col gap-6 pt-6">
+  <!-- Project info summary -->
+  <section aria-labelledby="review-project-heading">
+    <h2
+      id="review-project-heading"
+      class="text-base font-bold text-secondary-800 border-l-4 border-primary-500 pl-3 mb-4"
+    >
+      ข้อมูลโครงการ
+    </h2>
+    <div class="border border-secondary-200 rounded-xl overflow-hidden bg-white">
+      <div class="grid grid-cols-2 divide-x divide-secondary-200">
+        <div class="p-4">
+          <p class="text-xs text-secondary-400 mb-1.5">สี และชื่อโครงการ</p>
+          <div class="flex items-center gap-2">
+            <div
+              class="w-3.5 h-3.5 rounded-full shrink-0"
+              [style.background-color]="store.projectColor()"
+            ></div>
+            <span class="text-sm font-medium text-secondary-800">{{
+              store.projectName() || '-'
+            }}</span>
+          </div>
+        </div>
+        <div class="p-4">
+          <p class="text-xs text-secondary-400 mb-1.5">บริษัท</p>
+          <span class="text-sm font-medium text-secondary-800">{{ store.company() || '-' }}</span>
+        </div>
+      </div>
+      <div
+        class="border-t border-secondary-200 grid grid-cols-2 divide-x divide-secondary-200"
+      >
+        <div class="p-4">
+          <p class="text-xs text-secondary-400 mb-1.5">เริ่มต้นโครงการ</p>
+          <span class="text-sm font-medium text-secondary-800">{{
+            store.formatThaiDate(store.startDate())
+          }}</span>
+        </div>
+        <div class="p-4">
+          <p class="text-xs text-secondary-400 mb-1.5">ระยะสิ้นสุดโครงการ</p>
+          <span class="text-sm font-medium text-secondary-800">{{
+            store.formatThaiDate(store.endDate())
+          }}</span>
+        </div>
+      </div>
+      @if (store.projectStatus()) {
+        <div class="border-t border-secondary-200 p-4">
+          <p class="text-xs text-secondary-400 mb-1.5">สถานะโครงการ</p>
+          <span class="text-sm font-medium text-secondary-800">{{
+            store.projectStatus()!.label
+          }}</span>
+        </div>
+      }
+      @if (store.uploadedFiles().length > 0) {
+        <div class="border-t border-secondary-200 p-4">
+          <p class="text-xs text-secondary-400 mb-2">อัปโหลดเอกสาร</p>
+          <ul class="flex flex-col gap-1.5 list-none p-0 m-0">
+            @for (file of store.uploadedFiles(); track file.name) {
+              <li class="flex items-center gap-2">
+                <i [class]="store.getFileIcon(file.name) + ' text-secondary-400 text-sm'"></i>
+                <span class="text-sm text-secondary-700">{{ file.name }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Customers review -->
+  <section aria-labelledby="review-customers-heading">
+    <h2
+      id="review-customers-heading"
+      class="text-base font-bold text-secondary-800 border-l-4 border-primary-500 pl-3 mb-4"
+    >
+      ลูกค้า
+    </h2>
+    @if (store.selectedCustomers().length > 0) {
+      <ul class="flex flex-col gap-3 list-none p-0 m-0" role="list">
+        @for (user of store.selectedCustomers(); track user.id) {
+          <li
+            class="flex items-center gap-3 px-4 py-3 bg-white border border-secondary-200 rounded-xl"
+          >
+            <div
+              class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+              [style.background-color]="user.color"
+              aria-hidden="true"
+            >
+              {{ user.initials }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-secondary-800 truncate">{{ user.name }}</p>
+              <p class="text-xs text-secondary-400">{{ user.role }}</p>
+            </div>
+            <p-button
+              icon="pi pi-times"
+              [text]="true"
+              severity="secondary"
+              size="small"
+              [attr.aria-label]="'ลบ ' + user.name"
+              (onClick)="store.removeCustomer(user.id)"
+            />
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="text-sm text-secondary-400">ยังไม่ได้เลือกลูกค้า</p>
+    }
+  </section>
+
+  <!-- Managers review -->
+  <section aria-labelledby="review-managers-heading">
+    <h2
+      id="review-managers-heading"
+      class="text-base font-bold text-secondary-800 border-l-4 border-primary-500 pl-3 mb-4"
+    >
+      ผู้ดูแล
+    </h2>
+    @if (store.selectedManagers().length > 0) {
+      <ul class="flex flex-col gap-3 list-none p-0 m-0" role="list">
+        @for (user of store.selectedManagers(); track user.id) {
+          <li
+            class="flex items-center gap-3 px-4 py-3 bg-white border border-secondary-200 rounded-xl"
+          >
+            <div
+              class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
+              [style.background-color]="user.color"
+              aria-hidden="true"
+            >
+              {{ user.initials }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-secondary-800 truncate">{{ user.name }}</p>
+              <p class="text-xs text-secondary-400">{{ user.role }}</p>
+            </div>
+            <p-button
+              icon="pi pi-times"
+              [text]="true"
+              severity="secondary"
+              size="small"
+              [attr.aria-label]="'ลบ ' + user.name"
+              (onClick)="store.removeManager(user.id)"
+            />
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="text-sm text-secondary-400">ยังไม่ได้เลือกผู้ดูแล</p>
+    }
+  </section>
+
+  <!-- Navigation -->
+  <div class="grid grid-cols-2 gap-6 pt-12">
+    <p-button
+      label="ย้อนกลับ: เพิ่มผู้ใช้"
+      icon="pi pi-arrow-left"
+      [text]="true"
+      severity="secondary"
+      (onClick)="prev.emit()"
+      styleClass="w-full"
+    />
+    <p-button label="บันทึก" icon="pi pi-check" (onClick)="save.emit()" styleClass="w-full" />
+  </div>
+</div>
