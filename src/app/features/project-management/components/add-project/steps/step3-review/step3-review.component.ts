@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
 import { Button } from 'primeng/button';
-import { AddProjectStore } from '../../add-project.store';
+import { AddProjectStore } from '../../../../store/add-project.store';
 
 @Component({
   selector: 'app-step3-review',

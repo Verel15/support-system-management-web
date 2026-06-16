@@ -5,7 +5,7 @@ import { DatePicker } from 'primeng/datepicker';
 import { InputText } from 'primeng/inputtext';
 import { Popover } from 'primeng/popover';
 import { FileUploadComponent } from '../../../../../../shared/components/file-upload';
-import { AddProjectStore } from '../../add-project.store';
+import { AddProjectStore } from '../../../../store/add-project.store';
 
 @Component({
   selector: 'app-step1-project-info',

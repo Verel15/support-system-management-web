@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { SelectItemsDialogComponent } from '../../../../../../shared/components/dialogs';
-import { AddProjectStore } from '../../add-project.store';
+import { AddProjectStore } from '../../../../store/add-project.store';
 
 @Component({
   selector: 'app-step2-add-users',

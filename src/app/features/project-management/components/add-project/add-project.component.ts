@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Stepper, StepList, Step, StepPanels, StepPanel } from 'primeng/stepper';
-import { AddProjectStore } from './add-project.store';
+import { AddProjectStore } from '../../store/add-project.store';
 import { Step1ProjectInfoComponent } from './steps/step1-project-info/step1-project-info.component';
 import { Step2AddUsersComponent } from './steps/step2-add-users/step2-add-users.component';
 import { Step3ReviewComponent } from './steps/step3-review/step3-review.component';

@@ -1,7 +1,7 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { SelectItemOption } from '../../../../shared/components/dialogs';
+import { SelectItemOption } from '../../../shared/components/dialogs';
 
 export interface UserDetail {
   id: string;
