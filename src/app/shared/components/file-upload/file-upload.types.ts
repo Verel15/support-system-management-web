@@ -7,3 +7,8 @@ export interface UploadedFile {
   status: 'uploading' | 'complete' | 'error';
   preview?: string;
 }
+
+export interface ExistingFile {
+  id: string;
+  name: string;
+}

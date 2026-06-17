@@ -22,5 +22,12 @@ export const projectManagementRoutes: Routes = [
         (m) => m.ProjectDetailComponent,
       ),
   },
+  {
+    path: 'edit',
+    loadComponent: () =>
+      import('./components/edit-project/edit-project.component').then(
+        (m) => m.EditProjectComponent,
+      ),
+  },
   { path: '', redirectTo: 'list', pathMatch: 'full' },
 ];

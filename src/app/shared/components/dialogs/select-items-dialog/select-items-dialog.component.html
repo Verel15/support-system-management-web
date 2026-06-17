@@ -8,7 +8,10 @@
 >
   <ng-template #header>
     <div class="flex flex-col p-1 gap-0.5 w-full">
-      <h2 class="text-lg font-bold text-slate-900">{{ dialogTitle() }}</h2>
+      <h2 class="text-lg font-bold text-slate-900">
+        {{ title() }}
+        <span class="text-sm font-medium text-primary-500 ml-1">{{ countText() }}</span>
+      </h2>
       @if (subtitle()) {
         <p class="text-sm text-slate-500">{{ subtitle() }}</p>
       }
@@ -35,7 +38,7 @@
         class="shrink-0 text-sm text-primary-600 hover:text-primary-700 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
         (click)="clearAll()"
       >
-        ล้างทั้งหมด
+        รีเซ็ตข้อมูล
       </button>
     </div>
 
@@ -53,7 +56,19 @@
               (ngModelChange)="toggleItem(item.value)"
               [inputId]="'select-item-' + item.value"
             />
-            <span class="text-sm text-slate-700 select-none">{{ item.label }}</span>
+            @if (item.avatar) {
+              <p-avatar [image]="item.avatar" shape="circle" size="normal" />
+            } @else {
+              <p-avatar
+                [label]="item.label.charAt(0).toUpperCase()"
+                shape="circle"
+                size="normal"
+              />
+            }
+            <span class="flex-1 text-sm text-slate-700 select-none">{{ item.label }}</span>
+            @if (item.sublabel) {
+              <span class="text-sm text-slate-400">{{ item.sublabel }}</span>
+            }
           </label>
         </li>
       }

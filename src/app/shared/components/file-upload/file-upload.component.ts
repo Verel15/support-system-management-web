@@ -11,7 +11,7 @@ import {
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { ProgressBar } from 'primeng/progressbar';
-import { UploadedFile } from './file-upload.types';
+import { ExistingFile, UploadedFile } from './file-upload.types';
 
 @Component({
   selector: 'app-file-upload',
@@ -24,8 +24,10 @@ export class FileUploadComponent implements OnDestroy {
   multiple = input(true);
   maxSizeMb = input(500);
   subtitle = input<string | null>(null);
+  existingFiles = input<ExistingFile[]>([]);
 
   filesChange = output<File[]>();
+  existingFileRemoved = output<string>();
 
   protected readonly files = signal<UploadedFile[]>([]);
   protected readonly isDragging = signal(false);
@@ -65,6 +67,10 @@ export class FileUploadComponent implements OnDestroy {
       this.addFiles(Array.from(input.files));
       input.value = '';
     }
+  }
+
+  protected onRemoveExistingFile(id: string): void {
+    this.existingFileRemoved.emit(id);
   }
 
   protected removeFile(id: string): void {

@@ -1,0 +1,137 @@
+<div class="flex flex-col min-h-full">
+  <!-- Page header -->
+  <header class="sticky top-0 z-10 bg-white flex items-center px-6 py-4 border-b border-slate-200">
+    <button
+      type="button"
+      (click)="goBack()"
+      class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+      aria-label="กลับ"
+    >
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+    </button>
+    <h1 class="flex-1 text-center text-xl font-semibold text-slate-800">เพิ่ม Ticket</h1>
+    <div class="w-9" aria-hidden="true"></div>
+  </header>
+
+  <!-- Form body -->
+  <div class="flex-1 overflow-y-auto">
+    <div class="max-w-2xl mx-auto px-6 py-8 flex flex-col gap-6">
+      <!-- หัวข้อ Ticket -->
+      <div class="flex flex-col gap-1.5">
+        <label for="ticket-title" class="text-sm font-semibold text-slate-700">
+          หัวข้อ Ticket
+        </label>
+        <input
+          pInputText
+          id="ticket-title"
+          type="text"
+          [ngModel]="title()"
+          (ngModelChange)="title.set($event)"
+          placeholder="หัวข้อ Ticket"
+          class="w-full"
+          autocomplete="off"
+        />
+      </div>
+
+      <!-- โครงการ -->
+      <div class="flex flex-col gap-1.5">
+        <label for="ticket-project" class="text-sm font-semibold text-slate-700"> โครงการ </label>
+        <p-select
+          inputId="ticket-project"
+          [options]="projectOptions"
+          [ngModel]="selectedProject()"
+          (ngModelChange)="selectedProject.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="เลือกโครงการ"
+          class="w-full"
+        />
+      </div>
+
+      <!-- ประเภทของ Ticket -->
+      <div class="flex flex-col gap-1.5">
+        <span class="text-sm font-semibold text-slate-700">
+          {{ selectedTicketType() ? 'ประเภท Ticket' : 'ประเภทของ Ticket' }}
+        </span>
+
+        @if (selectedTicketType(); as ticketType) {
+          <!-- Selected state: info card -->
+          <div class="rounded-lg border border-primary-200 bg-primary-50 p-4 flex flex-col gap-2 mb-2">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              ข้อมูลที่เลือก
+            </p>
+            <p class="text-sm text-slate-700">
+              {{ ticketType.type }} &gt; {{ ticketType.category }} &gt; {{ ticketType.subCategory }}
+            </p>
+            <div class="flex flex-col gap-1.5 mt-1">
+              <div class="flex items-center gap-2 text-sm text-primary-700">
+                <i class="pi pi-info-circle text-xs" aria-hidden="true"></i>
+                <span
+                  >สถานะทีม <strong>{{ ticketType.team }}</strong></span
+                >
+              </div>
+              <div class="flex items-center gap-2 text-sm text-primary-700">
+                <i class="pi pi-info-circle text-xs" aria-hidden="true"></i>
+                <span>
+                  ระดับ <strong>{{ ticketType.level }}</strong> ใช้เวลาแก้ไข Ticket นี้ ภายใน
+                  {{ ticketType.resolutionTime }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <p-button
+            label="แก้ไขประเภท Ticket"
+            severity="primary"
+            [outlined]="true"
+            (onClick)="openTicketTypeDialog()"
+            fluid
+          />
+        } @else {
+          <!-- Empty state: selector button -->
+          <p-button
+            label="เลือกประเภท Ticket"
+            severity="primary"
+            [outlined]="true"
+            (onClick)="openTicketTypeDialog()"
+            fluid
+          />
+        }
+      </div>
+
+      <!-- รายละเอียด -->
+      <div class="flex flex-col gap-1.5">
+        <span class="text-sm font-semibold text-slate-700">รายละเอียด</span>
+        <app-text-editor [(value)]="description" placeholder="รายละเอียด" />
+      </div>
+
+      <!-- Submit -->
+      <p-button
+        label="เพิ่ม"
+        severity="primary"
+        [disabled]="!isValid() || saving()"
+        [loading]="saving()"
+        (onClick)="onSubmit()"
+        fluid
+      />
+    </div>
+  </div>
+</div>
+
+<!-- Ticket Type Dialog -->
+<app-ticket-type-dialog
+  [(visible)]="showTicketTypeDialog"
+  (confirmed)="onTicketTypeConfirmed($event)"
+/>
+
+<!-- Leave confirmation dialog -->
+<app-confirm-dialog
+  [(visible)]="showLeaveDialog"
+  type="warning"
+  title="ต้องการออกจากหน้านี้ใช่ไหม"
+  cancelLabel="สร้างต่อ"
+  confirmLabel="ออก"
+  (confirmed)="onLeaveConfirmed()"
+  (cancelled)="onLeaveCancelled()"
+>
+  คุณมีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก ซึ่งจะหายไปหากคุณออกจากหน้านี้
+</app-confirm-dialog>

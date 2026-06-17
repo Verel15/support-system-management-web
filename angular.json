@@ -24,7 +24,7 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/material-theme.scss", "src/styles.css"]
+            "styles": ["node_modules/quill/dist/quill.snow.css", "src/material-theme.scss", "src/styles.css"]
           },
           "configurations": {
             "production": {

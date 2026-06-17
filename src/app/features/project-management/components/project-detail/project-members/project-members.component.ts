@@ -3,7 +3,6 @@ import {
   Component,
   computed,
   inject,
-  output,
   signal,
   viewChild,
 } from '@angular/core';
@@ -15,13 +14,17 @@ import { InputText } from 'primeng/inputtext';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { Menu } from 'primeng/menu';
-import { MenuItem } from 'primeng/api';
+import { MenuItem, MessageService } from 'primeng/api';
 import {
   DataTableComponent,
   DataTableCellDirective,
   TableColumn,
 } from '../../../../../shared/components/data-table';
-import { ConfirmDialogComponent } from '../../../../../shared/components/dialogs';
+import {
+  ConfirmDialogComponent,
+  SelectItemsDialogComponent,
+  SelectItemOption,
+} from '../../../../../shared/components/dialogs';
 import { ProjectMember } from '../project-detail.types';
 
 @Component({
@@ -37,6 +40,7 @@ import { ProjectMember } from '../project-detail.types';
     DataTableComponent,
     DataTableCellDirective,
     ConfirmDialogComponent,
+    SelectItemsDialogComponent,
   ],
   templateUrl: './project-members.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,11 +48,21 @@ import { ProjectMember } from '../project-detail.types';
 export class ProjectMembersComponent {
   private readonly router = inject(Router);
 
-  readonly addClick = output<void>();
-
   protected readonly actionMenu = viewChild.required<Menu>('actionMenu');
   protected readonly showRemoveDialog = signal(false);
   protected readonly removing = signal(false);
+  protected readonly showAddDialog = signal(false);
+  private readonly messageService = inject(MessageService);
+
+  protected readonly memberCandidates: SelectItemOption[] = [
+    { value: 'c1', label: 'แสนดี ที่สุดเลย', sublabel: 'ลูกค้า' },
+    { value: 'c2', label: 'สดใส สวยงาม', sublabel: 'ลูกค้า' },
+    { value: 'c3', label: 'สมศรี มีเกียติ', sublabel: 'ลูกค้า' },
+    { value: 'c4', label: 'มาโมรุ มุคาวะ', sublabel: 'ลูกค้า' },
+    { value: 'c5', label: 'สุชาติ มีกลิ่น', sublabel: 'ลูกค้า' },
+    { value: 'c6', label: 'กรถนก หลากสี', sublabel: 'ลูกค้า' },
+    { value: 'c7', label: 'อรชร ชมรส', sublabel: 'ลูกค้า' },
+  ];
 
   protected readonly userTypeFilter = signal<string | null>(null);
   protected readonly positionFilter = signal<string | null>(null);
@@ -132,5 +146,15 @@ export class ProjectMembersComponent {
     this.removing.set(true);
     this.removing.set(false);
     this.showRemoveDialog.set(false);
+  }
+
+  protected onAddConfirmed(_selected: string[]): void {
+    this.showAddDialog.set(false);
+    this.messageService.add({
+      severity: 'success',
+      summary: 'บันทึกสำเร็จ',
+      detail: 'เพิ่มสมาชิกเรียบร้อยแล้ว',
+      life: 3000,
+    })
   }
 }

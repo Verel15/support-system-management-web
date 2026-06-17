@@ -8,3 +8,6 @@ export { DeleteConfirmDialogComponent } from './delete-confirm-dialog/delete-con
 
 export { SelectItemsDialogComponent } from './select-items-dialog/select-items-dialog.component';
 export type { SelectItemOption } from './select-items-dialog/select-items-dialog.component';
+
+export { DocumentsDialogComponent } from './documents-dialog/documents-dialog.component';
+export type { ProjectDocument } from './documents-dialog/documents-dialog.component';

@@ -9,6 +9,7 @@ import {
   inject,
   input,
   output,
+  signal,
   viewChild,
 } from '@angular/core';
 import { Button } from 'primeng/button';
@@ -17,12 +18,13 @@ import { MenuItem } from 'primeng/api';
 import { ArcElement, Chart, DoughnutController, Legend, Tooltip } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { ProjectDetail } from '../project-detail.types';
+import { DocumentsDialogComponent, ProjectDocument } from '../../../../../shared/components/dialogs';
 
 Chart.register(ArcElement, DoughnutController, Legend, Tooltip, ChartDataLabels);
 
 @Component({
   selector: 'app-project-info',
-  imports: [Button, Menu],
+  imports: [Button, Menu, DocumentsDialogComponent],
   templateUrl: './project-info.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -34,6 +36,15 @@ export class ProjectInfoComponent {
   private readonly destroyRef = inject(DestroyRef);
   protected readonly cardActionMenu = viewChild.required<Menu>('cardActionMenu');
   protected readonly chartCanvas = viewChild<ElementRef<HTMLCanvasElement>>('chartCanvas');
+
+  protected readonly documentsVisible = signal(false);
+  protected readonly projectDocuments: ProjectDocument[] = [
+    { id: '1', name: 'เอกสาร A.pdf', url: '#' },
+    { id: '2', name: 'เอกสาร B.pdf', url: '#' },
+    { id: '3', name: 'เอกสาร C.pdf', url: '#' },
+    { id: '4', name: 'เอกสาร D.pdf', url: '#' },
+    { id: '5', name: 'เอกสาร E.pdf', url: '#' },
+  ];
 
   private chartInstance: Chart | null = null;
   private totalForCenter = 0;
@@ -123,7 +134,7 @@ export class ProjectInfoComponent {
         ],
       },
       options: {
-        cutout: '65%',
+        cutout: '60%',
         responsive: true,
         maintainAspectRatio: true,
         plugins: {
@@ -155,5 +166,9 @@ export class ProjectInfoComponent {
 
   protected onCardMore(event: MouseEvent): void {
     this.cardActionMenu().toggle(event);
+  }
+
+  protected openDocuments(): void {
+    this.documentsVisible.set(true);
   }
 }

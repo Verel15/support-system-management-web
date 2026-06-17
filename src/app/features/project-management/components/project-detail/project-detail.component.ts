@@ -57,7 +57,7 @@ export class ProjectDetailComponent {
   }
 
   protected onEditProject(): void {
-    this.router.navigate(['/project-management/add']);
+    this.router.navigate(['/project-management/edit']);
   }
 
   protected onHeaderMore(event: MouseEvent): void {

@@ -1,0 +1,28 @@
+<!-- Feed messages (scrollable) -->
+<div class="flex-1 lg:overflow-y-auto p-6 bg-slate-50 flex flex-col gap-4">
+  @for (item of items(); track item.id) {
+    @if (item.type === 'comment') {
+      <app-ticket-comment-card [comment]="asComment(item)" />
+    } @else {
+      <app-ticket-activity-item [activity]="asActivity(item)" />
+    }
+  }
+
+  @if (items().length === 0) {
+    <p class="text-sm text-slate-400 text-center py-12">ยังไม่มีความคิดเห็น</p>
+  }
+</div>
+
+<!-- Comment editor (sticky bottom) -->
+<div class="shrink-0 border-t border-slate-200 bg-white p-4">
+  <app-text-editor [(value)]="commentText" placeholder="พิมพ์ความคิดเห็น..." minHeight="140px" />
+  <div class="flex justify-end mt-3">
+    <p-button
+      label="ส่ง"
+      severity="primary"
+      [loading]="submitting()"
+      [disabled]="!commentText().trim() || submitting()"
+      (onClick)="onSubmit()"
+    />
+  </div>
+</div>

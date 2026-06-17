@@ -37,14 +37,14 @@ export class MainLayoutComponent {
   };
 
   protected readonly personalNav: SidebarNavItem[] = [
-    { label: 'Tickets ของฉัน', icon: 'pi-ticket', route: '/dashboard/my-tickets' },
-    { label: 'โครงการของฉัน', icon: 'pi-folder', route: '/dashboard/my-projects' },
-    { label: 'การแจ้งเตือน', icon: 'pi-bell', route: '/dashboard/notifications', badge: 5 },
+    { label: 'Tickets ของฉัน', icon: 'pi-ticket', route: '/my-tickets' },
+    { label: 'โครงการของฉัน', icon: 'pi-folder', route: '/my-projects' },
+    { label: 'การแจ้งเตือน', icon: 'pi-bell', route: '/notifications', badge: 5 },
   ];
 
   protected readonly mainNav: SidebarNavItem[] = [
-    { label: 'แดชบอร์ด', icon: 'pi-chart-bar', route: '/dashboard/overview' },
-    { label: 'จัดการ Tickets', icon: 'pi-list-check', route: '/dashboard/tickets' },
+    { label: 'แดชบอร์ด', icon: 'pi-chart-bar', route: '/dashboard' },
+    { label: 'จัดการ Tickets', icon: 'pi-list-check', route: '/ticket-management/list' },
     { label: 'จัดการโครงการ', icon: 'pi-folder-open', route: '/project-management/list' },
     {
       label: 'จัดการผู้ใช้',

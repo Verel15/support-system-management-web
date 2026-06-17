@@ -1,0 +1,31 @@
+<p-editor
+  [ngModel]="value()"
+  (ngModelChange)="value.set($event)"
+  [style]="{ minHeight: minHeight() }"
+  [placeholder]="placeholder()"
+>
+  <ng-template #header>
+    <span class="ql-formats">
+      <select class="ql-header" aria-label="Text style">
+        <option value="" selected>Paragraph</option>
+        <option value="1">H1</option>
+        <option value="2">H2</option>
+        <option value="3">H3</option>
+      </select>
+    </span>
+    <span class="ql-formats">
+      <button type="button" class="ql-bold" aria-label="Bold"></button>
+      <button type="button" class="ql-italic" aria-label="Italic"></button>
+    </span>
+    <span class="ql-formats">
+      <button type="button" class="ql-link" aria-label="Link"></button>
+      <button type="button" class="ql-image" aria-label="Image"></button>
+    </span>
+    <span class="ql-formats">
+      <button type="button" class="ql-blockquote" aria-label="Blockquote"></button>
+    </span>
+    <span class="ql-formats">
+      <button type="button" class="ql-clean" aria-label="Remove formatting"></button>
+    </span>
+  </ng-template>
+</p-editor>

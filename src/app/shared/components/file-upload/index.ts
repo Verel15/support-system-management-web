@@ -1,2 +1,2 @@
 export { FileUploadComponent } from './file-upload.component';
-export type { UploadedFile } from './file-upload.types';
+export type { ExistingFile, UploadedFile } from './file-upload.types';

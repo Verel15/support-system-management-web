@@ -9,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Avatar } from 'primeng/avatar';
 import { Button } from 'primeng/button';
 import { Checkbox } from 'primeng/checkbox';
 import { Dialog } from 'primeng/dialog';
@@ -19,11 +20,13 @@ import { InputText } from 'primeng/inputtext';
 export interface SelectItemOption {
   value: string;
   label: string;
+  avatar?: string;
+  sublabel?: string;
 }
 
 @Component({
   selector: 'app-select-items-dialog',
-  imports: [FormsModule, Button, Checkbox, Dialog, IconField, InputIcon, InputText],
+  imports: [FormsModule, Avatar, Button, Checkbox, Dialog, IconField, InputIcon, InputText],
   templateUrl: './select-items-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -31,6 +34,7 @@ export class SelectItemsDialogComponent {
   readonly visible = model(false);
   readonly title = input.required<string>();
   readonly subtitle = input('');
+  readonly countLabel = input('จำนวน');
   readonly items = input.required<SelectItemOption[]>();
   readonly selected = input<string[]>([]);
 
@@ -49,8 +53,8 @@ export class SelectItemsDialogComponent {
     });
   }
 
-  protected readonly dialogTitle = computed(
-    () => `${this.title()} (จำนวน ${this.localSelected().length})`,
+  protected readonly countText = computed(
+    () => `${this.countLabel()}(${this.localSelected().length})`,
   );
 
   protected readonly filteredItems = computed(() => {

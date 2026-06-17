@@ -88,5 +88,16 @@ export const routes: Routes = [
         (m) => m.projectManagementRoutes,
       ),
   },
+  {
+    path: 'ticket-management',
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/ticket-management/ticket-managemnet.routes').then(
+        (m) => m.ticketManagementRoutes,
+      ),
+  },
   { path: '', redirectTo: 'auth', pathMatch: 'full' },
 ];

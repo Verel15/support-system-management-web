@@ -1,5 +1,5 @@
 <section aria-labelledby="members-heading">
-  <div class="border-b border-slate-100 pb-6 mb-6">
+  <div class="border-b border-slate-100 pb-6 mb-4">
     <!-- Section header -->
     <div class="flex items-center justify-between py-6">
       <h2
@@ -13,7 +13,7 @@
           label="เพิ่มสมาชิก"
           icon="pi pi-plus"
           severity="primary"
-          (onClick)="addClick.emit()"
+          (onClick)="showAddDialog.set(true)"
           fluid
         />
       </div>
@@ -101,4 +101,15 @@
   [loading]="removing()"
   (confirmed)="onRemoveConfirmed()"
   (cancelled)="showRemoveDialog.set(false)"
+/>
+
+<!-- Add member dialog -->
+<app-select-items-dialog
+  [(visible)]="showAddDialog"
+  title="เพิ่มสมาชิก"
+  countLabel="สมาชิก"
+  subtitle="เพิ่มรายชื่อสมาชิกของโครงการ"
+  [items]="memberCandidates"
+  (confirmed)="onAddConfirmed($event)"
+  (cancelled)="showAddDialog.set(false)"
 />

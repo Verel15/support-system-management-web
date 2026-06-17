@@ -1,0 +1,44 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [closable]="false"
+  [style]="{ width: '500px' }"
+  [contentStyle]="{ padding: '0' }"
+>
+  <!-- Header -->
+  <ng-template #header>
+    <div class="flex items-center justify-between w-full">
+      <h2 class="text-lg font-bold text-secondary-900">เอกสารเพิ่มเติม</h2>
+      <button
+        type="button"
+        class="inline-flex items-center justify-center w-8 h-8 rounded-full text-secondary-400 hover:bg-secondary-100 hover:text-secondary-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+        (click)="close()"
+        aria-label="ปิดหน้าต่าง"
+      >
+        <i class="pi pi-times text-sm" aria-hidden="true"></i>
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Document list -->
+  <ul class="list-none pb-4" role="list">
+    @for (doc of documents(); track doc.id) {
+      <li class="flex items-center gap-4 px-6 py-4">
+        <i class="pi pi-file text-xl text-primary-500 shrink-0" aria-hidden="true"></i>
+        <span class="flex-1 text-sm text-secondary-800 truncate">{{ doc.name }}</span>
+        <a
+          [href]="doc.url"
+          download
+          class="text-sm text-primary-500 underline hover:text-primary-700 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
+          [attr.aria-label]="'ดาวน์โหลด ' + doc.name"
+        >
+          ดาวน์โหลด
+        </a>
+      </li>
+    }
+    @empty {
+      <li class="px-6 py-10 text-center text-sm text-secondary-400">ไม่มีเอกสาร</li>
+    }
+  </ul>
+</p-dialog>
