@@ -1,0 +1,44 @@
+<article class="bg-white rounded-lg border border-slate-200 p-6 flex flex-col gap-5">
+  <!-- Header -->
+  <h2 class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
+    ผู้ใช้ในระบบ
+  </h2>
+
+  <!-- Controls: date picker + search -->
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <p-datepicker
+      [formControl]="dateCtrl"
+      dateFormat="dd/mm/yy"
+      [showIcon]="true"
+      icon="pi pi-calendar"
+      styleClass="w-44"
+      inputStyleClass="text-sm"
+      aria-label="เลือกวันที่"
+    />
+
+    <p-iconfield>
+      <p-inputicon class="pi pi-search" />
+      <input
+        pInputText
+        type="search"
+        placeholder="ค้นหา"
+        class="text-sm"
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)"
+        aria-label="ค้นหาผู้ใช้"
+      />
+    </p-iconfield>
+  </div>
+
+  <!-- Table -->
+  <app-data-table
+    [columns]="columns"
+    [data]="rows()"
+    [totalRecords]="totalRecords()"
+    [showActions]="false"
+  >
+    <ng-template dataTableCell="ticketCount" let-value="value">
+      {{ value }} Tickets
+    </ng-template>
+  </app-data-table>
+</article>

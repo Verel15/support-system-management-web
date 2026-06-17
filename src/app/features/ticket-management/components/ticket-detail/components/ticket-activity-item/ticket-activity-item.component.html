@@ -1,0 +1,11 @@
+<div
+  class="flex flex-col gap-0.5 px-1 py-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+  role="log"
+>
+  <p class="text-sm text-slate-600 leading-relaxed">
+    <span class="font-semibold text-slate-800">{{ activity().actor }}</span>
+    {{ ' ' }}{{ activity().action }}{{ ' ' }}
+    <span class="font-semibold text-blue-600">{{ activity().statusLabel }}</span>
+  </p>
+  <time class="text-xs text-slate-400 sm:shrink-0">{{ activity().timestamp }}</time>
+</div>

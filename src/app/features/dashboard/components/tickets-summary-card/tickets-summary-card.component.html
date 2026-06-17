@@ -1,0 +1,71 @@
+<article class="bg-white rounded-lg border border-slate-200 p-6 flex flex-col gap-5 h-full">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <h2 class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
+      Tickets
+    </h2>
+    <button
+      type="button"
+      class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
+      aria-label="ตัวเลือกเพิ่มเติม"
+    >
+      <i class="pi pi-ellipsis-h text-slate-500" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <!-- Year picker -->
+  <p-datepicker
+    [formControl]="yearCtrl"
+    view="year"
+    dateFormat="yy"
+    [showIcon]="true"
+    icon="pi pi-calendar"
+    styleClass="w-56"
+    inputStyleClass="text-sm"
+    aria-label="เลือกปี"
+  />
+
+  <!-- Main stat: average open -->
+  <div class="flex flex-col items-center gap-2 py-4 flex-1 justify-center">
+    <div class="flex items-center gap-2 mt-1">
+      <span class="text-6xl font-black text-slate-800 leading-none">
+        {{ summary().avgOpen }}
+      </span>
+      <i
+        class="pi text-xl"
+        [class]="summary().openTrend === 'up' ? 'pi-arrow-up text-primary-500' : 'pi-arrow-down text-error-500'"
+        [attr.aria-label]="summary().openTrend === 'up' ? 'เพิ่มขึ้น' : 'ลดลง'"
+      ></i>
+    </div>
+    <p class="text-sm text-slate-500">ค่าเฉลี่ยการเปิด</p>
+  </div>
+
+  <hr class="border-slate-100" />
+
+  <!-- Sub stats -->
+  <div class="grid grid-cols-2 divide-x divide-slate-100">
+    <div class="flex flex-col items-center gap-2 pr-4">
+      <div class="flex items-center gap-1.5">
+        <span class="text-3xl font-bold text-slate-800">{{ summary().avgOverdue }}</span>
+        <i
+          class="pi text-base"
+          [class]="summary().overdueTrend === 'up' ? 'pi-arrow-up text-primary-500' : 'pi-arrow-down text-error-500'"
+          [attr.aria-label]="summary().overdueTrend === 'up' ? 'เพิ่มขึ้น' : 'ลดลง'"
+        ></i>
+      </div>
+      <p class="text-xs text-slate-500 text-center">ค่าเฉลี่ยเกินกำหนด</p>
+    </div>
+
+    <div class="flex flex-col items-center gap-2 pl-4">
+      <div class="flex items-center gap-1.5">
+        <span class="text-3xl font-bold text-slate-800">{{ summary().avgClosed }}</span>
+        <i
+          class="pi text-base"
+          [class]="summary().closedTrend === 'up' ? 'pi-arrow-up text-primary-500' : 'pi-arrow-down text-error-500'"
+          [attr.aria-label]="summary().closedTrend === 'up' ? 'เพิ่มขึ้น' : 'ลดลง'"
+        ></i>
+      </div>
+      <p class="text-xs text-slate-500 text-center">ค่าเฉลี่ยการปิดสำเร็จ</p>
+    </div>
+  </div>
+</article>

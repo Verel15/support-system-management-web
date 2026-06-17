@@ -1,0 +1,53 @@
+<article class="bg-white rounded-lg border border-slate-200 p-6 flex flex-col gap-5">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <h2 class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
+      กราฟการเปิด ticket
+    </h2>
+    <button
+      type="button"
+      class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
+      aria-label="ตัวเลือกเพิ่มเติม"
+    >
+      <i class="pi pi-ellipsis-h text-slate-500" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <!-- Controls row: year picker + legend -->
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <p-datepicker
+      [formControl]="yearCtrl"
+      view="year"
+      dateFormat="yy"
+      [showIcon]="true"
+      icon="pi pi-calendar"
+      styleClass="w-56"
+      inputStyleClass="text-sm"
+      aria-label="เลือกปี"
+    />
+
+    <div class="flex flex-wrap items-center gap-6" role="list" aria-label="คำอธิบายกราฟ">
+      @for (s of series; track s.label) {
+        <div class="flex items-center gap-2" role="listitem">
+          <span
+            class="inline-block w-3.5 h-3.5 rounded-sm shrink-0"
+            [style.background]="s.color"
+            aria-hidden="true"
+          ></span>
+          <span class="text-sm text-slate-600">
+            {{ s.label }}: <strong class="font-semibold text-slate-800">{{ s.total }}</strong>
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Chart: position:relative + fixed height required by Chart.js responsive mode -->
+  <div class="relative h-96 w-full">
+    <canvas
+      #chartCanvas
+      role="img"
+      aria-label="กราฟเส้นแสดงจำนวน ticket เปิด สำเร็จ และเกินกำหนดรายเดือน"
+    ></canvas>
+  </div>
+</article>
