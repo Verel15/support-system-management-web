@@ -1,0 +1,70 @@
+<p-popover #panel>
+  <div class="w-72 p-1">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-3 py-2">
+      <div class="flex items-center gap-2">
+        <i class="pi pi-sliders-h text-secondary-600" aria-hidden="true"></i>
+        <span class="font-semibold text-secondary-800">ตัวกรอง</span>
+      </div>
+      <button
+        type="button"
+        class="text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors"
+        (click)="clear()"
+      >
+        ล้าง
+      </button>
+    </div>
+
+    <p-divider styleClass="my-2" />
+
+    <!-- จัดเรียงตาม -->
+    <div class="px-3 pb-3">
+      <p class="text-xs font-semibold text-secondary-500 mb-2">จัดเรียงตาม</p>
+      <div class="flex flex-wrap gap-2">
+        @for (opt of sortOptions; track opt.value) {
+          <button
+            type="button"
+            class="px-3 py-1.5 text-sm rounded-full border transition-colors"
+            [class.bg-primary-100]="isSortSelected(opt.value)"
+            [class.border-primary-500]="isSortSelected(opt.value)"
+            [class.text-primary-700]="isSortSelected(opt.value)"
+            [class.border-secondary-300]="!isSortSelected(opt.value)"
+            [class.text-secondary-700]="!isSortSelected(opt.value)"
+            [class.hover:border-secondary-400]="!isSortSelected(opt.value)"
+            [attr.aria-pressed]="isSortSelected(opt.value)"
+            (click)="toggleSort(opt.value)"
+          >
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- หมวดหมู่ -->
+    <div class="px-3 pb-3">
+      <p class="text-xs font-semibold text-secondary-500 mb-2">หมวดหมู่</p>
+      <div class="flex flex-wrap gap-2">
+        @for (opt of categoryOptions; track opt.value) {
+          <button
+            type="button"
+            class="px-3 py-1.5 text-sm rounded-full border transition-colors"
+            [class.bg-primary-100]="isCategorySelected(opt.value)"
+            [class.border-primary-500]="isCategorySelected(opt.value)"
+            [class.text-primary-700]="isCategorySelected(opt.value)"
+            [class.border-secondary-300]="!isCategorySelected(opt.value)"
+            [class.text-secondary-700]="!isCategorySelected(opt.value)"
+            [class.hover:border-secondary-400]="!isCategorySelected(opt.value)"
+            [attr.aria-pressed]="isCategorySelected(opt.value)"
+            (click)="toggleCategory(opt.value)"
+          >
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="px-3 pb-1">
+      <p-button label="ค้นหา" styleClass="w-full" (onClick)="search()" />
+    </div>
+  </div>
+</p-popover>

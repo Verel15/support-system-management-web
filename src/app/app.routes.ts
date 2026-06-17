@@ -103,5 +103,16 @@ export const routes: Routes = [
         (m) => m.ticketManagementRoutes,
       ),
   },
+  {
+    path: 'notifications',
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/notifications/notifications.routes').then(
+        (m) => m.notificationsRoutes,
+      ),
+  },
   { path: '', redirectTo: 'auth', pathMatch: 'full' },
 ];
