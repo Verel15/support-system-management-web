@@ -70,7 +70,16 @@
   } @else {
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
       @for (project of pagedProjects(); track project.name) {
-        <app-project-card [project]="project" />
+        <app-project-card
+          [project]="project"
+          class="cursor-pointer rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="'ดูรายละเอียดโครงการ ' + project.name"
+          (click)="onProjectClick(project)"
+          (keydown.enter)="onProjectClick(project)"
+          (keydown.space)="$event.preventDefault(); onProjectClick(project)"
+        />
       }
     </div>
   }

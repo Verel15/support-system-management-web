@@ -255,6 +255,11 @@ export class ProjectListComponent {
 
   protected onAddProject(): void {
     this.router.navigate(['/project-management/add']);
-    // TODO: implement open dialog/navigate to add project
+  }
+
+  protected onProjectClick(project: Project): void {
+    this.router.navigate(['/project-management/detail'], {
+      queryParams: { name: project.name },
+    });
   }
 }

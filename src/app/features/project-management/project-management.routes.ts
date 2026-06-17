@@ -15,5 +15,12 @@ export const projectManagementRoutes: Routes = [
         (m) => m.AddProjectComponent,
       ),
   },
+  {
+    path: 'detail',
+    loadComponent: () =>
+      import('./components/project-detail/project-detail.component').then(
+        (m) => m.ProjectDetailComponent,
+      ),
+  },
   { path: '', redirectTo: 'list', pathMatch: 'full' },
 ];

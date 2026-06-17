@@ -1,0 +1,137 @@
+<section aria-labelledby="project-info-heading">
+  <div class="border-b border-slate-100 pb-6">
+    <!-- Card header -->
+    <div class="flex items-center justify-between py-6">
+      <h2
+        id="project-info-heading"
+        class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3"
+      >
+        ข้อมูลโครงการ
+      </h2>
+      <button
+        type="button"
+        class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
+        aria-label="ตัวเลือกโครงการ"
+        aria-haspopup="true"
+        (click)="onCardMore($event)"
+      >
+        <i class="pi pi-ellipsis-h text-slate-500" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <!-- Card body: 3 columns -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Column 1: Donut chart (Chart.js) -->
+      <div class="flex justify-center">
+        <div class="flex flex-col gap-4 w-55">
+          <canvas
+            #chartCanvas
+            role="img"
+            aria-label="กราฟแสดงสัดส่วน ticket ตามสถานะ"
+          ></canvas>
+
+          <!-- Legend -->
+          <dl class="grid grid-cols-3 gap-x-5 gap-y-3 text-xs">
+            @for (seg of chartData(); track seg.label) {
+              <div class="flex items-center gap-1.5">
+                <span
+                  class="inline-block w-3 h-3 rounded-sm shrink-0"
+                  [style.background]="seg.color"
+                  aria-hidden="true"
+                ></span>
+                <dt class="text-slate-600">{{ seg.label }}</dt>
+              </div>
+            }
+          </dl>
+        </div>
+      </div>
+
+      <!-- Column 2: Stats cards (2x2 grid, centered layout) -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 p-6 text-center">
+          <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-primary-100 shrink-0" aria-hidden="true">
+            <i class="pi pi-users text-primary-600 text-base"></i>
+          </span>
+          <p class="text-lg font-bold text-slate-800 leading-tight">{{ project().totalUsers }} ผู้ใช้</p>
+          <p class="text-xs text-slate-500">จำนวนรวมทั้งหมด</p>
+        </div>
+
+        <div class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 p-6 text-center">
+          <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-primary-100 shrink-0" aria-hidden="true">
+            <i class="pi pi-calendar text-primary-600 text-base"></i>
+          </span>
+          <p class="text-sm font-bold text-slate-800 leading-tight">{{ project().lastUpdated }}</p>
+          <p class="text-xs text-slate-500">อัปเดตล่าสุด</p>
+        </div>
+
+        <div class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 p-6 text-center">
+          <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-primary-100 shrink-0" aria-hidden="true">
+            <i class="pi pi-calendar-plus text-primary-600 text-base"></i>
+          </span>
+          <p class="text-sm font-bold text-slate-800 leading-tight">{{ project().startDate }}</p>
+          <p class="text-xs text-slate-500">วันเริ่มโครงการ</p>
+        </div>
+
+        <div class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 p-6 text-center">
+          <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-primary-100 shrink-0" aria-hidden="true">
+            <i class="pi pi-clock text-primary-600 text-base"></i>
+          </span>
+          <p class="text-sm font-bold text-slate-800 leading-tight">{{ project().endDate }}</p>
+          <p class="text-xs text-slate-500">วันปิดโครงการ ({{ project().totalDays }}วัน)</p>
+        </div>
+      </div>
+
+      <!-- Column 3: Project metadata -->
+      <dl class="flex flex-col gap-4 justify-center rounded-xl border border-slate-200 p-6">
+        <div class="flex items-center gap-3">
+          <dt class="min-w-34 shrink-0 text-sm text-slate-500">สีประจำโครงการ:</dt>
+          <dd>
+            <span
+              class="inline-block w-4 h-4 rounded-full border border-slate-200"
+              [style.background]="project().color"
+              [attr.aria-label]="'สีโครงการ'"
+            ></span>
+          </dd>
+        </div>
+
+        <div class="flex items-start gap-3">
+          <dt class="min-w-34 shrink-0 text-sm text-slate-500">บริษัท:</dt>
+          <dd class="text-sm font-medium text-slate-800 truncate">{{ project().company }}</dd>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <dt class="min-w-34 shrink-0 text-sm text-slate-500">ผู้ดูแล:</dt>
+          <dd class="text-sm font-medium text-slate-800">{{ project().adminCount }}</dd>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <dt class="min-w-34 shrink-0 text-sm text-slate-500">ลูกค้า:</dt>
+          <dd class="text-sm font-medium text-slate-800">{{ project().customerCount }}</dd>
+        </div>
+
+        <div class="flex items-start gap-3">
+          <dt class="min-w-34 shrink-0 text-sm text-slate-500">ไฟล์เอกสาร:</dt>
+          <dd>
+            <p-button
+              label="ดูเอกสารเพิ่มเติม"
+              icon="pi pi-file"
+              severity="secondary"
+              [outlined]="true"
+              size="small"
+            />
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- Card action menu -->
+<p-menu #cardActionMenu [model]="cardMenuItems()" [popup]="true" appendTo="body">
+  <ng-template #item let-item pTemplate="item">
+    <a class="p-menu-item-link" role="menuitem">
+      <span [class]="item.data?.danger ? 'text-error-500 font-medium' : ''">{{ item.label }}</span>
+    </a>
+  </ng-template>
+</p-menu>

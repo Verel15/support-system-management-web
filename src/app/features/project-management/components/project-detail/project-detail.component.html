@@ -1,0 +1,47 @@
+<!-- Page header -->
+<div class="flex items-center gap-3 px-5 py-4 border-b border-slate-200 bg-white sticky top-0 z-10">
+  <button
+    type="button"
+    class="inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500) shrink-0"
+    aria-label="ย้อนกลับ"
+    (click)="onBack()"
+  >
+    <i class="pi pi-arrow-left text-slate-700" aria-hidden="true"></i>
+  </button>
+
+  <div class="flex-1 flex items-center justify-center gap-2 min-w-0">
+    <h1 class="text-xl font-semibold text-slate-800 truncate">{{ project().name }}</h1>
+    <app-status-chip [status]="project().status" />
+  </div>
+
+  <button
+    type="button"
+    class="inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500) shrink-0"
+    aria-label="ตัวเลือกเพิ่มเติม"
+    aria-haspopup="true"
+    (click)="onHeaderMore($event)"
+  >
+    <i class="pi pi-ellipsis-h text-slate-600" aria-hidden="true"></i>
+  </button>
+</div>
+
+<!-- Sections -->
+<div class="p-6 flex flex-col gap-6">
+  <app-project-info
+    [project]="project()"
+    (editClick)="onEditProject()"
+  />
+
+  <app-project-members />
+
+  <app-project-tickets />
+</div>
+
+<!-- Header action menu -->
+<p-menu #headerMenu [model]="headerMenuItems" [popup]="true" appendTo="body">
+  <ng-template #item let-item pTemplate="item">
+    <a class="p-menu-item-link" role="menuitem">
+      <span class="p-menu-item-label">{{ item.label }}</span>
+    </a>
+  </ng-template>
+</p-menu>

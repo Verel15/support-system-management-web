@@ -1,0 +1,104 @@
+<section aria-labelledby="members-heading">
+  <div class="border-b border-slate-100 pb-6 mb-6">
+    <!-- Section header -->
+    <div class="flex items-center justify-between py-6">
+      <h2
+        id="members-heading"
+        class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3"
+      >
+        ผู้ใช้ทั้งหมด
+      </h2>
+      <div class="w-full sm:w-auto md:w-44">
+        <p-button
+          label="เพิ่มสมาชิก"
+          icon="pi pi-plus"
+          severity="primary"
+          (onClick)="addClick.emit()"
+          fluid
+        />
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-4">
+      <!-- Filters -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <p-select
+          [options]="userTypeOptions"
+          [ngModel]="userTypeFilter()"
+          (ngModelChange)="userTypeFilter.set($event); onFilterChange()"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full sm:w-auto sm:min-w-44"
+          aria-label="กรองตามประเภทผู้ใช้"
+        />
+        <p-select
+          [options]="positionOptions"
+          [ngModel]="positionFilter()"
+          (ngModelChange)="positionFilter.set($event); onFilterChange()"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full sm:w-auto sm:min-w-40"
+          aria-label="กรองตามตำแหน่ง"
+        />
+        <p-icon-field class="w-full sm:w-72 sm:ml-auto">
+          <p-inputicon class="pi pi-search" />
+          <input
+            pInputText
+            type="search"
+            placeholder="ค้นหา"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event); onFilterChange()"
+            class="w-full"
+            aria-label="ค้นหาผู้ใช้"
+          />
+        </p-icon-field>
+      </div>
+
+      <!-- Table -->
+      <app-data-table
+        [columns]="columns"
+        [data]="tableData()"
+        [totalRecords]="totalRecords()"
+        [currentPage]="currentPage()"
+        [pageSize]="pageSize()"
+        (pageChange)="currentPage.set($event)"
+        (pageSizeChange)="pageSize.set($event); currentPage.set(1)"
+      >
+        <ng-template dataTableCell="_actions" let-row>
+          <button
+            type="button"
+            class="inline-flex items-center justify-center w-8 h-8 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
+            aria-label="การดำเนินการ"
+            aria-haspopup="true"
+            (click)="onActionClick($event)"
+          >
+            <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+          </button>
+        </ng-template>
+      </app-data-table>
+    </div>
+  </div>
+</section>
+
+<!-- Action menu -->
+<p-menu #actionMenu [model]="menuItems" [popup]="true" appendTo="body">
+  <ng-template #item let-item pTemplate="item">
+    <a class="p-menu-item-link" role="menuitem">
+      <span class="p-menu-item-label" [class.text-error-600]="item.label === 'ลบ'">{{
+        item.label
+      }}</span>
+    </a>
+  </ng-template>
+</p-menu>
+
+<!-- Remove confirm dialog -->
+<app-confirm-dialog
+  [(visible)]="showRemoveDialog"
+  type="warning"
+  title="ยืนยันการลบสมาชิก?"
+  confirmLabel="ลบ"
+  cancelLabel="ยกเลิก"
+  [loading]="removing()"
+  (confirmed)="onRemoveConfirmed()"
+  (cancelled)="showRemoveDialog.set(false)"
+/>
