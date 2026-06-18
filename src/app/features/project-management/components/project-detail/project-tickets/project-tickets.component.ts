@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  input,
   output,
   signal,
   viewChild,
@@ -40,6 +41,7 @@ import { ProjectTicket } from '../project-detail.types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectTicketsComponent {
+  readonly readOnly = input(false);
   readonly addClick = output<void>();
 
   protected readonly actionMenu = viewChild.required<Menu>('actionMenu');

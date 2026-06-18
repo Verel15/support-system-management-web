@@ -5,7 +5,6 @@ import { Select } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
 import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddon } from 'primeng/inputgroupaddon';
-import { Button } from 'primeng/button';
 import { NotificationFilterState, NotificationGroup, NotificationItem } from '../../notification.types';
 import { NotificationFilterComponent } from '../notification-filter/notification-filter.component';
 import { NotificationItemComponent } from '../notification-item/notification-item.component';
@@ -137,7 +136,6 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
     InputText,
     InputGroup,
     InputGroupAddon,
-    Button,
     NotificationFilterComponent,
     NotificationItemComponent,
   ],

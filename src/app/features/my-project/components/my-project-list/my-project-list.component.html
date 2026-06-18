@@ -1,0 +1,77 @@
+<div class="p-6 flex flex-col gap-6">
+  <!-- Header -->
+  <header class="flex items-center justify-between">
+    <h1 class="text-2xl font-semibold text-slate-800">โครงการของฉัน</h1>
+  </header>
+
+  <!-- Filters -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+    <!-- Left: dropdown filters -->
+    <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 shrink-0">
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event); onFilterChange()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="สถานะ"
+        class="w-full sm:w-auto sm:min-w-36"
+        aria-label="กรองตามสถานะ"
+      />
+
+      <p-select
+        [options]="dateOptions"
+        [ngModel]="selectedDate()"
+        (ngModelChange)="selectedDate.set($event); onFilterChange()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="วันที่สร้าง"
+        class="w-full sm:w-auto sm:min-w-44"
+        aria-label="กรองตามวันที่สร้าง"
+      />
+    </div>
+
+    <!-- Right: search -->
+    <div class="flex items-center gap-3 w-full sm:w-80 sm:ml-auto">
+      <p-icon-field class="w-full">
+        <p-inputicon class="pi pi-search" />
+        <input
+          pInputText
+          type="search"
+          placeholder="ค้นหา"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)"
+          class="w-full h-12 appearance-none"
+          aria-label="ค้นหาโครงการ"
+        />
+      </p-icon-field>
+    </div>
+  </div>
+
+  <!-- Project Cards Grid -->
+  @if (loading()) {
+    <div class="flex items-center justify-center py-12">
+      <i class="pi pi-spin pi-spinner text-3xl text-slate-400" aria-hidden="true"></i>
+    </div>
+  } @else if (pagedProjects().length === 0) {
+    <div class="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
+      <i class="pi pi-folder-open text-5xl text-slate-300 mb-3" aria-hidden="true"></i>
+      <p class="text-slate-500 font-medium">ไม่พบโครงการที่ค้นหา</p>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      @for (project of pagedProjects(); track project.name) {
+        <app-project-card
+          [project]="project"
+          class="cursor-pointer rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="'ดูรายละเอียดโครงการ ' + project.name"
+          (click)="onProjectClick(project)"
+          (keydown.enter)="onProjectClick(project)"
+          (keydown.space)="$event.preventDefault(); onProjectClick(project)"
+        />
+      }
+    </div>
+  }
+</div>

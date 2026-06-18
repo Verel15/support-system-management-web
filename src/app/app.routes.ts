@@ -7,6 +7,15 @@ export const routes: Routes = [
       import('./features/authentication/authentication.routes').then((m) => m.authRoutes),
   },
   {
+    path: 'my-tickets',
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/my-tickets/my-tickets.routes').then((m) => m.myTicketsRoutes),
+  },
+  {
     path: 'dashboard',
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
@@ -80,6 +89,15 @@ export const routes: Routes = [
       import('./features/priority-management/priority-management.routes').then(
         (m) => m.priorityManagementRoutes,
       ),
+  },
+  {
+    path: 'my-project',
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/my-project/my-project.routes').then((m) => m.myProjectRoutes),
   },
   {
     path: 'project-management',

@@ -8,15 +8,17 @@
       >
         ข้อมูลโครงการ
       </h2>
-      <button
-        type="button"
-        class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
-        aria-label="ตัวเลือกโครงการ"
-        aria-haspopup="true"
-        (click)="onCardMore($event)"
-      >
-        <i class="pi pi-ellipsis-h text-slate-500" aria-hidden="true"></i>
-      </button>
+      @if (!readOnly()) {
+        <button
+          type="button"
+          class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
+          aria-label="ตัวเลือกโครงการ"
+          aria-haspopup="true"
+          (click)="onCardMore($event)"
+        >
+          <i class="pi pi-ellipsis-h text-slate-500" aria-hidden="true"></i>
+        </button>
+      }
     </div>
 
     <!-- Card body: 3 columns -->

@@ -1,0 +1,189 @@
+<div class="p-6 flex flex-col gap-6">
+  <!-- Header -->
+  <header class="flex items-center justify-between">
+    <h1 class="text-2xl font-semibold text-slate-800">Tickets ของฉัน</h1>
+    <div class="w-full sm:w-auto md:w-44">
+      <p-button label="เพิ่ม Ticket" icon="pi pi-plus" [routerLink]="['add']" severity="primary" fluid />
+    </div>
+  </header>
+
+  <!-- Recent Projects -->
+  <section aria-labelledby="recent-projects-heading">
+    <div class="flex items-center justify-between mb-4">
+      <h2 id="recent-projects-heading" class="text-base font-semibold text-slate-800">
+        โครงการล่าสุด
+      </h2>
+      <a routerLink="/dashboard/my-projects" class="text-sm text-primary-600 hover:text-primary-700 hover:underline">
+        ดูทั้งหมด
+      </a>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" role="list" aria-label="โครงการล่าสุด">
+      @for (project of recentProjects; track project.name) {
+      <div role="listitem">
+        <app-project-card [project]="project" />
+      </div>
+      }
+    </div>
+  </section>
+
+  <!-- Tabs & Content -->
+  <section class="bg-white rounded-xl flex flex-col gap-4">
+    <!-- Tabs -->
+    <p-tabs [value]="activeTab()">
+      <p-tablist>
+        <p-tab [value]="0" (click)="onTabChange(0)">การทำงาน</p-tab>
+        <p-tab [value]="1" (click)="onTabChange(1)">Tickets ของฉัน</p-tab>
+        <p-tab [value]="2" (click)="onTabChange(2)">การตอบกลับ</p-tab>
+      </p-tablist>
+    </p-tabs>
+
+    <!-- Tab 0: การทำงาน -->
+    @if (activeTab() === 0) {
+    <!-- Filters -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex flex-col sm:flex-row gap-3 shrink-0">
+        <p-select [options]="priorityOptions" [ngModel]="priorityFilter()"
+          (ngModelChange)="priorityFilter.set($event); onFilterChange()" optionLabel="label" optionValue="value"
+          placeholder="ลำดับความสำคัญ" class="w-full sm:w-auto sm:min-w-44" aria-label="กรองตามลำดับความสำคัญ" />
+        <p-select [options]="timeOptions" [ngModel]="timeFilter()"
+          (ngModelChange)="timeFilter.set($event); onFilterChange()" optionLabel="label" optionValue="value"
+          placeholder="ระยะเวลาที่เหลือ" class="w-full sm:w-auto sm:min-w-44" aria-label="กรองตามระยะเวลาที่เหลือ" />
+      </div>
+      <div class="sm:ml-auto w-full sm:w-72">
+        <p-icon-field class="w-full">
+          <p-inputicon class="pi pi-search" />
+          <input pInputText type="search" placeholder="ค้นหา" [ngModel]="searchQuery()"
+            (ngModelChange)="onSearch($event)" class="w-full h-12 appearance-none" aria-label="ค้นหา Ticket" />
+        </p-icon-field>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <app-data-table [columns]="activeColumns()" [data]="pagedTickets()" [totalRecords]="totalRecords()"
+      [currentPage]="currentPage()" [pageSize]="pageSize()" [loading]="loading()" (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)" (sortChange)="onSort($event)">
+      <ng-template dataTableCell="title" let-row let-value="value">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full shrink-0" [class]="getPriorityDotClass(row['priority'])"
+            aria-hidden="true"></span>
+          <span class="text-slate-700">{{ value }}</span>
+        </div>
+      </ng-template>
+
+      <ng-template dataTableCell="status" let-value="value">
+        <app-status-chip [status]="value" />
+      </ng-template>
+
+      <ng-template dataTableCell="_actions" let-row>
+        <button type="button"
+          class="inline-flex items-center justify-center w-8 h-8 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+          aria-label="การดำเนินการ" (click)="actionMenu.toggle($event); $event.stopPropagation()">
+          <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+        </button>
+        <p-menu #actionMenu [model]="actionMenuItems" [popup]="true" appendTo="body" />
+      </ng-template>
+    </app-data-table>
+    }
+
+    <!-- Tab 1: Tickets ของฉัน -->
+    @if (activeTab() === 1) {
+    <!-- Filters -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex flex-col sm:flex-row gap-3 shrink-0">
+        <p-select [options]="statusOptions" [ngModel]="statusFilter()"
+          (ngModelChange)="statusFilter.set($event); onFilterChange()" optionLabel="label" optionValue="value"
+          placeholder="สถานะ" class="w-full sm:w-auto sm:min-w-36" aria-label="กรองตามสถานะ" />
+        <p-select [options]="priorityOptions" [ngModel]="priorityFilter()"
+          (ngModelChange)="priorityFilter.set($event); onFilterChange()" optionLabel="label" optionValue="value"
+          placeholder="ลำดับความสำคัญ" class="w-full sm:w-auto sm:min-w-44" aria-label="กรองตามลำดับความสำคัญ" />
+        <p-select [options]="timeOptions" [ngModel]="timeFilter()"
+          (ngModelChange)="timeFilter.set($event); onFilterChange()" optionLabel="label" optionValue="value"
+          placeholder="ระยะเวลาที่เหลือ" class="w-full sm:w-auto sm:min-w-44" aria-label="กรองตามระยะเวลาที่เหลือ" />
+      </div>
+      <div class="sm:ml-auto w-full sm:w-72">
+        <p-icon-field class="w-full">
+          <p-inputicon class="pi pi-search" />
+          <input pInputText type="search" placeholder="ค้นหา" [ngModel]="searchQuery()"
+            (ngModelChange)="onSearch($event)" class="w-full h-12 appearance-none" aria-label="ค้นหา Ticket" />
+        </p-icon-field>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <app-data-table [columns]="activeColumns()" [data]="pagedTickets()" [totalRecords]="totalRecords()"
+      [currentPage]="currentPage()" [pageSize]="pageSize()" [loading]="loading()" (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)" (sortChange)="onSort($event)">
+      <ng-template dataTableCell="title" let-row let-value="value">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full shrink-0" [class]="getPriorityDotClass(row['priority'])"
+            aria-hidden="true"></span>
+          <span class="text-slate-700">{{ value }}</span>
+        </div>
+      </ng-template>
+
+      <ng-template dataTableCell="status" let-value="value">
+        <app-status-chip [status]="value" />
+      </ng-template>
+
+      <ng-template dataTableCell="_actions" let-row>
+        <button type="button"
+          class="inline-flex items-center justify-center w-8 h-8 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+          aria-label="การดำเนินการ" (click)="actionMenu2.toggle($event); $event.stopPropagation()">
+          <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+        </button>
+        <p-menu #actionMenu2 [model]="actionMenuItems" [popup]="true" appendTo="body" />
+      </ng-template>
+    </app-data-table>
+    }
+
+    <!-- Tab 2: การตอบกลับ -->
+    @if (activeTab() === 2) {
+    <!-- Filters -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex flex-col sm:flex-row gap-3 shrink-0">
+        <p-select [options]="sortByOptions" [ngModel]="sortByFilter()" (ngModelChange)="sortByFilter.set($event)"
+          optionLabel="label" optionValue="value" placeholder="เรียงตาม" class="w-full sm:w-auto sm:min-w-36"
+          aria-label="เรียงตาม" />
+        <p-select [options]="feedbackDateOptions" [ngModel]="dateFilter()" (ngModelChange)="dateFilter.set($event)"
+          optionLabel="label" optionValue="value" placeholder="วันที่" class="w-full sm:w-auto sm:min-w-36"
+          aria-label="กรองตามวันที่" />
+      </div>
+      <div class="sm:ml-auto w-full sm:w-72">
+        <p-icon-field class="w-full">
+          <p-inputicon class="pi pi-search" />
+          <input pInputText type="search" placeholder="ค้นหา" [ngModel]="feedbackSearchQuery()"
+            (ngModelChange)="onFeedbackSearch($event)" class="w-full h-12 appearance-none"
+            aria-label="ค้นหาการตอบกลับ" />
+        </p-icon-field>
+      </div>
+    </div>
+
+    <!-- Feedback header -->
+    <div class="flex items-center justify-between px-2">
+      <h3 class="text-base font-semibold text-slate-800">ล่าสุด</h3>
+      <button type="button"
+        class="flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 transition-colors"
+        (click)="onMarkAllRead()">
+        <i class="pi pi-check-circle" aria-hidden="true"></i>
+        อ่านทั้งหมด
+      </button>
+    </div>
+
+    <!-- Feedback feed -->
+    <div class="flex flex-col gap-3" role="list" aria-label="รายการตอบกลับ">
+      @for (item of filteredFeedback(); track item.id) {
+      <app-notification-item [notification]="item" />
+      }
+    </div>
+
+    <!-- Load more -->
+    <div class="flex justify-center py-4">
+      @if (filteredFeedback().length > 0) {
+      <div class="w-44">
+        <p-button label="แสดงเพิ่มเติม" severity="secondary" [outlined]="true" fluid />
+      </div>
+      }
+    </div>
+    }
+  </section>
+</div>

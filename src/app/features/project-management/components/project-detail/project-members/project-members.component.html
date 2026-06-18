@@ -8,15 +8,17 @@
       >
         ผู้ใช้ทั้งหมด
       </h2>
-      <div class="w-full sm:w-auto md:w-44">
-        <p-button
-          label="เพิ่มสมาชิก"
-          icon="pi pi-plus"
-          severity="primary"
-          (onClick)="showAddDialog.set(true)"
-          fluid
-        />
-      </div>
+      @if (!readOnly()) {
+        <div class="w-full sm:w-auto md:w-44">
+          <p-button
+            label="เพิ่มสมาชิก"
+            icon="pi pi-plus"
+            severity="primary"
+            (onClick)="showAddDialog.set(true)"
+            fluid
+          />
+        </div>
+      }
     </div>
 
     <div class="flex flex-col gap-4">
@@ -61,6 +63,7 @@
         [totalRecords]="totalRecords()"
         [currentPage]="currentPage()"
         [pageSize]="pageSize()"
+        [showActions]="!readOnly()"
         (pageChange)="currentPage.set($event)"
         (pageSizeChange)="pageSize.set($event); currentPage.set(1)"
       >

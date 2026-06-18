@@ -22,7 +22,7 @@
 
     <!-- Name + Owner -->
     <div class="min-w-0">
-      <h3 class="font-bold text-slate-900 text-xl leading-snug truncate" [title]="project().name">
+      <h3 class="font-bold text-slate-900 text-lg leading-snug truncate" [title]="project().name">
         {{ project().name }}
       </h3>
       <p class="text-[15px] text-slate-400 font-medium mt-1 truncate" [title]="project().owner">
@@ -33,13 +33,13 @@
     <!-- Ticket counts -->
     <div class="flex flex-col gap-3.5 my-1">
       <div class="flex items-center justify-between text-base font-medium text-slate-800">
-        <span class="text-slate-800">Tickets ทั้งหมด</span>
+        <span class="text-slate-800 text-sm">Tickets ทั้งหมด</span>
         <span class="px-3.5 py-0.5 bg-slate-100 text-slate-900 rounded-full font-bold text-sm min-w-9 text-center">
           {{ project().totalTickets }}
         </span>
       </div>
       <div class="flex items-center justify-between text-base font-medium text-slate-800">
-        <span class="text-slate-800">Tickets ที่เสร็จสิ้น</span>
+        <span class="text-slate-800 text-sm">Tickets ที่เสร็จสิ้น</span>
         <span class="px-3.5 py-0.5 bg-[#DCFCE7] text-[#15803d] rounded-full font-bold text-sm min-w-9 text-center">
           {{ project().completedTickets }}
         </span>

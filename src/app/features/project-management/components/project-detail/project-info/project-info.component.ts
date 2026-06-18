@@ -30,6 +30,7 @@ Chart.register(ArcElement, DoughnutController, Legend, Tooltip, ChartDataLabels)
 })
 export class ProjectInfoComponent {
   readonly project = input.required<ProjectDetail>();
+  readonly readOnly = input(false);
   readonly editClick = output<void>();
   readonly deleteClick = output<void>();
 

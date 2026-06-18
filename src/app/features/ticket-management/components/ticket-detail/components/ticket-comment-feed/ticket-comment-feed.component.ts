@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
-import { Button } from 'primeng/button';
 import { FeedItem, CommentItem, ActivityItem } from '../../ticket-detail.types';
 import { TicketCommentCardComponent } from '../ticket-comment-card/ticket-comment-card.component';
 import { TicketActivityItemComponent } from '../ticket-activity-item/ticket-activity-item.component';
@@ -7,7 +6,7 @@ import { TextEditorComponent } from '../../../../../../shared/components/text-ed
 
 @Component({
   selector: 'app-ticket-comment-feed',
-  imports: [Button, TicketCommentCardComponent, TicketActivityItemComponent, TextEditorComponent],
+  imports: [TicketCommentCardComponent, TicketActivityItemComponent, TextEditorComponent],
   host: { class: 'flex flex-col border-b border-slate-200 lg:border-b-0 lg:border-r lg:overflow-hidden lg:col-span-8' },
   templateUrl: './ticket-comment-feed.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   inject,
+  input,
   signal,
   viewChild,
 } from '@angular/core';
@@ -47,6 +48,7 @@ import { ProjectMember } from '../project-detail.types';
 })
 export class ProjectMembersComponent {
   private readonly router = inject(Router);
+  readonly readOnly = input(false);
 
   protected readonly actionMenu = viewChild.required<Menu>('actionMenu');
   protected readonly showRemoveDialog = signal(false);

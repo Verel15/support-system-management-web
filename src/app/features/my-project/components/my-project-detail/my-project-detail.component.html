@@ -1,0 +1,25 @@
+<!-- Page header -->
+<div class="flex items-center gap-3 px-5 py-4 border-b border-slate-200 bg-white sticky top-0 z-10">
+  <button
+    type="button"
+    class="inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500) shrink-0"
+    aria-label="ย้อนกลับ"
+    (click)="onBack()"
+  >
+    <i class="pi pi-arrow-left text-slate-700" aria-hidden="true"></i>
+  </button>
+
+  <div class="flex-1 flex items-center justify-center gap-2 min-w-0">
+    <h1 class="text-xl font-semibold text-slate-800 truncate">{{ project().name }}</h1>
+    <app-status-chip [status]="project().status" />
+  </div>
+</div>
+
+<!-- Sections -->
+<div class="p-6 flex flex-col">
+  <app-project-info [project]="project()" [readOnly]="true" />
+
+  <app-project-members [readOnly]="true" />
+
+  <app-project-tickets [readOnly]="true" />
+</div>

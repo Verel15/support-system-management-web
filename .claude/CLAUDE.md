@@ -124,33 +124,39 @@ src/app/
 │   ├── components/
 │   │   ├── data-table/            # Reusable table + pagination component (see below)
 │   │   ├── sidebar/               # Collapsible nav sidebar (see below)
+│   │   ├── chip/                  # Generic chip/tag display
+│   │   ├── status-chip/           # Status-specific chip with color coding
+│   │   ├── project-card/          # Project summary card (shared)
+│   │   ├── text-editor/           # Rich text editor wrapper
+│   │   ├── file-upload/           # File upload component
 │   │   └── dialogs/               # All dialog components
 │   │       ├── alert-dialog/      # Info/success/warning/error notification dialog (1 button)
 │   │       ├── confirm-dialog/    # Two-button confirm/cancel dialog
-│   │       └── delete-confirm-dialog/ # Password-required deletion dialog
+│   │       ├── delete-confirm-dialog/ # Password-required deletion dialog
+│   │       ├── select-items-dialog/   # Multi-select searchable picker dialog
+│   │       └── documents-dialog/      # Document/file list viewer dialog
 │   ├── layouts/
-│   │   ├── auth-layout/           # Layout wrapper for auth pages (login, forgot-password, etc.)
+│   │   ├── auth-layout/           # Layout wrapper for auth pages
 │   │   └── main-layout/           # Authenticated layout: sidebar + router-outlet
 │   ├── directives/
 │   └── pipes/
 └── features/
-    ├── auth/                      # Auth feature (lazy-loaded at /auth)
-    │   ├── components/
-    │   │   ├── login/
-    │   │   ├── forgot-password/
-    │   │   ├── check-email/
-    │   │   └── reset-password/
-    │   ├── store/                 # Signal-based feature store (auth.store.ts)
-    │   └── auth.routes.ts
-    ├── dashboard/                 # /dashboard → MainLayoutComponent wrapper
-    │   └── dashboard.routes.ts    # children: my-tickets (default), more TBD
-    ├── my-tickets/                # /dashboard/my-tickets
-    │   ├── components/project-card/
-    │   ├── my-tickets.component.ts
-    │   └── my-tickets.routes.ts
-    └── user-management/           # /user-management → MainLayoutComponent wrapper
-        ├── components/user-list/
-        └── user-management.routes.ts
+    ├── authentication/            # /auth — uses AuthLayoutComponent
+    │   ├── components/            # login, forgot-password, check-email, reset-password
+    │   ├── store/                 # Signal-based auth store (auth.store.ts)
+    │   └── authentication.routes.ts
+    ├── dashboard/                 # /dashboard
+    ├── my-tickets/                # /my-tickets
+    ├── my-project/                # /my-project
+    ├── project-management/        # /project-management
+    ├── ticket-management/         # /ticket-management
+    ├── notifications/             # /notifications
+    ├── user-management/           # /user-management
+    ├── user-type-management/      # /user-type-management
+    ├── company-management/        # /company-management
+    ├── status-management/         # /status-management
+    ├── ticket-type-management/    # /ticket-type-management
+    └── priority-management/       # /ticket-priority-management
 ```
 
 ### Structure Conventions
@@ -162,15 +168,23 @@ src/app/
 
 ### Route Structure
 
-`MainLayoutComponent` (sidebar + router-outlet) is the shell for authenticated routes. Both `/dashboard` and `/user-management` load it as a parent and nest their children inside it.
+`MainLayoutComponent` (sidebar + router-outlet) is the shell for all authenticated routes. Every feature except `/auth` uses it as a parent shell.
 
 ```
-/               → redirectTo /auth
-/auth           → auth feature (uses AuthLayoutComponent)
-/dashboard      → MainLayoutComponent
-  /my-tickets   → MyTicketsComponent
-/user-management → MainLayoutComponent
-  /list          → UserListComponent
+/                            → redirectTo /auth
+/auth                        → authentication feature (AuthLayoutComponent)
+/dashboard                   → MainLayoutComponent
+/my-tickets                  → MainLayoutComponent
+/my-project                  → MainLayoutComponent
+/project-management          → MainLayoutComponent
+/ticket-management           → MainLayoutComponent
+/notifications               → MainLayoutComponent
+/user-management             → MainLayoutComponent
+/user-type-management        → MainLayoutComponent
+/company-management          → MainLayoutComponent
+/status-management           → MainLayoutComponent
+/ticket-type-management      → MainLayoutComponent
+/ticket-priority-management  → MainLayoutComponent
 ```
 
 ## Reusable Shared Components
@@ -280,6 +294,41 @@ const nav: SidebarNavItem[] = [
 ```
 
 The `badge` field on a nav item renders a numeric badge on the icon.
+
+### `app-select-items-dialog` (`shared/components/dialogs/select-items-dialog/`)
+
+Searchable multi-select picker dialog. Items can have an avatar, label, and sublabel. Emits the selected `string[]` on confirm.
+
+```typescript
+export interface SelectItemOption {
+  value: string;
+  label: string;
+  avatar?: string;
+  sublabel?: string;
+}
+```
+
+```html
+<app-select-items-dialog
+  [(visible)]="showPicker"
+  title="เลือกสมาชิก"
+  [items]="memberOptions()"
+  [selected]="selectedIds()"
+  (confirmed)="onMembersSelected($event)"
+/>
+```
+
+### `app-documents-dialog` (`shared/components/dialogs/documents-dialog/`)
+
+Read-only dialog that lists project documents with file-type icons (PDF, Word, generic). Pass a `ProjectDocument[]` array.
+
+```typescript
+export interface ProjectDocument { id: string; name: string; url: string; }
+```
+
+```html
+<app-documents-dialog [(visible)]="showDocs" [documents]="project().documents" />
+```
 
 ## Toasts
 

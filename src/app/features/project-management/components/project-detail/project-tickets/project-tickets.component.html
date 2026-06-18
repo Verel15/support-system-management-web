@@ -8,15 +8,17 @@
       >
         จัดการ Ticket
       </h2>
-      <div class="w-full sm:w-auto md:w-44">
-        <p-button
-          label="เพิ่ม Ticket"
-          icon="pi pi-plus"
-          severity="primary"
-          (onClick)="addClick.emit()"
-          fluid
-        />
-      </div>
+      @if (!readOnly()) {
+        <div class="w-full sm:w-auto md:w-44">
+          <p-button
+            label="เพิ่ม Ticket"
+            icon="pi pi-plus"
+            severity="primary"
+            (onClick)="addClick.emit()"
+            fluid
+          />
+        </div>
+      }
     </div>
 
     <div class="flex flex-col gap-4">
@@ -62,12 +64,6 @@
               aria-label="ค้นหา ticket"
             />
           </p-icon-field>
-          <p-button
-            icon="pi pi-filter"
-            severity="secondary"
-            [outlined]="true"
-            aria-label="ตัวกรองเพิ่มเติม"
-          />
         </div>
       </div>
 
@@ -78,6 +74,7 @@
         [totalRecords]="totalRecords()"
         [currentPage]="currentPage()"
         [pageSize]="pageSize()"
+        [showActions]="!readOnly()"
         (pageChange)="currentPage.set($event)"
         (pageSizeChange)="pageSize.set($event); currentPage.set(1)"
       >

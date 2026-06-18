@@ -6,11 +6,11 @@ import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Select } from 'primeng/select';
 import { MessageService } from 'primeng/api';
-import { TextEditorComponent } from '../../../../shared/components/text-editor';
-import { TicketTypeDialogComponent } from '../ticket-type-dialog/ticket-type-dialog.component';
-import { SelectedTicketType } from '../ticket-type-dialog/ticket-type-dialog.types';
-import { ConfirmDialogComponent } from '../../../../shared/components/dialogs';
-import { CanDeactivateComponent } from '../../../../core/guards/unsaved-changes.guard';
+import { TextEditorComponent } from '../../../../../shared/components/text-editor';
+import { TicketTypeDialogComponent } from '../../../../ticket-management/components/ticket-type-dialog/ticket-type-dialog.component';
+import { SelectedTicketType } from '../../../../ticket-management/components/ticket-type-dialog/ticket-type-dialog.types';
+import { ConfirmDialogComponent } from '../../../../../shared/components/dialogs';
+import { CanDeactivateComponent } from '../../../../../core/guards/unsaved-changes.guard';
 
 @Component({
   selector: 'app-add-ticket',
@@ -74,7 +74,7 @@ export class AddTicketComponent implements CanDeactivateComponent {
   }
 
   protected goBack(): void {
-    this.router.navigate(['/ticket-management/list']);
+    this.router.navigate(['/my-tickets']);
   }
 
   protected openTicketTypeDialog(): void {
@@ -108,7 +108,7 @@ export class AddTicketComponent implements CanDeactivateComponent {
         detail: 'สร้าง Ticket เรียบร้อยแล้ว',
         life: 3000,
       });
-      this.router.navigate(['/ticket-management/list']);
+      this.router.navigate(['/my-tickets']);
     }, 600);
   }
 
