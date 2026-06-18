@@ -16,7 +16,7 @@
 <!-- Comment editor (sticky bottom) -->
 <div class="shrink-0 border-t border-slate-200 bg-white p-4">
   <app-text-editor [(value)]="commentText" placeholder="พิมพ์ความคิดเห็น..." minHeight="140px" />
-  <div class="flex justify-end mt-3">
+  <!-- <div class="flex justify-end mt-3">
     <p-button
       label="ส่ง"
       severity="primary"
@@ -24,5 +24,5 @@
       [disabled]="!commentText().trim() || submitting()"
       (onClick)="onSubmit()"
     />
-  </div>
+  </div> -->
 </div>

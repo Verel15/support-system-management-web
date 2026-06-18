@@ -4,6 +4,6 @@ export const notificationsRoutes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./notifications.component').then(m => m.NotificationsComponent),
+      import('./components/notification/notifications.component').then(m => m.NotificationsComponent),
   },
 ];

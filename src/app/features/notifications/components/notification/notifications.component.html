@@ -1,0 +1,68 @@
+<div class="flex flex-col h-full">
+  <!-- Page header -->
+  <div class="px-6 pt-6 pb-2 shrink-0">
+    <h1 class="text-2xl font-bold text-secondary-900">การแจ้งเตือน</h1>
+  </div>
+
+  <!-- Tabs -->
+  <div class="px-6 shrink-0">
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+      <p-tablist>
+        <p-tab value="all">ทั้งหมด</p-tab>
+        <p-tab value="unread">
+          <span>ยังไม่ได้อ่าน</span>
+          @if (unreadCount() > 0) {
+          <span
+            class="ml-1.5 inline-flex items-center justify-center min-w-5 h-5 px-1 text-xs font-semibold bg-primary-500 text-white rounded-full"
+            aria-label="{{ unreadCount() }} การแจ้งเตือนที่ยังไม่ได้อ่าน">
+            {{ unreadCount() }}
+          </span>
+          }
+        </p-tab>
+      </p-tablist>
+    </p-tabs>
+  </div>
+
+  <!-- Filter row -->
+  <div class="px-6 py-4 flex items-center gap-3 shrink-0 border-b border-secondary-100">
+    <p-select [options]="dateOptions" [ngModel]="dateFilter()" (ngModelChange)="dateFilter.set($event)"
+      optionLabel="label" optionValue="value" placeholder="วันที่" class="w-44" aria-label="กรองตามวันที่" />
+
+    <div class="flex-1"></div>
+
+    <div class="w-80">
+      <p-inputgroup>
+        <input pInputText type="search" placeholder="ค้นหา" [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)" aria-label="ค้นหาการแจ้งเตือน" />
+        <p-inputgroup-addon class="cursor-pointer" (click)="onFilterClick($event)">
+          <i class="pi pi-sliders-h mr-2 text-primary-700"></i>
+          <span class="text-black">ตัวกรอง</span>
+        </p-inputgroup-addon>
+      </p-inputgroup>
+    </div>
+    <app-notification-filter #filterPanel (apply)="onFilterApply($event)" />
+  </div>
+
+  <!-- Notification list -->
+  <div class="flex-1 overflow-y-auto px-6">
+    @if (displayedGroups().length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 text-secondary-400" role="status">
+      <i class="pi pi-bell text-4xl mb-3" aria-hidden="true"></i>
+      <p class="text-sm">ไม่มีการแจ้งเตือน</p>
+    </div>
+    } @else {
+    @for (group of displayedGroups(); track group.groupLabel) {
+    <section [attr.aria-label]="group.groupLabel">
+      <h2 class="pt-4 pb-2 text-sm font-semibold text-secondary-500">
+        {{ group.groupLabel }}
+      </h2>
+      <div role="list" class="flex flex-col gap-2">
+        @for (item of group.items; track item.id) {
+        <app-notification-item [notification]="item" />
+        }
+      </div>
+    </section>
+    }
+    }
+  </div>
+</div>

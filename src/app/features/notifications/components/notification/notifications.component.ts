@@ -3,12 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { Tabs, TabList, Tab } from 'primeng/tabs';
 import { Select } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
-import { IconField } from 'primeng/iconfield';
-import { InputIcon } from 'primeng/inputicon';
+import { InputGroup } from 'primeng/inputgroup';
+import { InputGroupAddon } from 'primeng/inputgroupaddon';
 import { Button } from 'primeng/button';
-import { NotificationFilterComponent } from './components/notification-filter/notification-filter.component';
-import { NotificationItemComponent } from './components/notification-item/notification-item.component';
-import { NotificationFilterState, NotificationGroup, NotificationItem } from './notification.types';
+import { NotificationFilterState, NotificationGroup, NotificationItem } from '../../notification.types';
+import { NotificationFilterComponent } from '../notification-filter/notification-filter.component';
+import { NotificationItemComponent } from '../notification-item/notification-item.component';
 
 const _now = new Date();
 const _todayBase = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate());
@@ -135,8 +135,8 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
     Tab,
     Select,
     InputText,
-    IconField,
-    InputIcon,
+    InputGroup,
+    InputGroupAddon,
     Button,
     NotificationFilterComponent,
     NotificationItemComponent,

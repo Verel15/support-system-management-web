@@ -68,7 +68,7 @@
       <p class="text-slate-500 font-medium">ไม่พบโครงการที่ค้นหา</p>
     </div>
   } @else {
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       @for (project of pagedProjects(); track project.name) {
         <app-project-card
           [project]="project"

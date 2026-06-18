@@ -29,9 +29,18 @@ interface TicketLineSeries {
 }
 
 const THAI_MONTHS = [
-  'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน',
-  'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม',
-  'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
+  'มกราคม',
+  'กุมภาพันธ์',
+  'มีนาคม',
+  'เมษายน',
+  'พฤษภาคม',
+  'มิถุนายน',
+  'กรกฎาคม',
+  'สิงหาคม',
+  'กันยายน',
+  'ตุลาคม',
+  'พฤศจิกายน',
+  'ธันวาคม',
 ];
 
 @Component({
@@ -81,7 +90,7 @@ export class TicketOpenChartCardComponent {
       type: 'line',
       data: {
         labels: THAI_MONTHS,
-        datasets: this.series.map(s => ({
+        datasets: this.series.map((s) => ({
           label: s.label,
           data: s.data,
           borderColor: s.color,
@@ -102,6 +111,9 @@ export class TicketOpenChartCardComponent {
         interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
+          datalabels: {
+            display: false,
+          },
           tooltip: {
             backgroundColor: '#ffffff',
             titleColor: '#1e293b',
@@ -111,8 +123,8 @@ export class TicketOpenChartCardComponent {
             padding: 12,
             usePointStyle: true,
             callbacks: {
-              title: items => items[0]?.label ?? '',
-              label: ctx => `  ${ctx.dataset.label}: ${ctx.raw}`,
+              title: (items) => items[0]?.label ?? '',
+              label: (ctx) => `  ${ctx.dataset.label}: ${ctx.raw}`,
             },
           },
         },
