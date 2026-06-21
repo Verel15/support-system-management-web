@@ -1,15 +1,18 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Location } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Select } from 'primeng/select';
 import { MessageService } from 'primeng/api';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, filter, map, of, take } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+import { UserService } from '../../services/user.service';
+import { AccountType, UserRequest } from '../../interfaces/user.interface';
+import { UserTypeService } from '../../../user-type-management/services/user-type.service';
+import { DepartmentService } from '../../services/department.service';
+import { PositionService } from '../../services/position.service';
 
 @Component({
   selector: 'app-edit-user',
@@ -18,51 +21,82 @@ import { MessageService } from 'primeng/api';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditUserComponent {
-  private readonly location = inject(Location);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly userService = inject(UserService);
+  private readonly userTypeService = inject(UserTypeService);
+  private readonly departmentService = inject(DepartmentService);
+  private readonly positionService = inject(PositionService);
+
+  private readonly userId = this.route.snapshot.params['id'] as string;
 
   protected readonly avatarPreview = signal<string | null>(null);
   protected readonly submitting = signal(false);
 
-  protected readonly userTypeOptions = [
-    { label: 'แอดมิน', value: 'admin' },
-    { label: 'ลูกค้า', value: 'customer' },
-    { label: 'ผู้พัฒนา', value: 'developer' },
-  ];
+  protected readonly user = toSignal(
+    this.userService.getById(this.userId).pipe(catchError(() => of(null))),
+  );
 
-  protected readonly departmentOptions = [
-    { label: 'IT', value: 'it' },
-    { label: 'HR', value: 'hr' },
-    { label: 'Finance', value: 'finance' },
-    { label: 'Design', value: 'design' },
-    { label: 'Operations', value: 'operations' },
-  ];
+  protected readonly userTypeOptions = toSignal(
+    this.userTypeService.getAll().pipe(
+      map((types) => types.map((t) => ({ label: t.name, value: t.id }))),
+      catchError(() => of([])),
+    ),
+    { initialValue: [] },
+  );
 
-  protected readonly positionOptions = [
-    { label: 'Manager', value: 'manager' },
-    { label: 'Developer', value: 'developer' },
-    { label: 'UX / UI', value: 'ux_ui' },
-    { label: 'Analyst', value: 'analyst' },
-  ];
+  protected readonly departmentOptions = toSignal(
+    this.departmentService.getAll().pipe(
+      map((depts) => depts.map((d) => ({ label: d.name, value: d.id }))),
+      catchError(() => of([])),
+    ),
+    { initialValue: [] },
+  );
 
-  protected readonly projects = signal([
-    { name: 'Book Bank System' },
-    { name: 'Life Insurance System' },
-    { name: 'Rent a car System' },
-    { name: 'IT Supporting and Helpdesk Management System' },
-    { name: 'Manage Pharmacy System' },
-  ]);
+  protected readonly positionOptions = toSignal(
+    this.positionService.getAll().pipe(
+      map((page) => page.content.map((p) => ({ label: p.name, value: p.id }))),
+      catchError(() => of([])),
+    ),
+    { initialValue: [] },
+  );
 
   protected readonly form = this.fb.group({
-    userType: ['developer', Validators.required],
-    firstName: ['ยิ้มสวย', Validators.required],
-    lastName: ['มากเลย', Validators.required],
-    phone: ['000-000-0000'],
-    department: ['design', Validators.required],
-    position: ['ux_ui', Validators.required],
-    email: [{ value: 'ABC', disabled: true }],
+    userType: [null as string | null, Validators.required],
+    firstName: ['', Validators.required],
+    lastName: ['', Validators.required],
+    phone: [''],
+    department: [null as string | null, Validators.required],
+    position: [null as string | null, Validators.required],
+    email: [{ value: '', disabled: true }],
   });
+
+  protected readonly projects = signal<{ name: string }[]>([]);
+
+  constructor() {
+    toObservable(this.user)
+      .pipe(
+        filter(Boolean),
+        take(1),
+        takeUntilDestroyed(),
+      )
+      .subscribe((u) => {
+        this.form.patchValue({
+          userType: u.userTypeId,
+          firstName: u.firstName,
+          lastName: u.lastName,
+          phone: u.phone ?? '',
+          department: u.departmentId,
+          position: u.positionId,
+          email: u.email,
+        });
+        if (u.profileImageUrl) {
+          this.avatarPreview.set(u.profileImageUrl);
+        }
+      });
+  }
 
   protected isInvalid(field: string): boolean {
     const control = this.form.get(field);
@@ -78,21 +112,42 @@ export class EditUserComponent {
   }
 
   protected onBack(): void {
-    this.location.back();
+    this.router.navigate(['/user-management/list']);
   }
 
   protected onSubmit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
+
+    const u = this.user();
+    if (!u) return;
+
+    const v = this.form.getRawValue();
+    const payload: UserRequest = {
+      accountType: u.accountType as AccountType,
+      firstName: v.firstName!,
+      lastName: v.lastName!,
+      email: v.email!,
+      phone: v.phone || undefined,
+      userTypeId: v.userType ?? undefined,
+      departmentId: v.department ?? undefined,
+      positionId: v.position ?? undefined,
+    };
+
     this.submitting.set(true);
-    this.messageService.add({
-      severity: 'success',
-      summary: 'บันทึกสำเร็จ',
-      detail: 'แก้ไขข้อมูลผู้ใช้เรียบร้อยแล้ว',
-      life: 3000,
-    });
-    // TODO: call update user API
-    this.submitting.set(false);
-    this.location.back();
+    this.userService
+      .update(this.userId, payload)
+      .pipe(finalize(() => this.submitting.set(false)))
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'บันทึกสำเร็จ',
+            detail: 'แก้ไขข้อมูลผู้ใช้เรียบร้อยแล้ว',
+            life: 3000,
+          });
+          this.router.navigate(['/user-management/detail', this.userId]);
+        },
+      });
   }
 }

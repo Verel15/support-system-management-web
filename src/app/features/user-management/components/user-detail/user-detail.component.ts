@@ -6,11 +6,15 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, of } from 'rxjs';
+import { formatDate } from '@angular/common';
 import { ChipComponent } from '../../../../shared/components/chip';
 import { DeleteConfirmDialogComponent } from '../../../../shared/components/dialogs';
+import { UserService } from '../../services/user.service';
 
 interface UserDetail {
   firstName: string;
@@ -33,7 +37,12 @@ interface UserDetail {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserDetailComponent {
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly userService = inject(UserService);
+
+  private readonly userId = this.route.snapshot.params['id'] as string;
+
   protected readonly actionMenu = viewChild.required<Menu>('actionMenu');
   protected readonly showDeleteDialog = signal(false);
   protected readonly deleting = signal(false);
@@ -44,28 +53,32 @@ export class UserDetailComponent {
     { label: 'ลบ', command: () => this.showDeleteDialog.set(true) },
   ];
 
-  protected readonly user = signal<UserDetail>({
-    firstName: 'ยิ้มสวย',
-    lastName: 'มากเลย',
-    company: 'TEA MO NE CO., LTD.',
-    userType: 'ผู้พัฒนา',
-    phone: '000-000-0000',
-    createdAt: '16/08/2023',
-    department: 'Development',
-    position: 'Front-end',
-    email: 'sddwad@gmail.com',
-    projects: [
-      { name: 'Book Bank System' },
-      { name: 'Life Insurance System' },
-      { name: 'Rent a car System' },
-      { name: 'IT Supporting and Helpdesk Management System' },
-      { name: 'Manage Pharmacy System' },
-    ],
+  private readonly rawUser = toSignal(
+    this.userService.getById(this.userId).pipe(catchError(() => of(null))),
+  );
+
+  protected readonly user = computed<UserDetail | null>(() => {
+    const u = this.rawUser();
+    if (!u) return null;
+    return {
+      firstName: u.firstName,
+      lastName: u.lastName,
+      avatarUrl: u.profileImageUrl || undefined,
+      company: u.companyName ?? '',
+      userType: u.userTypeName ?? '',
+      phone: u.phone ?? '-',
+      createdAt: formatDate(u.createdAt, 'dd/MM/yyyy', 'en-US'),
+      department: u.departmentName ?? '',
+      position: u.positionName ?? '',
+      email: u.email,
+      projects: [],
+    };
   });
 
-  protected readonly fullName = computed(
-    () => `${this.user().firstName} ${this.user().lastName}`,
-  );
+  protected readonly fullName = computed(() => {
+    const u = this.user();
+    return u ? `${u.firstName} ${u.lastName}` : '';
+  });
 
   protected onBack(): void {
     this.router.navigate(['/user-management/list']);
@@ -76,13 +89,17 @@ export class UserDetailComponent {
   }
 
   protected onEdit(): void {
-    this.router.navigate(['/user-management/edit']);
+    this.router.navigate(['/user-management/edit', this.userId]);
   }
 
   protected onDeleteConfirmed(_password: string): void {
     this.deleting.set(true);
-    // TODO: call delete API
-    this.deleting.set(false);
-    this.onBack();
+    this.userService.delete(this.userId).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.router.navigate(['/user-management/list']);
+      },
+      error: () => this.deleting.set(false),
+    });
   }
 }

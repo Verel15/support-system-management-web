@@ -55,7 +55,7 @@
         <p-select
           inputId="userType"
           formControlName="userType"
-          [options]="userTypeOptions"
+          [options]="userTypeOptions()"
           optionLabel="label"
           optionValue="value"
           placeholder="กรุณาเลือกประเภทผู้ใช้"
@@ -134,7 +134,7 @@
           <p-select
             inputId="department"
             formControlName="department"
-            [options]="departmentOptions"
+            [options]="departmentOptions()"
             optionLabel="label"
             optionValue="value"
             placeholder="กรุณาเลือกแผนก"
@@ -153,7 +153,7 @@
           <p-select
             inputId="position"
             formControlName="position"
-            [options]="positionOptions"
+            [options]="positionOptions()"
             optionLabel="label"
             optionValue="value"
             placeholder="กรุณาเลือกตำแหน่ง"

@@ -22,6 +22,12 @@
 
 <!-- Content -->
 <div class="p-6 flex flex-col gap-8 max-w-2xl mx-auto">
+@if (!user()) {
+  <div class="flex justify-center py-16">
+    <i class="pi pi-spin pi-spinner text-3xl text-slate-400" aria-label="กำลังโหลด"></i>
+  </div>
+}
+@if (user(); as u) {
 
   <!-- Avatar + Name -->
   <div class="flex flex-col items-center gap-3 pt-2">
@@ -29,21 +35,21 @@
       class="w-28 h-28 rounded-full overflow-hidden bg-yellow-400 flex items-center justify-center shrink-0"
       aria-hidden="true"
     >
-      @if (user().avatarUrl) {
+      @if (u.avatarUrl) {
         <img
-          [src]="user().avatarUrl"
+          [src]="u.avatarUrl"
           [alt]="fullName()"
           class="w-full h-full object-cover"
         />
       } @else {
         <span class="text-4xl font-bold text-white select-none">
-          {{ user().firstName[0] }}
+          {{ u.firstName[0] }}
         </span>
       }
     </div>
     <div class="text-center">
       <p class="text-xl font-bold text-slate-800">{{ fullName() }}</p>
-      <p class="text-sm text-slate-500 uppercase tracking-widest mt-0.5">{{ user().company }}</p>
+      <p class="text-sm text-slate-500 uppercase tracking-widest mt-0.5">{{ u.company }}</p>
     </div>
   </div>
 
@@ -58,31 +64,31 @@
     <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
       <div class="flex gap-3 items-start">
         <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">ชื่อ</dt>
-        <dd class="text-sm font-medium text-slate-800">{{ user().firstName }}</dd>
+        <dd class="text-sm font-medium text-slate-800">{{ u.firstName }}</dd>
       </div>
       <div class="flex gap-3 items-start">
         <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">นามสกุล</dt>
-        <dd class="text-sm font-medium text-slate-800">{{ user().lastName }}</dd>
+        <dd class="text-sm font-medium text-slate-800">{{ u.lastName }}</dd>
       </div>
       <div class="flex gap-3 items-start">
         <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">ประเภทผู้ใช้</dt>
-        <dd class="text-sm font-medium text-slate-800">{{ user().userType }}</dd>
+        <dd class="text-sm font-medium text-slate-800">{{ u.userType }}</dd>
       </div>
       <div class="flex gap-3 items-start">
         <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">เบอร์โทรศัพท์</dt>
-        <dd class="text-sm font-medium text-slate-800">{{ user().phone }}</dd>
+        <dd class="text-sm font-medium text-slate-800">{{ u.phone }}</dd>
       </div>
       <div class="flex gap-3 items-start sm:col-span-2">
         <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">วันที่สร้าง</dt>
-        <dd class="text-sm font-medium text-slate-800">{{ user().createdAt }}</dd>
+        <dd class="text-sm font-medium text-slate-800">{{ u.createdAt }}</dd>
       </div>
       <div class="flex gap-3 items-center">
         <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">แผนก</dt>
-        <dd><app-chip [label]="user().department" color="primary" /></dd>
+        <dd><app-chip [label]="u.department" color="primary" /></dd>
       </div>
       <div class="flex gap-3 items-center">
         <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">ตำแหน่ง</dt>
-        <dd><app-chip [label]="user().position" color="primary" /></dd>
+        <dd><app-chip [label]="u.position" color="primary" /></dd>
       </div>
     </dl>
   </section>
@@ -97,7 +103,7 @@
     </h2>
     <dl class="flex gap-3 items-start">
       <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">อีเมล</dt>
-      <dd class="text-sm font-medium text-slate-800">{{ user().email }}</dd>
+      <dd class="text-sm font-medium text-slate-800">{{ u.email }}</dd>
     </dl>
   </section>
 
@@ -125,7 +131,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (project of user().projects; track project.name; let even = $even) {
+          @for (project of u.projects; track project.name; let even = $even) {
             <tr [class]="even ? 'bg-white' : 'bg-slate-50'">
               <td class="px-4 py-3 text-slate-700">{{ project.name }}</td>
             </tr>
@@ -135,6 +141,7 @@
     </div>
   </section>
 
+}
 </div>
 
 <!-- More menu -->

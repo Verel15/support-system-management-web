@@ -30,7 +30,11 @@
 
   <!-- Content -->
   <div class="p-6">
-    @if (userType()) {
+    @if (userType() === undefined) {
+      <div class="flex justify-center py-16">
+        <i class="pi pi-spin pi-spinner text-3xl text-slate-400" aria-label="กำลังโหลด"></i>
+      </div>
+    } @else if (userType()) {
       <h2 class="text-lg font-semibold text-slate-800 mb-4">ประเภทผู้ใช้ : {{ typeName() }}</h2>
 
       <app-data-table

@@ -4,30 +4,22 @@ export const userManagementRoutes: Routes = [
   {
     path: 'list',
     loadComponent: () =>
-      import('./components/user-list/user-list.component').then(
-        (m) => m.UserListComponent,
-      ),
+      import('./components/user-list/user-list.component').then((m) => m.UserListComponent),
   },
   {
     path: 'add',
     loadComponent: () =>
-      import('./components/add-user/add-user.component').then(
-        (m) => m.AddUserComponent,
-      ),
+      import('./components/add-user/add-user.component').then((m) => m.AddUserComponent),
   },
   {
-    path: 'detail',
+    path: 'detail/:id',
     loadComponent: () =>
-      import('./components/user-detail/user-detail.component').then(
-        (m) => m.UserDetailComponent,
-      ),
+      import('./components/user-detail/user-detail.component').then((m) => m.UserDetailComponent),
   },
   {
-    path: 'edit',
+    path: 'edit/:id',
     loadComponent: () =>
-      import('./components/edit-user/edit-user.component').then(
-        (m) => m.EditUserComponent,
-      ),
+      import('./components/edit-user/edit-user.component').then((m) => m.EditUserComponent),
   },
   { path: '', redirectTo: 'list', pathMatch: 'full' },
 ];

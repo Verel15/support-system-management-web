@@ -4,28 +4,28 @@ export const userTypeManagementRoutes: Routes = [
   {
     path: 'list',
     loadComponent: () =>
-      import('./user-type-list/user-type-list.component').then(
+      import('./components/user-type-list/user-type-list.component').then(
         (m) => m.UserTypeListComponent,
       ),
   },
   {
     path: 'add',
     loadComponent: () =>
-      import('./add-user-type/add-user-type.component').then(
+      import('./components/add-user-type/add-user-type.component').then(
         (m) => m.AddUserTypeComponent,
       ),
   },
   {
-    path: 'detail/:typeName',
+    path: 'detail/:id',
     loadComponent: () =>
-      import('./detail-user-type/detail-user-type.component').then(
+      import('./components/detail-user-type/detail-user-type.component').then(
         (m) => m.DetailUserTypeComponent,
       ),
   },
   {
-    path: 'edit/:typeName',
+    path: 'edit/:id',
     loadComponent: () =>
-      import('./edit-user-type/edit-user-type.component').then(
+      import('./components/edit-user-type/edit-user-type.component').then(
         (m) => m.EditUserTypeComponent,
       ),
   },

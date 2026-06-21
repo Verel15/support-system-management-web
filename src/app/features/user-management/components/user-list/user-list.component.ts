@@ -14,7 +14,9 @@ import { InputText } from 'primeng/inputtext';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { Menu } from 'primeng/menu';
-import { MenuItem, MessageService } from 'primeng/api';
+import { MenuItem } from 'primeng/api';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, debounceTime, map, of, startWith, switchMap } from 'rxjs';
 import {
   DataTableComponent,
   DataTableCellDirective,
@@ -22,16 +24,21 @@ import {
   SortEvent,
 } from '../../../../shared/components/data-table';
 import { DeleteConfirmDialogComponent } from '../../../../shared/components/dialogs';
+import { UserService } from '../../services/user.service';
+import { AccountType, UserFilterRequest } from '../../interfaces/user.interface';
+import { PageResponse } from '../../interfaces/position.interface';
+import { UserResponse } from '../../interfaces/user.interface';
 
-interface User {
+interface ActionMenuItem extends MenuItem {
+  danger?: boolean;
+}
+
+interface UserRow {
+  id: string;
   name: string;
   userType: string;
   email: string;
   phone: string;
-}
-
-interface ActionMenuItem extends MenuItem {
-  danger?: boolean;
 }
 
 @Component({
@@ -53,11 +60,14 @@ interface ActionMenuItem extends MenuItem {
 })
 export class UserListComponent {
   private readonly router = inject(Router);
-  private messageService = inject(MessageService);
+  private readonly userService = inject(UserService);
+
   protected readonly menu = viewChild.required<Menu>('actionMenu');
-  protected readonly activeRow = signal<Record<string, unknown> | null>(null);
+  protected readonly activeRow = signal<UserRow | null>(null);
   protected readonly showDeleteDialog = signal(false);
-  protected readonly deletingUser = signal<User | null>(null);
+  protected readonly deletingEmail = signal('');
+  private readonly deletingId = signal<string | null>(null);
+  private readonly refreshTrigger = signal(0);
 
   protected readonly menuItems: ActionMenuItem[] = [
     { label: 'ดูรายละเอียด', command: () => this.onViewUser() },
@@ -70,94 +80,68 @@ export class UserListComponent {
     { field: 'name', header: 'รายชื่อ', sortable: true },
     { field: 'userType', header: 'ประเภทผู้ใช้', sortable: true },
     { field: 'email', header: 'อีเมล', sortable: true },
-    { field: 'phone', header: 'เบอร์โทรศัพท์', sortable: true },
+    { field: 'phone', header: 'เบอร์โทรศัพท์' },
   ];
 
-  protected readonly userTypeOptions = [
+  protected readonly accountTypeOptions = [
     { label: 'ทั้งหมด', value: null },
-    { label: 'แอดมิน', value: 'แอดมิน' },
-    { label: 'ลูกค้า', value: 'ลูกค้า' },
-    { label: 'ผู้พัฒนา', value: 'ผู้พัฒนา' },
+    { label: 'ลูกค้า', value: 'CUSTOMER' as AccountType },
+    { label: 'บุคคลภายนอก', value: 'EXTERNAL' as AccountType },
   ];
 
   protected readonly dateOptions = [
-    { label: 'วันที่สร้าง', value: null },
-    { label: 'วันนี้', value: 'today' },
-    { label: 'สัปดาห์นี้', value: 'week' },
-    { label: 'เดือนนี้', value: 'month' },
+    { label: 'วันที่สร้าง (ทั้งหมด)', value: null },
+    { label: 'วันนี้', value: 1 },
+    { label: '7 วันที่แล้ว', value: 7 },
+    { label: '30 วันที่แล้ว', value: 30 },
   ];
 
-  protected readonly selectedUserType = signal<string | null>(null);
-  protected readonly selectedDate = signal<string | null>(null);
+  protected readonly selectedAccountType = signal<AccountType | null>(null);
+  protected readonly selectedDate = signal<number | null>(null);
   protected readonly searchQuery = signal('');
   protected readonly currentPage = signal(1);
   protected readonly pageSize = signal(10);
-  protected readonly loading = signal(false);
 
-  private readonly allUsers: User[] = [
-    {
-      name: 'ใจงาม สุดใจจริง',
-      userType: 'แอดมิน',
-      email: 'Jaiknam@gmail.com',
-      phone: '012-345-6789',
-    },
-    {
-      name: 'แสนดี ที่สุดเลย',
-      userType: 'ลูกค้า',
-      email: 'Sansee@gmail.com',
-      phone: '012-345-6789',
-    },
-    { name: 'มานี มีตา', userType: 'ผู้พัฒนา', email: 'Manee@gmail.com', phone: '012-345-6789' },
-    {
-      name: 'ตุ๊กตุ๊ก ตุ๊กแก',
-      userType: 'ผู้พัฒนา',
-      email: 'Tuktuk@gmail.com',
-      phone: '012-345-6789',
-    },
-    { name: 'สิริ สวัสดิ', userType: 'ผู้พัฒนา', email: 'Siri@gmail.com', phone: '012-345-6789' },
-    {
-      name: 'มีดัง ต้นเตือน',
-      userType: 'ผู้พัฒนา',
-      email: 'Metung@gmail.com',
-      phone: '012-345-6789',
-    },
-    { name: 'ชูใจ ใจดี', userType: 'ผู้พัฒนา', email: 'Shujai@gmail.com', phone: '012-345-6789' },
-    { name: 'ปิติ ยินดี', userType: 'ลูกค้า', email: 'Piti@gmail.com', phone: '012-345-6789' },
-    { name: 'แก้ว ดิ้นน้ำ', userType: 'ผู้พัฒนา', email: 'Kwaw@gmail.com', phone: '012-345-6789' },
-    {
-      name: 'มะลิลา ขึ้นต้นเป็นมะลิซ้อน',
-      userType: 'ผู้พัฒนา',
-      email: 'Malila@gmail.com',
-      phone: '012-345-6789',
-    },
-    { name: 'สมชาย ใจดี', userType: 'แอดมิน', email: 'Somchai@gmail.com', phone: '012-345-6789' },
-    {
-      name: 'วิภาวรรณ สวัสดี',
-      userType: 'ลูกค้า',
-      email: 'Wipawan@gmail.com',
-      phone: '012-345-6789',
-    },
-  ];
+  private readonly queryParams = computed(() => ({
+    filter: {
+      accountType: this.selectedAccountType() ?? undefined,
+      keyword: this.searchQuery() || undefined,
+      createdWithinDays: this.selectedDate() ?? undefined,
+    } satisfies UserFilterRequest,
+    page: this.currentPage() - 1,
+    size: this.pageSize(),
+    _refresh: this.refreshTrigger(),
+  }));
 
-  protected readonly filteredUsers = computed(() => {
-    const query = this.searchQuery().toLowerCase();
-    const type = this.selectedUserType();
-    return this.allUsers.filter((u) => {
-      const matchesSearch =
-        !query || u.name.toLowerCase().includes(query) || u.email.toLowerCase().includes(query);
-      const matchesType = !type || u.userType === type;
-      return matchesSearch && matchesType;
-    });
-  });
+  private readonly response = toSignal(
+    toObservable(this.queryParams).pipe(
+      debounceTime(250),
+      switchMap(({ filter, page, size }) =>
+        this.userService.getAll(filter, page, size).pipe(
+          map((data) => ({ data, loading: false })),
+          startWith({ data: null as PageResponse<UserResponse> | null, loading: true }),
+          catchError(() => of({ data: null as PageResponse<UserResponse> | null, loading: false })),
+        ),
+      ),
+      startWith({ data: null as PageResponse<UserResponse> | null, loading: true }),
+    ),
+  );
 
-  protected readonly totalRecords = computed(() => this.filteredUsers().length);
+  protected readonly loading = computed(() => this.response()?.loading ?? true);
 
-  protected readonly pagedUsers = computed<Record<string, unknown>[]>(() => {
-    const start = (this.currentPage() - 1) * this.pageSize();
-    return this.filteredUsers()
-      .slice(start, start + this.pageSize())
-      .map((u) => ({ ...u }));
-  });
+  protected readonly pagedUsers = computed<Record<string, unknown>[]>(() =>
+    (this.response()?.data?.content ?? []).map((u) => ({
+      id: u.id,
+      name: `${u.firstName} ${u.lastName}`,
+      userType: u.userTypeName,
+      email: u.email,
+      phone: u.phone ?? '-',
+    })),
+  );
+
+  protected readonly totalRecords = computed(
+    () => this.response()?.data?.totalElements ?? 0,
+  );
 
   protected onSearch(value: string): void {
     this.searchQuery.set(value);
@@ -187,32 +171,37 @@ export class UserListComponent {
 
   protected onMenuOpen(event: MouseEvent, row: Record<string, unknown>): void {
     event.stopPropagation();
-    this.activeRow.set(row);
+    this.activeRow.set(row as unknown as UserRow);
     this.menu().toggle(event);
   }
 
   protected onViewUser(): void {
-    this.router.navigate(['/user-management/detail']);
+    const id = this.activeRow()?.id;
+    if (id) this.router.navigate(['/user-management/detail', id]);
   }
+
   protected onEditUser(): void {
-    this.router.navigate(['/user-management/edit']);
+    const id = this.activeRow()?.id;
+    if (id) this.router.navigate(['/user-management/edit', id]);
   }
 
   protected onDeleteUser(): void {
     const row = this.activeRow();
     if (!row) return;
-    this.deletingUser.set(row as unknown as User);
+    this.deletingId.set(row.id);
+    this.deletingEmail.set(row.email);
     this.showDeleteDialog.set(true);
   }
 
   protected onDeleteConfirmed(_password: string): void {
-    // TODO: call delete API with this.deletingUser() and _password
-    this.messageService.add({
-      severity: 'success',
-      summary: 'เพิ่มผู้ใช้สำเร็จ',
-      detail: 'สร้างผู้ใช้ใหม่เรียบร้อยแล้ว',
-      life: 4000,
+    const id = this.deletingId();
+    if (!id) return;
+    this.userService.delete(id).subscribe({
+      next: () => {
+        this.showDeleteDialog.set(false);
+        this.deletingId.set(null);
+        this.refreshTrigger.update((n) => n + 1);
+      },
     });
-    this.deletingUser.set(null);
   }
 }

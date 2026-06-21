@@ -18,9 +18,9 @@
     <!-- Left: dropdown filters -->
     <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 shrink-0">
       <p-select
-        [options]="userTypeOptions"
-        [ngModel]="selectedUserType()"
-        (ngModelChange)="selectedUserType.set($event); onFilterChange()"
+        [options]="accountTypeOptions"
+        [ngModel]="selectedAccountType()"
+        (ngModelChange)="selectedAccountType.set($event); onFilterChange()"
         optionLabel="label"
         optionValue="value"
         placeholder="ประเภท"
@@ -84,7 +84,7 @@
 
 <app-delete-confirm-dialog
   [(visible)]="showDeleteDialog"
-  [targetLabel]="deletingUser()?.email ?? ''"
+  [targetLabel]="deletingEmail()"
   (confirmed)="onDeleteConfirmed($event)"
 />
 
