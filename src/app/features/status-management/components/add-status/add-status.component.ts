@@ -10,6 +10,7 @@ import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Tooltip } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
+import { StatusFlowService } from '../../services/status-flow.service';
 
 @Component({
   selector: 'app-add-status',
@@ -21,6 +22,7 @@ export class AddStatusComponent {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly statusFlowService = inject(StatusFlowService);
   protected readonly submitting = signal(false);
 
   protected readonly processingStatusControls = new FormArray<FormControl>([]);
@@ -59,15 +61,33 @@ export class AddStatusComponent {
   protected onSubmit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
+
+    const name = this.form.get('name')!.value as string;
+    const processStatuses = this.processingStatusControls.controls.map(
+      (c) => c.value as string,
+    );
+
     this.submitting.set(true);
-    // TODO: call create status API
-    this.messageService.add({
-      severity: 'success',
-      summary: 'เพิ่มสถานะสำเร็จ',
-      detail: 'สร้างสถานะใหม่เรียบร้อยแล้ว',
-      life: 4000,
+    this.statusFlowService.create({ name, processStatuses }).subscribe({
+      next: () => {
+        this.submitting.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'เพิ่มสถานะสำเร็จ',
+          detail: 'สร้างสถานะใหม่เรียบร้อยแล้ว',
+          life: 4000,
+        });
+        this.router.navigate(['/status-management/list']);
+      },
+      error: () => {
+        this.submitting.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถสร้างสถานะได้',
+          life: 4000,
+        });
+      },
     });
-    this.router.navigate(['/status-management/list']);
-    this.submitting.set(false);
   }
 }

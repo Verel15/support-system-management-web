@@ -15,12 +15,11 @@
 
   <!-- Filters -->
   <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-    <!-- Left: date filter -->
     <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 shrink-0">
       <p-select
         [options]="dateOptions"
         [ngModel]="selectedDate()"
-        (ngModelChange)="selectedDate.set($event); onFilterChange()"
+        (ngModelChange)="selectedDate.set($event)"
         optionLabel="label"
         optionValue="value"
         placeholder="วันที่แก้ไข"
@@ -28,28 +27,12 @@
         aria-label="กรองตามวันที่แก้ไข"
       />
     </div>
-
-    <!-- Right: search -->
-    <div class="flex items-center gap-3 w-full sm:w-80 sm:ml-auto">
-      <p-icon-field class="w-full">
-        <p-inputicon class="pi pi-search" />
-        <input
-          pInputText
-          type="search"
-          placeholder="ค้นหาชื่อสถานะ"
-          [ngModel]="searchQuery()"
-          (ngModelChange)="onSearch($event)"
-          class="w-full h-12 appearance-none"
-          aria-label="ค้นหาชื่อสถานะ"
-        />
-      </p-icon-field>
-    </div>
   </div>
 
   <!-- Table -->
   <app-data-table
     [columns]="columns"
-    [data]="pagedStatuses()"
+    [data]="tableRows()"
     [totalRecords]="totalRecords()"
     [currentPage]="currentPage()"
     [pageSize]="pageSize()"
@@ -80,16 +63,17 @@
   (confirmed)="onDeleteFirstStepConfirmed()"
 >
   ขณะนี้สถานะ
-  <strong class="text-primary-600">{{ deletingStatus()?.name }}</strong>
+  <strong class="text-primary-600">{{ activeRow()?.name }}</strong>
   มี tickets ที่ดำเนินการสถานะนี้อยู่จำนวน
-  <strong class="text-primary-600">{{ deletingStatus()?.ticketCount }} tickets</strong>
+  <strong class="text-primary-600">{{ activeRow()?.ticketCount }} tickets</strong>
   หากทำการนำสถานะนี้ออก tickets ที่ใช้สถานะนี้จะถูกลบออกด้วย
   คุณแน่ใจที่จะลบสถานะนี้ออกหรือไม่?
 </app-confirm-dialog>
 
 <app-delete-confirm-dialog
   [(visible)]="showDeleteDialog"
-  [targetLabel]="deletingStatus()?.name ?? ''"
+  [targetLabel]="activeRow()?.name ?? ''"
+  [loading]="deleting()"
   (confirmed)="onDeleteConfirmed($event)"
 />
 

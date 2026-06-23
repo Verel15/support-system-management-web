@@ -1,167 +1,179 @@
-<div class="flex flex-col min-h-full">
-  <!-- Header -->
-  <div class="relative flex items-center px-6 py-4 border-b border-slate-200">
-    <p-button
-      type="button"
-      icon="pi pi-arrow-left"
-      severity="secondary"
-      variant="text"
-      [rounded]="true"
-      (onClick)="onBack()"
-      aria-label="กลับ"
-    />
-    <h1
-      class="absolute inset-0 flex items-center justify-center text-xl font-semibold text-slate-800 pointer-events-none"
-    >
-      รายละเอียดสถานะ
-    </h1>
+@if (loading()) {
+  <div class="flex items-center justify-center h-full p-12">
+    <i class="pi pi-spin pi-spinner text-3xl text-primary-500" aria-label="กำลังโหลด"></i>
   </div>
+} @else if (status()) {
+  <div class="flex flex-col min-h-full">
+    <!-- Header -->
+    <div class="relative flex items-center px-6 py-4 border-b border-slate-200">
+      <p-button
+        type="button"
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        variant="text"
+        [rounded]="true"
+        (onClick)="onBack()"
+        aria-label="กลับ"
+      />
+      <h1
+        class="absolute inset-0 flex items-center justify-center text-xl font-semibold text-slate-800 pointer-events-none"
+      >
+        รายละเอียดสถานะ
+      </h1>
+    </div>
 
-  <!-- Content -->
-  <div class="flex-1 p-6 grid grid-cols-12 gap-5 items-start">
-    <!-- Left: Status Pipeline (col 8) -->
-    <div class="col-span-12 md:col-span-8 flex flex-col gap-5">
-      <h2 class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
-        ขั้นตอนของสถานะ
-      </h2>
+    <!-- Content -->
+    <div class="flex-1 p-6 grid grid-cols-12 gap-5 items-start">
+      <!-- Left: Status Pipeline (col 8) -->
+      <div class="col-span-12 md:col-span-8 flex flex-col gap-5">
+        <h2 class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
+          ขั้นตอนของสถานะ
+        </h2>
 
-      <!-- Initial Status -->
-      <div class="flex flex-col gap-2">
-        <div class="flex items-center gap-1.5">
-          <span class="text-sm font-medium text-slate-700">สถานะเริ่มต้น</span>
-          <i
-            class="pi pi-info-circle text-sm text-slate-400"
-            pTooltip="สำหรับงานที่เปิดเข้ามา โดยเป็นสถานะเริ่มต้นของระบบ"
-            tooltipPosition="right"
-            aria-label="สำหรับงานที่เปิดเข้ามา โดยเป็นสถานะเริ่มต้นของระบบ"
-          ></i>
-        </div>
-        <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
-          <span class="w-3 h-3 rounded-full bg-blue-500 shrink-0" aria-hidden="true"></span>
-          <span class="font-medium text-blue-600">Open</span>
-        </div>
+        <!-- START -->
+        @if (startStatuses().length) {
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm font-medium text-slate-700">สถานะเริ่มต้น</span>
+              <i
+                class="pi pi-info-circle text-sm text-slate-400"
+                pTooltip="สำหรับงานที่เปิดเข้ามา โดยเป็นสถานะเริ่มต้นของระบบ"
+                tooltipPosition="right"
+                aria-label="สำหรับงานที่เปิดเข้ามา โดยเป็นสถานะเริ่มต้นของระบบ"
+              ></i>
+            </div>
+            @for (s of startStatuses(); track s.id) {
+              <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
+                <span class="w-3 h-3 rounded-full shrink-0" [class]="groupColor(s)" aria-hidden="true"></span>
+                <span class="font-medium" [class]="groupTextColor(s)">{{ s.name }}</span>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- PROCESS -->
+        @if (processStatuses().length) {
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm font-medium text-slate-700">สถานะดำเนินการ</span>
+              <i
+                class="pi pi-info-circle text-sm text-slate-400"
+                pTooltip="สำหรับงานที่เริ่มดำเนินการแล้ว"
+                tooltipPosition="right"
+                aria-label="สำหรับงานที่เริ่มดำเนินการแล้ว"
+              ></i>
+            </div>
+            @for (s of processStatuses(); track s.id) {
+              <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
+                <span class="w-3 h-3 rounded-full shrink-0" [class]="groupColor(s)" aria-hidden="true"></span>
+                <span class="font-medium" [class]="groupTextColor(s)">{{ s.name }}</span>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- SUCCESS -->
+        @if (successStatuses().length) {
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm font-medium text-slate-700">สถานะสิ้นสุด</span>
+              <i
+                class="pi pi-info-circle text-sm text-slate-400"
+                pTooltip="สำหรับงานที่ทำเสร็จแล้ว และไม่มีการแก้ไขงานอีก"
+                tooltipPosition="right"
+                aria-label="สำหรับงานที่ทำเสร็จแล้ว และไม่มีการแก้ไขงานอีก"
+              ></i>
+            </div>
+            @for (s of successStatuses(); track s.id) {
+              <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
+                <span class="w-3 h-3 rounded-full shrink-0" [class]="groupColor(s)" aria-hidden="true"></span>
+                <span class="font-medium" [class]="groupTextColor(s)">{{ s.name }}</span>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- FAILED -->
+        @if (failedStatuses().length) {
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm font-medium text-slate-700">สถานะล้มเหลว</span>
+              <i
+                class="pi pi-info-circle text-sm text-slate-400"
+                pTooltip="สำหรับงานที่มีการตีกลับ หรือ มีการปฏิเสธการดำเนินงาน"
+                tooltipPosition="right"
+                aria-label="สำหรับงานที่มีการตีกลับ หรือ มีการปฏิเสธการดำเนินงาน"
+              ></i>
+            </div>
+            @for (s of failedStatuses(); track s.id) {
+              <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
+                <span class="w-3 h-3 rounded-full shrink-0" [class]="groupColor(s)" aria-hidden="true"></span>
+                <span class="font-medium" [class]="groupTextColor(s)">{{ s.name }}</span>
+              </div>
+            }
+          </div>
+        }
       </div>
 
-      <!-- Processing Status -->
-      <div class="flex flex-col gap-2">
-        <div class="flex items-center gap-1.5">
-          <span class="text-sm font-medium text-slate-700">สถานะดำเนินการ</span>
-          <i
-            class="pi pi-info-circle text-sm text-slate-400"
-            pTooltip="สำหรับงานที่เริ่มดำเนินการแล้ว"
-            tooltipPosition="right"
-            aria-label="สำหรับงานที่เริ่มดำเนินการแล้ว"
-          ></i>
+      <!-- Right: Info Card (col 4) -->
+      <div class="col-span-12 md:col-span-4 rounded-xl border border-slate-200 bg-white overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+          <h3 class="font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">สถานะ</h3>
+          <button
+            type="button"
+            class="w-8 h-8 flex items-center justify-center rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+            aria-label="การดำเนินการ"
+            aria-haspopup="true"
+            (click)="onMenuOpen($event)"
+          >
+            <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+          </button>
         </div>
-        <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
-          <span class="w-3 h-3 rounded-full bg-orange-400 shrink-0" aria-hidden="true"></span>
-          <span class="font-medium text-orange-500">In Progress</span>
-        </div>
-      </div>
+        <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 items-baseline p-4">
+          <span class="text-sm text-slate-500 whitespace-nowrap">ชื่อสถานะ</span>
+          <span class="text-sm font-medium text-slate-800">{{ status()?.name }}</span>
 
-      <!-- End Status -->
-      <div class="flex flex-col gap-2">
-        <div class="flex items-center gap-1.5">
-          <span class="text-sm font-medium text-slate-700">สถานะสิ้นสุด</span>
-          <i
-            class="pi pi-info-circle text-sm text-slate-400"
-            pTooltip="สำหรับงานที่ทำเสร็จแล้ว และไม่มีการแก้ไขงานอีก"
-            tooltipPosition="right"
-            aria-label="สำหรับงานที่ทำเสร็จแล้ว และไม่มีการแก้ไขงานอีก"
-          ></i>
-        </div>
-        <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
-          <span class="w-3 h-3 rounded-full bg-green-500 shrink-0" aria-hidden="true"></span>
-          <span class="font-medium text-green-600">Done</span>
-        </div>
-        <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
-          <span class="w-3 h-3 rounded-full bg-slate-400 shrink-0" aria-hidden="true"></span>
-          <span class="font-medium text-slate-500">Close</span>
-        </div>
-      </div>
+          <span class="text-sm text-slate-500 whitespace-nowrap">วันที่แก้ไขล่าสุด</span>
+          <span class="text-sm font-medium text-slate-800">{{ status()?.updatedAt }}</span>
 
-      <!-- Failed Status -->
-      <div class="flex flex-col gap-2">
-        <div class="flex items-center gap-1.5">
-          <span class="text-sm font-medium text-slate-700">สถานะล้มเหลว</span>
-          <i
-            class="pi pi-info-circle text-sm text-slate-400"
-            pTooltip="สำหรับงานที่มีการตีกลับ หรือ มีการปฏิเสธการดำเนินงาน"
-            tooltipPosition="right"
-            aria-label="สำหรับงานที่มีการตีกลับ หรือ มีการปฏิเสธการดำเนินงาน"
-          ></i>
-        </div>
-        <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
-          <span class="w-3 h-3 rounded-full bg-red-500 shrink-0" aria-hidden="true"></span>
-          <span class="font-medium text-red-500">Reject</span>
-        </div>
-        <div class="flex items-center gap-3 px-4 py-3 rounded-lg border border-slate-200 bg-white">
-          <span class="w-3 h-3 rounded-full bg-red-500 shrink-0" aria-hidden="true"></span>
-          <span class="font-medium text-red-500">Return</span>
+          <span class="text-sm text-slate-500 whitespace-nowrap">จำนวน Tickets ที่ใช้</span>
+          <span class="text-sm font-medium text-slate-800">{{ status()?.ticketCount }}</span>
+
+          <span class="text-sm text-slate-500 whitespace-nowrap">สร้างโดย</span>
+          <span class="text-sm font-medium text-slate-800">{{ status()?.createdByName }}</span>
         </div>
       </div>
     </div>
-
-    <!-- Right: Info Card (col 4) -->
-    <div class="col-span-12 md:col-span-4 rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <!-- Card Header -->
-      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-        <h3 class="font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">สถานะ</h3>
-        <button
-          type="button"
-          class="w-8 h-8 flex items-center justify-center rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-          aria-label="การดำเนินการ"
-          aria-haspopup="true"
-          (click)="onMenuOpen($event)"
-        >
-          <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
-        </button>
-      </div>
-      <!-- Card Info -->
-      <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 items-baseline p-4">
-        <span class="text-sm text-slate-500 whitespace-nowrap">ชื่อสถานะ</span>
-        <span class="text-sm font-medium text-slate-800">{{ status().name }}</span>
-
-        <span class="text-sm text-slate-500 whitespace-nowrap">วันที่แก้ไขล่าสุด</span>
-        <span class="text-sm font-medium text-slate-800">{{ status().updatedDate }}</span>
-
-        <span class="text-sm text-slate-500 whitespace-nowrap">จำนวน Tickets ที่ใช้</span>
-        <span class="text-sm font-medium text-slate-800">{{ status().ticketCount }}</span>
-
-        <span class="text-sm text-slate-500 whitespace-nowrap">สร้างโดย</span>
-        <span class="text-sm font-medium text-slate-800">{{ status().createdBy }}</span>
-      </div>
-    </div>
   </div>
-</div>
 
-<app-confirm-dialog
-  [(visible)]="showConfirmDialog"
-  type="warning"
-  title="ยืนยันการลบสถานะ"
-  confirmLabel="ยืนยัน"
-  cancelLabel="ยกเลิก"
-  (confirmed)="onDeleteFirstStepConfirmed()"
->
-  ขณะนี้สถานะ
-  <strong class="text-primary-600">{{ status().name }}</strong>
-  มี tickets ที่ดำเนินการสถานะนี้อยู่จำนวน
-  <strong class="text-primary-600">{{ status().ticketCount }} tickets</strong>
-  หากทำการนำสถานะนี้ออก tickets ที่ใช้สถานะนี้จะถูกลบออกด้วย
-  คุณแน่ใจที่จะลบสถานะนี้ออกหรือไม่?
-</app-confirm-dialog>
+  <app-confirm-dialog
+    [(visible)]="showConfirmDialog"
+    type="warning"
+    title="ยืนยันการลบสถานะ"
+    confirmLabel="ยืนยัน"
+    cancelLabel="ยกเลิก"
+    (confirmed)="onDeleteFirstStepConfirmed()"
+  >
+    ขณะนี้สถานะ
+    <strong class="text-primary-600">{{ status()?.name }}</strong>
+    มี tickets ที่ดำเนินการสถานะนี้อยู่จำนวน
+    <strong class="text-primary-600">{{ status()?.ticketCount }} tickets</strong>
+    หากทำการนำสถานะนี้ออก tickets ที่ใช้สถานะนี้จะถูกลบออกด้วย
+    คุณแน่ใจที่จะลบสถานะนี้ออกหรือไม่?
+  </app-confirm-dialog>
 
-<app-delete-confirm-dialog
-  [(visible)]="showDeleteDialog"
-  [targetLabel]="status().name"
-  [loading]="deleting()"
-  (confirmed)="onDeleteConfirmed($event)"
-/>
+  <app-delete-confirm-dialog
+    [(visible)]="showDeleteDialog"
+    [targetLabel]="status()?.name ?? ''"
+    [loading]="deleting()"
+    (confirmed)="onDeleteConfirmed($event)"
+  />
 
-<p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
-  <ng-template #item let-item pTemplate="item">
-    <a class="p-menu-item-link" role="menuitem">
-      <span class="p-menu-item-label" [class.text-error-600]="item.danger">{{ item.label }}</span>
-    </a>
-  </ng-template>
-</p-menu>
+  <p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
+    <ng-template #item let-item pTemplate="item">
+      <a class="p-menu-item-link" role="menuitem">
+        <span class="p-menu-item-label" [class.text-error-600]="item.danger">{{ item.label }}</span>
+      </a>
+    </ng-template>
+  </p-menu>
+}

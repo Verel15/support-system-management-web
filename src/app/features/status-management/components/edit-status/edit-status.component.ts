@@ -5,7 +5,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -19,6 +19,8 @@ import { InputText } from 'primeng/inputtext';
 import { Tooltip } from 'primeng/tooltip';
 import { Menu } from 'primeng/menu';
 import { MenuItem, MessageService } from 'primeng/api';
+import { StatusFlowService } from '../../services/status-flow.service';
+import { StatusFlowResponse } from '../../interfaces/status-flow.interface';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -41,28 +43,59 @@ interface ActionMenuItem extends MenuItem {
 })
 export class EditStatusComponent {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly statusFlowService = inject(StatusFlowService);
+
   protected readonly submitting = signal(false);
-  protected readonly menu = viewChild.required<Menu>('actionMenu');
+  protected readonly loading = signal(true);
+  protected readonly menu = viewChild<Menu>('actionMenu');
   protected readonly editingIndex = signal(-1);
 
-  // TODO: pre-fill from route params / service
-  protected readonly createdBy = 'ใจงาม สุดใจจริง';
-  protected readonly updatedDate = '18/07/66';
-  protected readonly ticketCount = 56;
+  protected readonly statusData = signal<StatusFlowResponse | null>(null);
+  private statusId = '';
 
-  protected readonly processingStatusControls = new FormArray<FormControl>([
-    new FormControl('Pending', Validators.required),
-    new FormControl('In Review', Validators.required),
-  ]);
+  protected readonly processingStatusControls = new FormArray<FormControl>([]);
 
   protected readonly form = this.fb.group({
-    name: ['EVT-DEV', Validators.required],
+    name: ['', Validators.required],
     processingStatuses: this.processingStatusControls,
   });
 
   protected menuItems: ActionMenuItem[] = [];
+
+  constructor() {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.router.navigate(['/status-management/list']);
+      return;
+    }
+    this.statusId = id;
+    this.statusFlowService.getById(id).subscribe({
+      next: (data) => {
+        this.statusData.set(data);
+        this.form.patchValue({ name: data.name });
+        const processItems = data.statuses
+          .filter((s) => s.group === 'PROCESS' && !s.isSystem)
+          .sort((a, b) => a.sequence - b.sequence);
+        processItems.forEach((s) =>
+          this.processingStatusControls.push(new FormControl(s.name, Validators.required)),
+        );
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูลสถานะได้',
+          life: 4000,
+        });
+        this.router.navigate(['/status-management/list']);
+      },
+    });
+  }
 
   protected getStatusControl(index: number): FormControl {
     return this.processingStatusControls.at(index) as FormControl;
@@ -88,7 +121,7 @@ export class EditStatusComponent {
         command: () => this.removeProcessingStatus(index),
       },
     ];
-    this.menu().toggle(event);
+    this.menu()?.toggle(event);
   }
 
   protected startEditing(index: number): void {
@@ -115,27 +148,45 @@ export class EditStatusComponent {
     const controls = this.processingStatusControls.controls.slice() as FormControl[];
     moveItemInArray(controls, event.previousIndex, event.currentIndex);
     this.processingStatusControls.clear({ emitEvent: false });
-    controls.forEach(ctrl =>
+    controls.forEach((ctrl) =>
       this.processingStatusControls.push(ctrl, { emitEvent: false }),
     );
   }
 
   protected onBack(): void {
-    this.router.navigate(['/status-management/detail']);
+    this.router.navigate(['/status-management/detail', this.statusId]);
   }
 
   protected onSubmit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
+
+    const name = this.form.get('name')!.value as string;
+    const processStatuses = this.processingStatusControls.controls.map(
+      (c) => c.value as string,
+    );
+
     this.submitting.set(true);
-    // TODO: call update status API
-    this.messageService.add({
-      severity: 'success',
-      summary: 'บันทึกสำเร็จ',
-      detail: 'แก้ไขสถานะเรียบร้อยแล้ว',
-      life: 4000,
+    this.statusFlowService.update(this.statusId, { name, processStatuses }).subscribe({
+      next: () => {
+        this.submitting.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'บันทึกสำเร็จ',
+          detail: 'แก้ไขสถานะเรียบร้อยแล้ว',
+          life: 4000,
+        });
+        this.router.navigate(['/status-management/detail', this.statusId]);
+      },
+      error: () => {
+        this.submitting.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถบันทึกสถานะได้',
+          life: 4000,
+        });
+      },
     });
-    this.router.navigate(['/status-management/detail']);
-    this.submitting.set(false);
   }
 }

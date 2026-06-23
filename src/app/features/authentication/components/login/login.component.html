@@ -46,7 +46,16 @@
         />
       </div>
 
-      <p-button type="submit" label="เข้าสู่ระบบ" [disabled]="form.invalid" styleClass="w-full" />
+      @if (authStore.error()) {
+        <p class="text-error-500 text-sm mb-4 text-center" role="alert">{{ authStore.error() }}</p>
+      }
+      <p-button
+        type="submit"
+        label="เข้าสู่ระบบ"
+        [disabled]="form.invalid || authStore.isLoading()"
+        [loading]="authStore.isLoading()"
+        styleClass="w-full"
+      />
     </form>
   </p-fluid>
   <p-divider layout="horizontal"></p-divider>

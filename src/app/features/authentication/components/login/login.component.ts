@@ -1,13 +1,13 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgOptimizedImage } from '@angular/common';
 import { InputText } from 'primeng/inputtext';
 import { Password } from 'primeng/password';
 import { Button } from 'primeng/button';
 import { Fluid } from 'primeng/fluid';
-import { MessageService } from 'primeng/api';
 import { Divider } from 'primeng/divider';
+import { AuthStore } from '../../store/auth.store';
 
 @Component({
   selector: 'app-login',
@@ -17,8 +17,7 @@ import { Divider } from 'primeng/divider';
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);
-  private router = inject(Router);
-  private messageService = inject(MessageService);
+  protected authStore = inject(AuthStore);
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -40,26 +39,7 @@ export class LoginComponent {
       this.form.markAllAsTouched();
       return;
     }
-
-    // TODO: replace with actual auth service call
-    const loginSuccess = true;
-
-    if (!loginSuccess) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'เข้าสู่ระบบไม่สำเร็จ',
-        detail: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
-        life: 4000,
-      });
-      return;
-    }
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'เข้าสู่ระบบสำเร็จ',
-      detail: 'ยินดีต้อนรับเข้าสู่ระบบ',
-      life: 3000,
-    });
-    this.router.navigate(['/dashboard']);
+    const { email, password } = this.form.getRawValue();
+    this.authStore.login({ email: email!, password: password! });
   }
 }

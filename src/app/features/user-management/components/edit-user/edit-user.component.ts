@@ -41,7 +41,7 @@ export class EditUserComponent {
 
   protected readonly userTypeOptions = toSignal(
     this.userTypeService.getAll().pipe(
-      map((types) => types.map((t) => ({ label: t.name, value: t.id }))),
+      map((types) => types.content.map((t) => ({ label: t.name, value: t.id }))),
       catchError(() => of([])),
     ),
     { initialValue: [] },
@@ -57,7 +57,7 @@ export class EditUserComponent {
 
   protected readonly positionOptions = toSignal(
     this.positionService.getAll().pipe(
-      map((page) => page.content.map((p) => ({ label: p.name, value: p.id }))),
+      map((page) => page.map((p) => ({ label: p.name, value: p.id }))),
       catchError(() => of([])),
     ),
     { initialValue: [] },

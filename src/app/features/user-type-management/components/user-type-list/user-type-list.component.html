@@ -13,22 +13,6 @@
     </div>
   </div>
 
-  <!-- Search -->
-  <div class="flex items-center gap-3 w-full sm:w-80 mb-6">
-    <p-icon-field class="w-full">
-      <p-inputicon class="pi pi-search" />
-      <input
-        pInputText
-        type="search"
-        placeholder="ค้นหาประเภทผู้ใช้"
-        [ngModel]="searchQuery()"
-        (ngModelChange)="onSearch($event)"
-        class="w-full h-12 appearance-none"
-        aria-label="ค้นหาประเภทผู้ใช้"
-      />
-    </p-icon-field>
-  </div>
-
   <!-- Action menu (shared across all rows) -->
   <p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
     <ng-template #item let-item pTemplate="item">
@@ -41,7 +25,7 @@
   <!-- Table -->
   <app-data-table
     [columns]="columns"
-    [data]="pagedUsers()"
+    [data]="pagedUserTypes()"
     [totalRecords]="totalRecords()"
     [currentPage]="currentPage()"
     [pageSize]="pageSize()"

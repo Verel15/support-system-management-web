@@ -1,22 +1,17 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 
 export const routes: Routes = [
   {
     path: 'auth',
+    canActivate: [guestGuard],
     loadChildren: () =>
       import('./features/authentication/authentication.routes').then((m) => m.authRoutes),
   },
   {
-    path: 'my-tickets',
-    loadComponent: () =>
-      import('./shared/layouts/main-layout/main-layout.component').then(
-        (m) => m.MainLayoutComponent,
-      ),
-    loadChildren: () =>
-      import('./features/my-tickets/my-tickets.routes').then((m) => m.myTicketsRoutes),
-  },
-  {
     path: 'dashboard',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,
@@ -25,73 +20,18 @@ export const routes: Routes = [
       import('./features/dashboard/dashboard.routes').then((m) => m.dashboardRoutes),
   },
   {
-    path: 'user-management',
+    path: 'my-tickets',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,
       ),
     loadChildren: () =>
-      import('./features/user-management/user-management.routes').then(
-        (m) => m.userManagementRoutes,
-      ),
-  },
-  {
-    path: 'user-type-management',
-    loadComponent: () =>
-      import('./shared/layouts/main-layout/main-layout.component').then(
-        (m) => m.MainLayoutComponent,
-      ),
-    loadChildren: () =>
-      import('./features/user-type-management/user-type-management.routes').then(
-        (m) => m.userTypeManagementRoutes,
-      ),
-  },
-  {
-    path: 'company-management',
-    loadComponent: () =>
-      import('./shared/layouts/main-layout/main-layout.component').then(
-        (m) => m.MainLayoutComponent,
-      ),
-    loadChildren: () =>
-      import('./features/company-management/company-management.routes').then(
-        (m) => m.companyManagementRoutes,
-      ),
-  },
-  {
-    path: 'status-management',
-    loadComponent: () =>
-      import('./shared/layouts/main-layout/main-layout.component').then(
-        (m) => m.MainLayoutComponent,
-      ),
-    loadChildren: () =>
-      import('./features/status-management/status-management.routes').then(
-        (m) => m.statusManagementRoutes,
-      ),
-  },
-  {
-    path: 'ticket-type-management',
-    loadComponent: () =>
-      import('./shared/layouts/main-layout/main-layout.component').then(
-        (m) => m.MainLayoutComponent,
-      ),
-    loadChildren: () =>
-      import('./features/ticket-type-management/ticket-type-management.routes').then(
-        (m) => m.ticketTypeManagementRoutes,
-      ),
-  },
-  {
-    path: 'ticket-priority-management',
-    loadComponent: () =>
-      import('./shared/layouts/main-layout/main-layout.component').then(
-        (m) => m.MainLayoutComponent,
-      ),
-    loadChildren: () =>
-      import('./features/priority-management/priority-management.routes').then(
-        (m) => m.priorityManagementRoutes,
-      ),
+      import('./features/my-tickets/my-tickets.routes').then((m) => m.myTicketsRoutes),
   },
   {
     path: 'my-project',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,
@@ -101,6 +41,7 @@ export const routes: Routes = [
   },
   {
     path: 'project-management',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,
@@ -112,6 +53,7 @@ export const routes: Routes = [
   },
   {
     path: 'ticket-management',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,
@@ -123,6 +65,7 @@ export const routes: Routes = [
   },
   {
     path: 'notifications',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,
@@ -132,5 +75,78 @@ export const routes: Routes = [
         (m) => m.notificationsRoutes,
       ),
   },
-  { path: '', redirectTo: 'auth', pathMatch: 'full' },
+  {
+    path: 'user-management',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/user-management/user-management.routes').then(
+        (m) => m.userManagementRoutes,
+      ),
+  },
+  {
+    path: 'user-type-management',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/user-type-management/user-type-management.routes').then(
+        (m) => m.userTypeManagementRoutes,
+      ),
+  },
+  {
+    path: 'company-management',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/company-management/company-management.routes').then(
+        (m) => m.companyManagementRoutes,
+      ),
+  },
+  {
+    path: 'status-management',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/status-management/status-management.routes').then(
+        (m) => m.statusManagementRoutes,
+      ),
+  },
+  {
+    path: 'ticket-type-management',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/ticket-type-management/ticket-type-management.routes').then(
+        (m) => m.ticketTypeManagementRoutes,
+      ),
+  },
+  {
+    path: 'ticket-priority-management',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/priority-management/priority-management.routes').then(
+        (m) => m.priorityManagementRoutes,
+      ),
+  },
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: '**', redirectTo: 'dashboard' },
 ];

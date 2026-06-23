@@ -4,6 +4,7 @@ import { NgOptimizedImage } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { SidebarComponent, SidebarNavItem, SidebarUser } from '../../components/sidebar';
+import { AuthStore } from '../../../features/authentication/store/auth.store';
 
 @Component({
   selector: 'app-main-layout',
@@ -16,6 +17,7 @@ export class MainLayoutComponent {
   protected readonly mobileOpen = signal(false);
 
   private readonly router = inject(Router);
+  protected readonly authStore = inject(AuthStore);
 
   // On lg+ the sidebar is a normal flex child; on mobile it's a fixed drawer
   protected readonly sidebarDrawerClass = computed(() =>
@@ -30,11 +32,13 @@ export class MainLayoutComponent {
       .subscribe(() => this.mobileOpen.set(false));
   }
 
-  protected readonly currentUser: SidebarUser = {
-    name: 'ใจงาม สุดใจจริง',
-    role: 'แอดมิน',
-    avatarUrl: '/logo/logo-sms.png',
-  };
+  protected readonly currentUser = computed<SidebarUser>(() => {
+    const user = this.authStore.user();
+    return {
+      name: user ? `${user.firstName} ${user.lastName}` : '',
+      role: user?.accountType ?? '',
+    };
+  });
 
   protected readonly personalNav: SidebarNavItem[] = [
     { label: 'Tickets ของฉัน', icon: 'pi-ticket', route: '/my-tickets' },

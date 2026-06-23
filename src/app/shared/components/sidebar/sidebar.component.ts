@@ -6,17 +6,20 @@ import {
   inject,
   input,
   model,
+  output,
   signal,
 } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
+import { MenuItem } from 'primeng/api';
+import { Menu } from 'primeng/menu';
 import { SidebarNavItem, SidebarUser } from './sidebar.types';
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, NgOptimizedImage],
+  imports: [RouterLink, NgOptimizedImage, Menu],
   templateUrl: './sidebar.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -31,6 +34,15 @@ export class SidebarComponent {
   readonly mainNav = input<SidebarNavItem[]>([]);
   readonly user = input.required<SidebarUser>();
   readonly collapsed = model(false);
+  readonly logoutClick = output<void>();
+
+  readonly userMenuItems: MenuItem[] = [
+    {
+      label: 'ออกจากระบบ',
+      icon: 'pi pi-sign-out',
+      command: () => this.logoutClick.emit(),
+    },
+  ];
 
   private readonly router = inject(Router);
 

@@ -7,7 +7,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { catchError, map, of, startWith, switchMap } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
@@ -25,13 +27,8 @@ import {
   ConfirmDialogComponent,
   DeleteConfirmDialogComponent,
 } from '../../../../shared/components/dialogs';
-
-interface Status {
-  name: string;
-  createdBy: string;
-  ticketCount: number;
-  updatedDate: string;
-}
+import { StatusFlowService } from '../../services/status-flow.service';
+import { StatusFlowPageResponse, StatusFlowResponse } from '../../interfaces/status-flow.interface';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -58,11 +55,16 @@ interface ActionMenuItem extends MenuItem {
 export class StatusListComponent {
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  private readonly statusFlowService = inject(StatusFlowService);
   protected readonly menu = viewChild.required<Menu>('actionMenu');
-  protected readonly activeRow = signal<Record<string, unknown> | null>(null);
+
+  protected readonly activeRow = signal<StatusFlowResponse | null>(null);
   protected readonly showConfirmDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
-  protected readonly deletingStatus = signal<Status | null>(null);
+  protected readonly deleting = signal(false);
+  protected readonly currentPage = signal(1);
+  protected readonly pageSize = signal(10);
+  protected readonly refreshTrigger = signal(0);
 
   protected readonly menuItems: ActionMenuItem[] = [
     { label: 'ดูรายละเอียด', command: () => this.onViewStatus() },
@@ -73,9 +75,9 @@ export class StatusListComponent {
 
   protected readonly columns: TableColumn[] = [
     { field: 'name', header: 'ชื่อสถานะ', sortable: true },
-    { field: 'createdBy', header: 'สร้างโดย', sortable: true },
+    { field: 'createdByName', header: 'สร้างโดย', sortable: true },
     { field: 'ticketCount', header: 'จำนวน Tickets ที่ใช้ทั้งหมด', sortable: true },
-    { field: 'updatedDate', header: 'วันที่แก้ไข', sortable: true },
+    { field: 'updatedAt', header: 'วันที่แก้ไข', sortable: true },
   ];
 
   protected readonly dateOptions = [
@@ -86,65 +88,38 @@ export class StatusListComponent {
   ];
 
   protected readonly selectedDate = signal<string | null>(null);
-  protected readonly searchQuery = signal('');
-  protected readonly currentPage = signal(1);
-  protected readonly pageSize = signal(10);
+
+  private readonly queryParams = computed(() => ({
+    page: this.currentPage() - 1,
+    size: this.pageSize(),
+    _refresh: this.refreshTrigger(),
+  }));
+
+  protected readonly pageData = signal<StatusFlowPageResponse | null>(null);
   protected readonly loading = signal(false);
 
-  private readonly allStatuses: Status[] = [
-    { name: 'เปิด', createdBy: 'สมชาย ใจดี', ticketCount: 42, updatedDate: '2026-06-01' },
-    { name: 'กำลังดำเนินการ', createdBy: 'วิภาวรรณ สวัสดี', ticketCount: 18, updatedDate: '2026-06-02' },
-    { name: 'รอการอนุมัติ', createdBy: 'ใจงาม สุดใจจริง', ticketCount: 7, updatedDate: '2026-06-03' },
-    { name: 'ปิด', createdBy: 'แสนดี ที่สุดเลย', ticketCount: 125, updatedDate: '2026-06-04' },
-    { name: 'ยกเลิก', createdBy: 'มานี มีตา', ticketCount: 15, updatedDate: '2026-06-05' },
-    { name: 'รอดำเนินการ', createdBy: 'ตุ๊กตุ๊ก ตุ๊กแก', ticketCount: 33, updatedDate: '2026-05-28' },
-    { name: 'เสร็จสิ้น', createdBy: 'สิริ สวัสดิ', ticketCount: 89, updatedDate: '2026-05-30' },
-    { name: 'รอตอบกลับ', createdBy: 'ชูใจ ใจดี', ticketCount: 5, updatedDate: '2026-06-06' },
-  ];
-
-  protected readonly filteredStatuses = computed(() => {
-    const query = this.searchQuery().toLowerCase();
-    const date = this.selectedDate();
-    const now = new Date();
-    const todayStr = now.toISOString().slice(0, 10);
-
-    return this.allStatuses.filter((s) => {
-      const matchesSearch = !query || s.name.toLowerCase().includes(query);
-
-      let matchesDate = true;
-      if (date === 'today') {
-        matchesDate = s.updatedDate === todayStr;
-      } else if (date === 'week') {
-        const weekAgo = new Date(now);
-        weekAgo.setDate(now.getDate() - 7);
-        matchesDate = new Date(s.updatedDate) >= weekAgo;
-      } else if (date === 'month') {
-        const monthAgo = new Date(now);
-        monthAgo.setMonth(now.getMonth() - 1);
-        matchesDate = new Date(s.updatedDate) >= monthAgo;
-      }
-
-      return matchesSearch && matchesDate;
-    });
-  });
-
-  protected readonly totalRecords = computed(() => this.filteredStatuses().length);
-
-  protected readonly pagedStatuses = computed<Record<string, unknown>[]>(() => {
-    const start = (this.currentPage() - 1) * this.pageSize();
-    return this.filteredStatuses()
-      .slice(start, start + this.pageSize())
-      .map((s) => ({ ...s }));
-  });
-
-  protected onSearch(value: string): void {
-    this.searchQuery.set(value);
-    this.currentPage.set(1);
+  constructor() {
+    toObservable(this.queryParams)
+      .pipe(
+        switchMap(({ page, size }) =>
+          this.statusFlowService.getAll(page, size).pipe(
+            map((data) => ({ data, loading: false })),
+            startWith({ data: null as StatusFlowPageResponse | null, loading: true }),
+            catchError(() => of({ data: null as StatusFlowPageResponse | null, loading: false })),
+          ),
+        ),
+      )
+      .subscribe(({ data, loading }) => {
+        this.pageData.set(data);
+        this.loading.set(loading);
+      });
   }
 
-  protected onFilterChange(): void {
-    this.currentPage.set(1);
-  }
+  protected readonly tableRows = computed<Record<string, unknown>[]>(() =>
+    (this.pageData()?.content ?? []).map((r) => ({ ...r })),
+  );
+
+  protected readonly totalRecords = computed(() => this.pageData()?.totalElements ?? 0);
 
   protected onSort(_event: SortEvent): void {
     this.currentPage.set(1);
@@ -165,22 +140,22 @@ export class StatusListComponent {
 
   protected onMenuOpen(event: MouseEvent, row: Record<string, unknown>): void {
     event.stopPropagation();
-    this.activeRow.set(row);
+    this.activeRow.set(row as unknown as StatusFlowResponse);
     this.menu().toggle(event);
   }
 
   protected onViewStatus(): void {
-    this.router.navigate(['/status-management/detail']);
+    const id = this.activeRow()?.id;
+    if (id) this.router.navigate(['/status-management/detail', id]);
   }
 
   protected onEditStatus(): void {
-    this.router.navigate(['/status-management/edit']);
+    const id = this.activeRow()?.id;
+    if (id) this.router.navigate(['/status-management/edit', id]);
   }
 
   protected onDeleteStatus(): void {
-    const row = this.activeRow();
-    if (!row) return;
-    this.deletingStatus.set(row as unknown as Status);
+    if (!this.activeRow()) return;
     this.showConfirmDialog.set(true);
   }
 
@@ -190,13 +165,31 @@ export class StatusListComponent {
   }
 
   protected onDeleteConfirmed(_password: string): void {
-    // TODO: call delete API with this.deletingStatus() and _password
-    this.messageService.add({
-      severity: 'success',
-      summary: 'ลบสำเร็จ',
-      detail: 'ลบสถานะเรียบร้อยแล้ว',
-      life: 4000,
+    const id = this.activeRow()?.id;
+    if (!id) return;
+    this.deleting.set(true);
+    this.statusFlowService.delete(id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.showDeleteDialog.set(false);
+        this.activeRow.set(null);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'ลบสำเร็จ',
+          detail: 'ลบสถานะเรียบร้อยแล้ว',
+          life: 4000,
+        });
+        this.refreshTrigger.update((v) => v + 1);
+      },
+      error: () => {
+        this.deleting.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถลบสถานะได้',
+          life: 4000,
+        });
+      },
     });
-    this.deletingStatus.set(null);
   }
 }

@@ -16,14 +16,14 @@ export const statusManagementRoutes: Routes = [
       ),
   },
   {
-    path: 'detail',
+    path: 'detail/:id',
     loadComponent: () =>
       import('./components/status-detail/status-detail.component').then(
         (m) => m.StatusDetailComponent,
       ),
   },
   {
-    path: 'edit',
+    path: 'edit/:id',
     loadComponent: () =>
       import('./components/edit-status/edit-status.component').then(
         (m) => m.EditStatusComponent,

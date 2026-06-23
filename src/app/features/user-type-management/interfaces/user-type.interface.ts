@@ -26,3 +26,13 @@ export interface UserTypeResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface UserTypePageResponse {
+  content: UserTypeResponse[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+}

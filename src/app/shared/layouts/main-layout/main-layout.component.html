@@ -14,7 +14,8 @@
       [(collapsed)]="sidebarCollapsed"
       [personalNav]="personalNav"
       [mainNav]="mainNav"
-      [user]="currentUser"
+      [user]="currentUser()"
+      (logoutClick)="authStore.logout()"
     />
   </div>
 

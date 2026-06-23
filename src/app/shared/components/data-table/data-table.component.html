@@ -5,17 +5,13 @@
       <thead>
         <tr>
           @for (col of columns(); track col.field) {
-            <th
-              scope="col"
-              [style.width]="col.width"
-              [class]="
+          <th scope="col" [style.width]="col.width" [class]="
                 'px-4 py-4.5 text-left text-sm font-semibold text-white whitespace-nowrap ' +
                 'bg-[var(--p-primary-500)] ' +
                 (col.sortable
                   ? 'cursor-pointer select-none hover:bg-[var(--p-primary-600)] transition-colors'
                   : '')
-              "
-              [attr.aria-sort]="
+              " [attr.aria-sort]="
                 col.sortable
                   ? sortField() === col.field
                     ? sortDirection() === 'asc'
@@ -23,119 +19,92 @@
                       : 'descending'
                     : 'none'
                   : null
-              "
-              [attr.tabindex]="col.sortable ? 0 : null"
-              (click)="onSort(col.field)"
-              (keydown.enter)="onSort(col.field)"
-              (keydown.space)="$event.preventDefault(); onSort(col.field)"
-            >
-              <div class="flex items-center gap-1.5">
-                <span>{{ col.header }}</span>
-                @if (col.sortable) {
-                  <i
-                    aria-hidden="true"
-                    [class]="
+              " [attr.tabindex]="col.sortable ? 0 : null" (click)="onSort(col.field)"
+            (keydown.enter)="onSort(col.field)" (keydown.space)="$event.preventDefault(); onSort(col.field)">
+            <div class="flex items-center gap-1.5">
+              <span>{{ col.header }}</span>
+              @if (col.sortable) {
+              <i aria-hidden="true" [class]="
                       'pi text-xs transition-opacity ' +
                       getSortIcon(col.field) +
                       ' ' +
                       (sortField() === col.field ? 'opacity-100' : 'opacity-60')
-                    "
-                  ></i>
-                }
-              </div>
-            </th>
+                    "></i>
+              }
+            </div>
+          </th>
           }
           @if (showActions()) {
-            <th scope="col" class="px-4 py-3 bg-[var(--p-primary-500)] w-14">
-              <span class="sr-only">การดำเนินการ</span>
-            </th>
+          <th scope="col" class="px-4 py-3 bg-[var(--p-primary-500)] w-14">
+            <span class="sr-only">การดำเนินการ</span>
+          </th>
           }
         </tr>
       </thead>
 
       <tbody>
         @if (loading()) {
-          @for (_ of loadingRows; track $index) {
-            <tr class="border-b border-slate-100">
-              @for (col of columns(); track col.field) {
-                <td class="px-4 py-3.5">
-                  <p-skeleton height="1.125rem"></p-skeleton>
-                </td>
-              }
-              @if (showActions()) {
-                <td class="px-4 py-3.5">
-                  <p-skeleton height="1.125rem" width="2rem"></p-skeleton>
-                </td>
-              }
-            </tr>
+        @for (_ of loadingRows; track $index) {
+        <tr class="border-b border-slate-100">
+          @for (col of columns(); track col.field) {
+          <td class="px-4 py-3.5">
+            <p-skeleton height="1.125rem"></p-skeleton>
+          </td>
           }
+          @if (showActions()) {
+          <td class="px-4 py-3.5">
+            <p-skeleton height="1.125rem" width="2rem"></p-skeleton>
+          </td>
+          }
+        </tr>
+        }
         } @else if (data().length === 0) {
-          <tr>
-            <td
-              [attr.colspan]="columns().length + (showActions() ? 1 : 0)"
-              class="px-4 py-16 text-center text-slate-400 text-sm"
-            >
-              {{ emptyMessage() }}
-            </td>
-          </tr>
+        <tr>
+          <td [attr.colspan]="columns().length + (showActions() ? 1 : 0)"
+            class="px-4 py-16 text-center text-slate-400 text-sm">
+            {{ emptyMessage() }}
+          </td>
+        </tr>
         } @else {
-          @for (row of data(); track $index; let isOdd = $odd) {
-            <tr
-              [class]="
+        @for (row of data(); track $index; let isOdd = $odd) {
+        <tr [class]="
                 'border-b border-slate-100 transition-colors cursor-pointer focus-visible:outline-none ' +
                 (isOdd
                   ? 'bg-slate-50 hover:bg-slate-100 focus-visible:bg-slate-100'
                   : 'bg-white hover:bg-slate-50 focus-visible:bg-slate-50')
-              "
-              (click)="onRowClick(row)"
-              (keydown.enter)="onRowClick(row)"
-              tabindex="0"
-              role="row"
-            >
-              @for (col of columns(); track col.field) {
-                <td class="px-4 py-4 text-sm text-slate-700" role="gridcell">
-                  @if (col.cellTemplate; as tpl) {
-                    <ng-container
-                      [ngTemplateOutlet]="tpl"
-                      [ngTemplateOutletContext]="{
+              " (click)="onRowClick(row)" (keydown.enter)="onRowClick(row)" tabindex="0" role="row">
+          @for (col of columns(); track col.field) {
+          <td class="px-4 py-4 text-sm text-slate-700" role="gridcell">
+            @if (col.cellTemplate; as tpl) {
+            <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{
                         $implicit: row,
                         value: getFieldValue(row, col.field),
-                      }"
-                    ></ng-container>
-                  } @else if (cellTemplateMap().get(col.field); as tpl) {
-                    <ng-container
-                      [ngTemplateOutlet]="tpl"
-                      [ngTemplateOutletContext]="{
+                      }"></ng-container>
+            } @else if (cellTemplateMap().get(col.field); as tpl) {
+            <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{
                         $implicit: row,
                         value: getFieldValue(row, col.field),
-                      }"
-                    ></ng-container>
-                  } @else {
-                    {{ getFieldValue(row, col.field) }}
-                  }
-                </td>
-              }
-              @if (showActions()) {
-                <td class="px-4 py-2 text-center" role="gridcell">
-                  @if (cellTemplateMap().get('_actions'); as tpl) {
-                    <ng-container
-                      [ngTemplateOutlet]="tpl"
-                      [ngTemplateOutletContext]="{ $implicit: row }"
-                    ></ng-container>
-                  } @else {
-                    <button
-                      type="button"
-                      class="inline-flex items-center justify-center w-8 h-8 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--p-primary-500)]"
-                      aria-label="การดำเนินการ"
-                      (click)="onActionClick($event, row)"
-                    >
-                      <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
-                    </button>
-                  }
-                </td>
-              }
-            </tr>
+                      }"></ng-container>
+            } @else {
+            {{ getFieldValue(row, col.field) }}
+            }
+          </td>
           }
+          @if (showActions()) {
+          <td class="px-4 py-2 text-center" role="gridcell">
+            @if (cellTemplateMap().get('_actions'); as tpl) {
+            <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{ $implicit: row }"></ng-container>
+            } @else {
+            <button type="button"
+              class="inline-flex items-center justify-center w-8 h-8 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--p-primary-500)]"
+              aria-label="การดำเนินการ" (click)="onActionClick($event, row)">
+              <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+            </button>
+            }
+          </td>
+          }
+        </tr>
+        }
         }
       </tbody>
     </table>
@@ -143,11 +112,8 @@
 </div>
 
 <!-- Pagination -->
-<app-pagination
-  [totalRecords]="totalRecords()"
-  [pageSize]="pageSize()"
-  [currentPage]="currentPage()"
-  [loading]="loading()"
-  (pageChange)="pageChange.emit($event)"
-  (pageSizeChange)="pageSizeChange.emit($event)"
-></app-pagination>
+@if (paginationEnabled()) {
+<app-pagination [totalRecords]="totalRecords()" [pageSize]="pageSize()" [currentPage]="currentPage()"
+  [loading]="loading()" (pageChange)="pageChange.emit($event)"
+  (pageSizeChange)="pageSizeChange.emit($event)"></app-pagination>
+}

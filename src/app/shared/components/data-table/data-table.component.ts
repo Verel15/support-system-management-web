@@ -29,6 +29,7 @@ export class DataTableComponent {
   readonly loading = input(false);
   readonly showActions = input(true);
   readonly emptyMessage = input('ไม่พบข้อมูล');
+  readonly paginationEnabled = input(true);
 
   readonly pageChange = output<number>();
   readonly pageSizeChange = output<number>();

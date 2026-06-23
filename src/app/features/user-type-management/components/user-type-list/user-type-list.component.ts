@@ -6,16 +6,12 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
-import { IconField } from 'primeng/iconfield';
-import { InputIcon } from 'primeng/inputicon';
-import { InputText } from 'primeng/inputtext';
 import { Menu } from 'primeng/menu';
 import { MenuItem, MessageService } from 'primeng/api';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, map, of, startWith, switchMap } from 'rxjs';
 import { formatDate } from '@angular/common';
 import {
   DataTableCellDirective,
@@ -28,6 +24,7 @@ import {
   DeleteConfirmDialogComponent,
 } from '../../../../shared/components/dialogs';
 import { UserTypeService } from '../../services/user-type.service';
+import { UserTypePageResponse } from '../../interfaces/user-type.interface';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -36,11 +33,7 @@ interface ActionMenuItem extends MenuItem {
 @Component({
   selector: 'app-user-type-list',
   imports: [
-    FormsModule,
     Button,
-    InputText,
-    IconField,
-    InputIcon,
     Menu,
     DataTableComponent,
     DataTableCellDirective,
@@ -62,12 +55,13 @@ export class UserTypeListComponent {
   protected readonly deletingId = signal<string | null>(null);
   protected readonly deletingName = signal('');
   protected readonly deleting = signal(false);
+  private readonly refreshTrigger = signal(0);
 
   protected readonly menuItems: ActionMenuItem[] = [
-    { label: 'ดูรายละเอียด', command: () => this.onViewUser() },
-    { label: 'แก้ไข', command: () => this.onEditUser() },
+    { label: 'ดูรายละเอียด', command: () => this.onViewUserType() },
+    { label: 'แก้ไข', command: () => this.onEditUserType() },
     { separator: true },
-    { label: 'ลบ', danger: true, command: () => this.onDeleteUser() },
+    { label: 'ลบ', danger: true, command: () => this.onDeleteUserType() },
   ];
 
   protected readonly columns: TableColumn[] = [
@@ -75,41 +69,41 @@ export class UserTypeListComponent {
     { field: 'updatedAt', header: 'วันที่แก้ไขล่าสุด', sortable: true },
   ];
 
-  protected readonly searchQuery = signal('');
   protected readonly currentPage = signal(1);
   protected readonly pageSize = signal(10);
 
-  private readonly allUserTypes = toSignal(
-    this.userTypeService.getAll().pipe(catchError(() => of([]))),
-    { initialValue: [] },
+  private readonly queryParams = computed(() => ({
+    page: this.currentPage() - 1,
+    size: this.pageSize(),
+    _refresh: this.refreshTrigger(),
+  }));
+
+  private readonly response = toSignal(
+    toObservable(this.queryParams).pipe(
+      switchMap(({ page, size }) =>
+        this.userTypeService.getAll(page, size).pipe(
+          map((data) => ({ data, loading: false })),
+          startWith({ data: null as UserTypePageResponse | null, loading: true }),
+          catchError(() => of({ data: null as UserTypePageResponse | null, loading: false })),
+        ),
+      ),
+      startWith({ data: null as UserTypePageResponse | null, loading: true }),
+    ),
   );
 
-  protected readonly loading = computed(() => this.allUserTypes().length === 0 && !this.searchQuery());
+  protected readonly loading = computed(() => this.response()?.loading ?? true);
 
-  protected readonly filteredUserTypes = computed(() => {
-    const query = this.searchQuery().toLowerCase();
-    return this.allUserTypes().filter(
-      (u) => !query || u.name.toLowerCase().includes(query),
-    );
-  });
+  protected readonly totalRecords = computed(
+    () => this.response()?.data?.totalElements ?? 0,
+  );
 
-  protected readonly totalRecords = computed(() => this.filteredUserTypes().length);
-
-  protected readonly pagedUsers = computed<Record<string, unknown>[]>(() => {
-    const start = (this.currentPage() - 1) * this.pageSize();
-    return this.filteredUserTypes()
-      .slice(start, start + this.pageSize())
-      .map((u) => ({
-        id: u.id,
-        typeName: u.name,
-        updatedAt: formatDate(u.updatedAt, 'dd/MM/yyyy HH:mm', 'en-US'),
-      }));
-  });
-
-  protected onSearch(value: string): void {
-    this.searchQuery.set(value);
-    this.currentPage.set(1);
-  }
+  protected readonly pagedUserTypes = computed<Record<string, unknown>[]>(() =>
+    (this.response()?.data?.content ?? []).map((u) => ({
+      id: u.id,
+      typeName: u.name,
+      updatedAt: formatDate(u.updatedAt, 'dd/MM/yyyy HH:mm', 'en-US'),
+    })),
+  );
 
   protected onSort(_event: SortEvent): void {
     this.currentPage.set(1);
@@ -134,17 +128,17 @@ export class UserTypeListComponent {
     this.menu().toggle(event);
   }
 
-  protected onViewUser(): void {
+  protected onViewUserType(): void {
     const id = this.activeRow()?.['id'];
     if (id) this.router.navigate(['/user-type-management/detail', id]);
   }
 
-  protected onEditUser(): void {
+  protected onEditUserType(): void {
     const id = this.activeRow()?.['id'];
     if (id) this.router.navigate(['/user-type-management/edit', id]);
   }
 
-  protected onDeleteUser(): void {
+  protected onDeleteUserType(): void {
     const row = this.activeRow();
     if (!row) return;
     this.deletingId.set(row['id'] as string);
@@ -172,6 +166,7 @@ export class UserTypeListComponent {
           detail: 'ลบประเภทผู้ใช้เรียบร้อยแล้ว',
           life: 4000,
         });
+        this.refreshTrigger.update((n) => n + 1);
       },
       error: () => this.deleting.set(false),
     });

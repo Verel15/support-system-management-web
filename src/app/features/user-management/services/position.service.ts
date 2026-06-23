@@ -7,8 +7,8 @@ import { PageResponse, PositionRequest, PositionResponse } from '../interfaces/p
 export class PositionService {
   private readonly api = inject(ApiService);
 
-  getAll(page = 0, size = 100): Observable<PageResponse<PositionResponse>> {
-    return this.api.get<PageResponse<PositionResponse>>('/positions', { page, size });
+  getAll(): Observable<PositionResponse[]> {
+    return this.api.get<PositionResponse[]>('/positions');
   }
 
   getById(id: string): Observable<PositionResponse> {

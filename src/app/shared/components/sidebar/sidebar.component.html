@@ -135,9 +135,16 @@
 </nav>
 
 <!-- ─── User Profile ────────────────────────────────────── -->
-<div class="shrink-0 border-t border-slate-200 px-3 py-4">
-  @if (!collapsed()) {
-    <div class="flex items-center gap-3 min-w-0">
+<p-menu #userMenu [model]="userMenuItems" [popup]="true" appendTo="body" />
+
+<div class="shrink-0 border-t border-slate-200 px-3 py-2">
+  <button
+    type="button"
+    class="w-full flex items-center gap-3 min-w-0 rounded-lg px-1 py-2 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+    [attr.aria-label]="'เมนูผู้ใช้: ' + user().name"
+    (click)="userMenu.toggle($event)"
+  >
+    @if (!collapsed()) {
       @if (user().avatarUrl) {
         <img
           [src]="user().avatarUrl"
@@ -152,25 +159,26 @@
           {{ getInitials(user().name) }}
         </div>
       }
-      <div class="min-w-0">
+      <div class="min-w-0 flex-1 text-left">
         <p class="text-sm font-medium text-slate-800 truncate">{{ user().name }}</p>
         <p class="text-xs text-primary-500 truncate">{{ user().role }}</p>
       </div>
-    </div>
-  } @else {
-    @if (user().avatarUrl) {
-      <img
-        [src]="user().avatarUrl"
-        [alt]="user().name"
-        class="w-8 h-8 rounded-full object-cover mx-auto"
-      />
+      <i class="pi pi-ellipsis-v text-slate-400 shrink-0" aria-hidden="true"></i>
     } @else {
-      <div
-        class="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-semibold mx-auto select-none"
-        [attr.aria-label]="user().name"
-      >
-        {{ getInitials(user().name) }}
-      </div>
+      @if (user().avatarUrl) {
+        <img
+          [src]="user().avatarUrl"
+          [alt]="user().name"
+          class="w-8 h-8 rounded-full object-cover mx-auto"
+        />
+      } @else {
+        <div
+          class="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-semibold mx-auto select-none"
+          [attr.aria-label]="user().name"
+        >
+          {{ getInitials(user().name) }}
+        </div>
+      }
     }
-  }
+  </button>
 </div>
