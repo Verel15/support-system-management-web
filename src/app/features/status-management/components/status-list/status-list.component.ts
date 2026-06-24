@@ -12,9 +12,6 @@ import { FormsModule } from '@angular/forms';
 import { catchError, map, of, startWith, switchMap } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
-import { InputText } from 'primeng/inputtext';
-import { IconField } from 'primeng/iconfield';
-import { InputIcon } from 'primeng/inputicon';
 import { Menu } from 'primeng/menu';
 import { MenuItem, MessageService } from 'primeng/api';
 import {
@@ -40,9 +37,6 @@ interface ActionMenuItem extends MenuItem {
     FormsModule,
     Button,
     Select,
-    InputText,
-    IconField,
-    InputIcon,
     Menu,
     DataTableComponent,
     DataTableCellDirective,
