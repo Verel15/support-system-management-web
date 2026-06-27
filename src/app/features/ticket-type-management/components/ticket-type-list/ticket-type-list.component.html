@@ -36,7 +36,9 @@
       aria-label="กรองตามวันที่สร้าง"
     />
 
-    <p-icon-field class="flex-1 min-w-0">
+    <div class="flex-1 hidden sm:block" aria-hidden="true"></div>
+
+    <p-icon-field class="w-full sm:w-64 shrink-0">
       <p-inputicon class="pi pi-search" />
       <input
         pInputText
@@ -48,16 +50,6 @@
         [attr.aria-label]="searchPlaceholder()"
       />
     </p-icon-field>
-
-    <p-button
-      label="ตัวกรอง"
-      icon="pi pi-sliders-h"
-      severity="secondary"
-      [outlined]="true"
-      class="shrink-0"
-      aria-label="เปิดตัวกรอง"
-    />
-
     <p-button
       [label]="addButtonLabel()"
       icon="pi pi-plus"

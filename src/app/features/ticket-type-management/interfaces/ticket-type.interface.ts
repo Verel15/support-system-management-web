@@ -6,6 +6,7 @@ export interface TicketTypeRequest {
 export interface TicketTypeResponse {
   id: string;
   name: string;
+  categories: CategoryItem[];
   createdAt: string;
   updatedAt: string;
 }
@@ -84,6 +85,24 @@ export interface TicketSubCategoryResponse {
 
 export interface TicketSubCategoryPageResponse {
   content: TicketSubCategoryResponse[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+}
+
+export interface TicketSummaryResponse {
+  id: string;
+  title: string;
+  projectName: string;
+  assigneeName: string;
+  teamName: string;
+}
+
+export interface TicketSummaryPageResponse {
+  content: TicketSummaryResponse[];
   page: number;
   size: number;
   totalElements: number;

@@ -5,6 +5,7 @@ import {
   TicketSubCategoryPageResponse,
   TicketSubCategoryRequest,
   TicketSubCategoryResponse,
+  TicketSummaryPageResponse,
 } from '../interfaces/ticket-type.interface';
 
 @Injectable({ providedIn: 'root' })
@@ -29,5 +30,9 @@ export class TicketSubCategoryService {
 
   delete(id: string): Observable<void> {
     return this.api.delete<void>(`/ticket-sub-categories/${id}`);
+  }
+
+  getTickets(id: string, page = 0, size = 10): Observable<TicketSummaryPageResponse> {
+    return this.api.get<TicketSummaryPageResponse>(`/ticket-sub-categories/${id}/tickets`, { page, size });
   }
 }

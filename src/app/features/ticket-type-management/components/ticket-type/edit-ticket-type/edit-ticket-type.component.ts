@@ -5,6 +5,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
@@ -74,6 +75,7 @@ export class EditTicketTypeComponent {
     this.ticketTypeService.getById(this.id).subscribe({
       next: (res) => {
         this.form.patchValue({ name: res.name });
+        this.selectedCategoryValues.set(res.categories.map((c) => c.id));
       },
       error: () => {
         this.messageService.add({
@@ -91,8 +93,9 @@ export class EditTicketTypeComponent {
     this.categoryOptions().filter((opt) => this.selectedCategoryValues().includes(opt.value)),
   );
 
+  private readonly formStatus = toSignal(this.form.statusChanges, { initialValue: this.form.status });
   protected readonly canSubmit = computed(
-    () => this.form.valid && this.selectedCategoryValues().length > 0,
+    () => this.formStatus() === 'VALID' && this.selectedCategoryValues().length > 0,
   );
 
   protected readonly currentName = computed(() => this.form.get('name')?.value ?? '');

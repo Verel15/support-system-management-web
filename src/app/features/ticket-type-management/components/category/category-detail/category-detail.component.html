@@ -28,7 +28,7 @@
 
         <ul class="flex flex-col gap-3" aria-label="รายการ Sub-Category">
           @for (sub of cat.subCategories; track sub.id) {
-            <li class="px-4 py-3.5 rounded-xl bg-blue-50 text-blue-900 text-sm font-medium">
+            <li class="px-4 py-3.5 rounded-xl bg-green-50 text-green-900 text-sm font-medium">
               {{ sub.name }}
             </li>
           }
@@ -60,9 +60,6 @@
 
           <dt class="text-sm text-slate-500 whitespace-nowrap">วันที่สร้าง:</dt>
           <dd class="text-sm font-medium text-slate-800">{{ formatDate(cat.createdAt) }}</dd>
-
-          <dt class="text-sm text-slate-500 whitespace-nowrap">เวลา:</dt>
-          <dd class="text-sm font-medium text-slate-800">{{ formatTime(cat.createdAt) }}</dd>
 
           <dt class="text-sm text-slate-500 whitespace-nowrap">อัปเดตล่าสุด:</dt>
           <dd class="text-sm font-medium text-slate-800">{{ formatDate(cat.updatedAt) }}</dd>

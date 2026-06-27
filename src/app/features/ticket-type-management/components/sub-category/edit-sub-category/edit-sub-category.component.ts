@@ -5,6 +5,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
@@ -106,7 +107,8 @@ export class EditSubCategoryComponent {
     });
   }
 
-  protected readonly canSubmit = computed(() => this.form.valid);
+  private readonly formStatus = toSignal(this.form.statusChanges, { initialValue: this.form.status });
+  protected readonly canSubmit = computed(() => this.formStatus() === 'VALID');
   protected readonly currentName = computed(() => this.form.get('name')?.value ?? '');
 
   protected isNameInvalid(): boolean {

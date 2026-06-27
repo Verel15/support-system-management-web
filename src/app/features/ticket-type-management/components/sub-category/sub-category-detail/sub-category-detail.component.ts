@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   signal,
   viewChild,
@@ -13,8 +14,15 @@ import {
   ConfirmDialogComponent,
   DeleteConfirmDialogComponent,
 } from '../../../../../shared/components/dialogs';
+import {
+  DataTableComponent,
+  TableColumn,
+} from '../../../../../shared/components/data-table';
 import { TicketSubCategoryService } from '../../../services/ticket-sub-category.service';
-import { TicketSubCategoryResponse } from '../../../interfaces/ticket-type.interface';
+import {
+  TicketSubCategoryResponse,
+  TicketSummaryResponse,
+} from '../../../interfaces/ticket-type.interface';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -22,7 +30,7 @@ interface ActionMenuItem extends MenuItem {
 
 @Component({
   selector: 'app-sub-category-detail',
-  imports: [Button, Menu, ConfirmDialogComponent, DeleteConfirmDialogComponent],
+  imports: [Button, Menu, ConfirmDialogComponent, DeleteConfirmDialogComponent, DataTableComponent],
   templateUrl: './sub-category-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -40,6 +48,21 @@ export class SubCategoryDetailComponent {
   protected readonly deleting = signal(false);
   protected readonly subCategory = signal<TicketSubCategoryResponse | null>(null);
 
+  protected readonly tickets = signal<any[]>([]);
+  protected readonly ticketTotal = signal(0);
+  protected readonly ticketPage = signal(0);
+  protected readonly ticketPageSize = signal(10);
+  protected readonly ticketLoading = signal(false);
+
+  protected readonly ticketRows = computed(() => this.tickets() as Record<string, unknown>[]);
+
+  protected readonly ticketColumns: TableColumn[] = [
+    { field: 'title', header: 'หัวข้องาน', sortable: true },
+    { field: 'projectName', header: 'โครงการ', sortable: true },
+    { field: 'assigneeName', header: 'ผู้รับผิดชอบ', sortable: true },
+    { field: 'teamName', header: 'ทีมรับเรื่อง', sortable: true },
+  ];
+
   protected readonly menuItems: ActionMenuItem[] = [
     { label: 'แก้ไข Sub-Category', command: () => this.onEdit() },
     { separator: true },
@@ -48,6 +71,7 @@ export class SubCategoryDetailComponent {
 
   constructor() {
     this.loadData();
+    this.loadTickets();
   }
 
   private loadData(): void {
@@ -63,6 +87,33 @@ export class SubCategoryDetailComponent {
         this.router.navigate(['/ticket-type-management/list']);
       },
     });
+  }
+
+  private loadTickets(): void {
+    this.ticketLoading.set(true);
+    this.ticketSubCategoryService
+      .getTickets(this.id, this.ticketPage(), this.ticketPageSize())
+      .subscribe({
+        next: (res) => {
+          this.tickets.set(res.content);
+          this.ticketTotal.set(res.totalElements);
+          this.ticketLoading.set(false);
+        },
+        error: () => {
+          this.ticketLoading.set(false);
+        },
+      });
+  }
+
+  protected onTicketPageChange(page: number): void {
+    this.ticketPage.set(page);
+    this.loadTickets();
+  }
+
+  protected onTicketPageSizeChange(size: number): void {
+    this.ticketPageSize.set(size);
+    this.ticketPage.set(0);
+    this.loadTickets();
   }
 
   protected formatDate(iso: string): string {
