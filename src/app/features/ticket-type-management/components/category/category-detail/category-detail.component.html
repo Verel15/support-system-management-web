@@ -13,101 +13,84 @@
     <h1
       class="absolute inset-0 flex items-center justify-center text-xl font-semibold text-slate-800 pointer-events-none"
     >
-      {{ category().name }}
+      @if (category()) { {{ category()!.name }} } @else { กำลังโหลด... }
     </h1>
   </div>
 
-  <!-- Content -->
-  <div class="flex-1 p-6 grid grid-cols-12 gap-5 items-start">
-    <!-- Left: Sub-Category list -->
-    <div class="col-span-12 md:col-span-8 flex flex-col gap-4">
-      <h2 class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
-        Sub-Category
-      </h2>
+  @if (category(); as cat) {
+    <!-- Content -->
+    <div class="flex-1 p-6 grid grid-cols-12 gap-5 items-start">
+      <!-- Left: Sub-Category list -->
+      <div class="col-span-12 md:col-span-8 flex flex-col gap-4">
+        <h2 class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
+          Sub-Category
+        </h2>
 
-      <ul class="flex flex-col gap-3" aria-label="รายการ Sub-Category">
-        @for (sub of category().subCategories; track sub) {
-          <li class="px-4 py-3.5 rounded-xl bg-blue-50 text-blue-900 text-sm font-medium">
-            {{ sub }}
-          </li>
-        }
-      </ul>
-    </div>
-
-    <!-- Right: Info card -->
-    <div class="col-span-12 md:col-span-4 rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <!-- Card header -->
-      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-        <h3 class="font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">ข้อมูล</h3>
-        <button
-          type="button"
-          class="w-8 h-8 flex items-center justify-center rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-          aria-label="การดำเนินการ"
-          aria-haspopup="true"
-          (click)="onMenuOpen($event)"
-        >
-          <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
-        </button>
+        <ul class="flex flex-col gap-3" aria-label="รายการ Sub-Category">
+          @for (sub of cat.subCategories; track sub.id) {
+            <li class="px-4 py-3.5 rounded-xl bg-blue-50 text-blue-900 text-sm font-medium">
+              {{ sub.name }}
+            </li>
+          }
+        </ul>
       </div>
 
-      <dl class="grid grid-cols-[auto_1fr] py-4">
-        <!-- วันที่สร้าง -->
-        <dt class="px-3 py-3 text-sm text-slate-500 whitespace-nowrap">วันที่สร้าง:</dt>
-        <dd class="px-3 py-3 text-sm font-medium text-slate-800 leading-relaxed">
-          {{ category().createdDate }}
-          <span class="text-slate-500 font-normal">เวลา {{ category().createdTime }} น.</span>
-        </dd>
+      <!-- Right: Info card -->
+      <div class="col-span-12 md:col-span-4 rounded-xl border border-slate-200 bg-white overflow-hidden">
+        <!-- Card header -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+          <h3 class="font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">ข้อมูล</h3>
+          <button
+            type="button"
+            class="w-8 h-8 flex items-center justify-center rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+            aria-label="การดำเนินการ"
+            aria-haspopup="true"
+            (click)="onMenuOpen($event)"
+          >
+            <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+          </button>
+        </div>
 
-        <!-- Sub-Category count -->
-        <dt class="px-3 py-3 text-sm text-slate-500 whitespace-nowrap">Sub-Category:</dt>
-        <dd class="px-3 py-3 text-sm font-medium text-slate-800">
-          {{ category().subCategories.length }}
-        </dd>
+        <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 items-baseline p-4">
+          <dt class="text-sm text-slate-500 whitespace-nowrap">Status Flow:</dt>
+          <dd class="text-sm font-medium text-slate-800">{{ cat.statusFlowName }}</dd>
 
-        <!-- สถานะ -->
-        <dt class="px-3 py-2 text-sm text-slate-500 whitespace-nowrap self-center">สถานะ:</dt>
-        <dd class="px-2 py-2">
-          <p-select
-            [ngModel]="selectedStatus()"
-            (ngModelChange)="onStatusChange($event)"
-            [options]="statusOptions"
-            optionLabel="label"
-            optionValue="value"
-            appendTo="body"
-            styleClass="w-full"
-            aria-label="สถานะ"
-          />
-        </dd>
+          <dt class="text-sm text-slate-500 whitespace-nowrap">Sub-Category:</dt>
+          <dd class="text-sm font-medium text-slate-800">{{ cat.subCategories.length }}</dd>
 
-        <!-- สร้างโดย -->
-        <dt class="px-3 py-3 text-sm text-slate-500 whitespace-nowrap">สร้างโดย:</dt>
-        <dd class="px-3 py-3 text-sm font-medium text-slate-800">
-          {{ category().createdBy }}
-        </dd>
-      </dl>
+          <dt class="text-sm text-slate-500 whitespace-nowrap">วันที่สร้าง:</dt>
+          <dd class="text-sm font-medium text-slate-800">{{ formatDate(cat.createdAt) }}</dd>
+
+          <dt class="text-sm text-slate-500 whitespace-nowrap">เวลา:</dt>
+          <dd class="text-sm font-medium text-slate-800">{{ formatTime(cat.createdAt) }}</dd>
+
+          <dt class="text-sm text-slate-500 whitespace-nowrap">อัปเดตล่าสุด:</dt>
+          <dd class="text-sm font-medium text-slate-800">{{ formatDate(cat.updatedAt) }}</dd>
+        </dl>
+      </div>
     </div>
-  </div>
+
+    <app-confirm-dialog
+      [(visible)]="showConfirmDialog"
+      type="warning"
+      title="ยืนยันการลบ Category"
+      confirmLabel="ยืนยัน"
+      cancelLabel="ยกเลิก"
+      (confirmed)="onDeleteFirstStepConfirmed()"
+    >
+      คุณแน่ใจที่จะลบ Category
+      <strong class="text-primary-600">{{ cat.name }}</strong>
+      ออกหรือไม่?
+    </app-confirm-dialog>
+
+    <app-delete-confirm-dialog
+      [(visible)]="showDeleteDialog"
+      [targetLabel]="cat.name"
+      [loading]="deleting()"
+      (confirmed)="onDeleteConfirmed($event)"
+    />
+  }
 </div>
-
-<app-confirm-dialog
-  [(visible)]="showConfirmDialog"
-  type="warning"
-  title="ยืนยันการลบ Category"
-  confirmLabel="ยืนยัน"
-  cancelLabel="ยกเลิก"
-  (confirmed)="onDeleteFirstStepConfirmed()"
->
-  คุณแน่ใจที่จะลบ Category
-  <strong class="text-primary-600">{{ category().name }}</strong>
-  ออกหรือไม่?
-</app-confirm-dialog>
-
-<app-delete-confirm-dialog
-  [(visible)]="showDeleteDialog"
-  [targetLabel]="category().name"
-  [loading]="deleting()"
-  (confirmed)="onDeleteConfirmed($event)"
-/>
 
 <p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
   <ng-template #item let-item pTemplate="item">

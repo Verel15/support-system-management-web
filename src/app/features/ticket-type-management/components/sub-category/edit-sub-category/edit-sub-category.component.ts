@@ -5,7 +5,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
@@ -15,8 +15,9 @@ import {
   ConfirmDialogComponent,
   DeleteConfirmDialogComponent,
 } from '../../../../../shared/components/dialogs';
-
-type Priority = 'น้อย' | 'ปานกลาง' | 'มาก';
+import { TicketSubCategoryService } from '../../../services/ticket-sub-category.service';
+import { PriorityService } from '../../../../../features/priority-management/services/priority.service';
+import { PositionService } from '../../../../../features/user-management/services/position.service';
 
 @Component({
   selector: 'app-edit-sub-category',
@@ -32,43 +33,78 @@ type Priority = 'น้อย' | 'ปานกลาง' | 'มาก';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditSubCategoryComponent {
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly ticketSubCategoryService = inject(TicketSubCategoryService);
+  private readonly priorityService = inject(PriorityService);
+  private readonly positionService = inject(PositionService);
+
+  private readonly id = this.route.snapshot.paramMap.get('id')!;
 
   protected readonly submitting = signal(false);
   protected readonly showConfirmDialog = signal(false);
   protected readonly showPasswordDialog = signal(false);
+  protected readonly priorityOptions = signal<{ value: string; label: string }[]>([]);
+  protected readonly positionOptions = signal<{ value: string; label: string }[]>([]);
 
-  // TODO: pre-fill from route params / service
   protected readonly form = this.fb.group({
-    name: ['Network Design', Validators.required],
-    priority: ['น้อย' as Priority | null, Validators.required],
-    relatedPosition: ['Back-end' as string | null, Validators.required],
-    status: ['active' as string | null, Validators.required],
+    name: ['', Validators.required],
+    priorityLevelId: [null as string | null, Validators.required],
+    positionId: [null as string | null, Validators.required],
   });
 
-  protected readonly priorityOptions: { value: Priority; label: string }[] = [
-    { value: 'น้อย', label: 'น้อย' },
-    { value: 'ปานกลาง', label: 'ปานกลาง' },
-    { value: 'มาก', label: 'มาก' },
-  ];
+  constructor() {
+    this.loadData();
+  }
 
-  protected readonly relatedPositionOptions: { value: string; label: string }[] = [
-    { value: 'Front-end', label: 'Front-end' },
-    { value: 'Back-end', label: 'Back-end' },
-    { value: 'Full-stack', label: 'Full-stack' },
-    { value: 'DevOps', label: 'DevOps' },
-    { value: 'QA', label: 'QA' },
-    { value: 'UX/UI', label: 'UX/UI' },
-    { value: 'Database', label: 'Database' },
-    { value: 'Network', label: 'Network' },
-  ];
+  private loadData(): void {
+    this.priorityService.getAll(0, 1000).subscribe({
+      next: (res) => {
+        this.priorityOptions.set(res.content.map((p) => ({ value: p.id, label: p.name })));
+      },
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูลลำดับความสำคัญได้',
+          life: 4000,
+        }),
+    });
 
-  protected readonly statusOptions = [
-    { value: 'active', label: 'ใช้งาน' },
-    { value: 'inactive', label: 'ไม่ใช้งาน' },
-  ];
+    this.positionService.getAll().subscribe({
+      next: (res) => {
+        this.positionOptions.set(res.map((p) => ({ value: p.id, label: p.name })));
+      },
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูลตำแหน่งได้',
+          life: 4000,
+        }),
+    });
+
+    this.ticketSubCategoryService.getById(this.id).subscribe({
+      next: (res) => {
+        this.form.patchValue({
+          name: res.name,
+          priorityLevelId: res.priorityLevelId,
+          positionId: res.positionId,
+        });
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูลได้',
+          life: 4000,
+        });
+        this.router.navigate(['/ticket-type-management/list']);
+      },
+    });
+  }
 
   protected readonly canSubmit = computed(() => this.form.valid);
   protected readonly currentName = computed(() => this.form.get('name')?.value ?? '');
@@ -79,22 +115,17 @@ export class EditSubCategoryComponent {
   }
 
   protected isPriorityInvalid(): boolean {
-    const ctrl = this.form.get('priority');
+    const ctrl = this.form.get('priorityLevelId');
     return !!(ctrl?.invalid && ctrl?.touched);
   }
 
-  protected isRelatedPositionInvalid(): boolean {
-    const ctrl = this.form.get('relatedPosition');
-    return !!(ctrl?.invalid && ctrl?.touched);
-  }
-
-  protected isStatusInvalid(): boolean {
-    const ctrl = this.form.get('status');
+  protected isPositionInvalid(): boolean {
+    const ctrl = this.form.get('positionId');
     return !!(ctrl?.invalid && ctrl?.touched);
   }
 
   protected onBack(): void {
-    this.router.navigate(['/ticket-type-management/sub-category/detail']);
+    this.router.navigate(['/ticket-type-management/sub-category/detail', this.id]);
   }
 
   protected onSubmit(): void {
@@ -110,14 +141,31 @@ export class EditSubCategoryComponent {
 
   protected onSaveConfirmed(_password: string): void {
     this.submitting.set(true);
-    // TODO: call update sub-category API with _password
-    this.messageService.add({
-      severity: 'success',
-      summary: 'บันทึกสำเร็จ',
-      detail: 'แก้ไข Sub-Category เรียบร้อยแล้ว',
-      life: 4000,
-    });
-    this.router.navigate(['/ticket-type-management/sub-category/detail']);
-    this.submitting.set(false);
+    this.ticketSubCategoryService
+      .update(this.id, {
+        name: this.form.value.name!,
+        priorityLevelId: this.form.value.priorityLevelId!,
+        positionId: this.form.value.positionId!,
+      })
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'บันทึกสำเร็จ',
+            detail: 'แก้ไข Sub-Category เรียบร้อยแล้ว',
+            life: 4000,
+          });
+          this.router.navigate(['/ticket-type-management/sub-category/detail', this.id]);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'เกิดข้อผิดพลาด',
+            detail: 'ไม่สามารถบันทึกข้อมูลได้',
+            life: 4000,
+          });
+          this.submitting.set(false);
+        },
+      });
   }
 }

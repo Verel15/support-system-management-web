@@ -25,29 +25,16 @@ import {
   ConfirmDialogComponent,
   DeleteConfirmDialogComponent,
 } from '../../../../shared/components/dialogs';
+import { TicketTypeService } from '../../services/ticket-type.service';
+import { TicketCategoryService } from '../../services/ticket-category.service';
+import { TicketSubCategoryService } from '../../services/ticket-sub-category.service';
+import {
+  TicketTypeResponse,
+  TicketCategoryResponse,
+  TicketSubCategoryResponse,
+} from '../../interfaces/ticket-type.interface';
 
 type TabType = 'ticket-type' | 'category' | 'sub-category';
-type Priority = 'น้อย' | 'ปานกลาง' | 'มาก';
-
-interface TicketTypeItem {
-  name: string;
-  createdBy: string;
-  ticketCount: number;
-  createdDate: string;
-}
-
-interface CategoryItem {
-  name: string;
-  createdBy: string;
-  subCategoryCount: number;
-  createdDate: string;
-}
-
-interface SubCategoryItem {
-  name: string;
-  priority: Priority;
-  relatedPosition: string;
-}
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -74,11 +61,16 @@ interface ActionMenuItem extends MenuItem {
 export class TicketTypeListComponent {
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  private readonly ticketTypeService = inject(TicketTypeService);
+  private readonly ticketCategoryService = inject(TicketCategoryService);
+  private readonly ticketSubCategoryService = inject(TicketSubCategoryService);
+
   protected readonly menu = viewChild.required<Menu>('actionMenu');
   protected readonly activeRow = signal<Record<string, unknown> | null>(null);
   protected readonly showConfirmDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly deletingItem = signal<string | null>(null);
+  protected readonly deleting = signal(false);
   protected readonly activeTab = signal<TabType>('ticket-type');
 
   protected readonly tabs: { label: string; value: TabType }[] = [
@@ -96,22 +88,20 @@ export class TicketTypeListComponent {
 
   protected readonly ticketTypeColumns: TableColumn[] = [
     { field: 'name', header: 'ประเภท Ticket', sortable: true },
-    { field: 'createdBy', header: 'สร้างโดย', sortable: true },
-    { field: 'ticketCount', header: 'จำนวน Tickets ที่ใช้', sortable: true },
-    { field: 'createdDate', header: 'วันที่สร้าง', sortable: true },
+    { field: 'createdAt', header: 'วันที่สร้าง', sortable: true },
   ];
 
   protected readonly categoryColumns: TableColumn[] = [
     { field: 'name', header: 'หมวดหมู่', sortable: true },
-    { field: 'createdBy', header: 'สร้างโดย', sortable: true },
+    { field: 'statusFlowName', header: 'Status Flow', sortable: true },
     { field: 'subCategoryCount', header: 'จำนวน Sub-Category', sortable: true },
-    { field: 'createdDate', header: 'วันที่สร้าง', sortable: true },
+    { field: 'createdAt', header: 'วันที่สร้าง', sortable: true },
   ];
 
   protected readonly subCategoryColumns: TableColumn[] = [
     { field: 'name', header: 'หมวดหมู่ย่อย', sortable: true },
-    { field: 'priority', header: 'ลำดับความสำคัญ', sortable: true },
-    { field: 'relatedPosition', header: 'ตำแหน่งที่เกี่ยวข้อง', sortable: true },
+    { field: 'priorityLevelName', header: 'ลำดับความสำคัญ', sortable: true },
+    { field: 'positionName', header: 'ตำแหน่งที่เกี่ยวข้อง', sortable: true },
   ];
 
   protected readonly dateOptions = [
@@ -127,88 +117,82 @@ export class TicketTypeListComponent {
   protected readonly pageSize = signal(10);
   protected readonly loading = signal(false);
 
-  private readonly allTicketTypes: TicketTypeItem[] = [
-    { name: 'Network Issue', createdBy: 'สมชาย ใจดี', ticketCount: 42, createdDate: '2026-06-01' },
-    {
-      name: 'Software Bug',
-      createdBy: 'วิภาวรรณ สวัสดี',
-      ticketCount: 18,
-      createdDate: '2026-06-02',
-    },
-    {
-      name: 'Hardware Failure',
-      createdBy: 'ใจงาม สุดใจจริง',
-      ticketCount: 7,
-      createdDate: '2026-06-03',
-    },
-    {
-      name: 'Access Request',
-      createdBy: 'แสนดี ที่สุดเลย',
-      ticketCount: 25,
-      createdDate: '2026-06-04',
-    },
-    {
-      name: 'Security Incident',
-      createdBy: 'มานี มีตา',
-      ticketCount: 15,
-      createdDate: '2026-06-05',
-    },
-  ];
+  private readonly allTicketTypes = signal<TicketTypeResponse[]>([]);
+  private readonly allCategories = signal<TicketCategoryResponse[]>([]);
+  private readonly allSubCategories = signal<TicketSubCategoryResponse[]>([]);
 
-  private readonly allCategories: CategoryItem[] = [
-    { name: 'Network', createdBy: 'สมชาย ใจดี', subCategoryCount: 8, createdDate: '2026-06-01' },
-    {
-      name: 'Software',
-      createdBy: 'วิภาวรรณ สวัสดี',
-      subCategoryCount: 12,
-      createdDate: '2026-06-02',
-    },
-    {
-      name: 'Hardware',
-      createdBy: 'ใจงาม สุดใจจริง',
-      subCategoryCount: 5,
-      createdDate: '2026-06-03',
-    },
-    {
-      name: 'Security',
-      createdBy: 'แสนดี ที่สุดเลย',
-      subCategoryCount: 6,
-      createdDate: '2026-06-04',
-    },
-    {
-      name: 'Infrastructure',
-      createdBy: 'มานี มีตา',
-      subCategoryCount: 9,
-      createdDate: '2026-06-05',
-    },
-  ];
+  constructor() {
+    this.loadTicketTypes();
+    this.loadCategories();
+    this.loadSubCategories();
+  }
 
-  private readonly allSubCategories: SubCategoryItem[] = [
-    { name: 'Network Design', priority: 'น้อย', relatedPosition: 'Back-end' },
-    { name: 'Network Configuration', priority: 'ปานกลาง', relatedPosition: 'Back-end' },
-    { name: 'Network Security', priority: 'มาก', relatedPosition: 'Back-end' },
-    { name: 'Network Monitoring', priority: 'น้อย', relatedPosition: 'Back-end' },
-    { name: 'Network Troubleshooting', priority: 'ปานกลาง', relatedPosition: 'Back-end' },
-    { name: 'Network Performance', priority: 'น้อย', relatedPosition: 'Back-end' },
-    { name: 'Network Infrastructure', priority: 'มาก', relatedPosition: 'Back-end' },
-    { name: 'Network Connectivity', priority: 'น้อย', relatedPosition: 'Back-end' },
-    { name: 'Software Usage', priority: 'มาก', relatedPosition: 'Back-end' },
-    { name: 'Printer Not Working', priority: 'ปานกลาง', relatedPosition: 'Back-end' },
-  ];
+  private loadTicketTypes(): void {
+    this.loading.set(true);
+    this.ticketTypeService.getAll(0, 1000).subscribe({
+      next: (res) => {
+        this.allTicketTypes.set(res.content);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูล Ticket Type ได้',
+          life: 4000,
+        });
+        this.loading.set(false);
+      },
+    });
+  }
+
+  private loadCategories(): void {
+    this.ticketCategoryService.getAll(0, 1000).subscribe({
+      next: (res) => this.allCategories.set(res.content),
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูล Category ได้',
+          life: 4000,
+        }),
+    });
+  }
+
+  private loadSubCategories(): void {
+    this.ticketSubCategoryService.getAll(0, 1000).subscribe({
+      next: (res) => this.allSubCategories.set(res.content),
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูล Sub-Category ได้',
+          life: 4000,
+        }),
+    });
+  }
+
+  private formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  }
 
   private readonly filteredTicketTypes = computed(() => {
     const query = this.searchQuery().toLowerCase();
-    return this.allTicketTypes.filter((item) => !query || item.name.toLowerCase().includes(query));
+    return this.allTicketTypes().filter((item) => !query || item.name.toLowerCase().includes(query));
   });
 
   private readonly filteredCategories = computed(() => {
     const query = this.searchQuery().toLowerCase();
-    return this.allCategories.filter((item) => !query || item.name.toLowerCase().includes(query));
+    return this.allCategories().filter((item) => !query || item.name.toLowerCase().includes(query));
   });
 
   private readonly filteredSubCategories = computed(() => {
     const query = this.searchQuery().toLowerCase();
-    return this.allSubCategories.filter(
+    return this.allSubCategories().filter(
       (item) => !query || item.name.toLowerCase().includes(query),
     );
   });
@@ -230,13 +214,35 @@ export class TicketTypeListComponent {
   protected readonly currentData = computed<Record<string, unknown>[]>(() => {
     const tab = this.activeTab();
     const start = (this.currentPage() - 1) * this.pageSize();
-    let source: (TicketTypeItem | CategoryItem | SubCategoryItem)[];
-    if (tab === 'ticket-type') source = this.filteredTicketTypes();
-    else if (tab === 'category') source = this.filteredCategories();
-    else source = this.filteredSubCategories();
-    return source
+
+    if (tab === 'ticket-type') {
+      return this.filteredTicketTypes()
+        .slice(start, start + this.pageSize())
+        .map((item) => ({
+          id: item.id,
+          name: item.name,
+          createdAt: this.formatDate(item.createdAt),
+        }));
+    }
+    if (tab === 'category') {
+      return this.filteredCategories()
+        .slice(start, start + this.pageSize())
+        .map((item) => ({
+          id: item.id,
+          name: item.name,
+          statusFlowName: item.statusFlowName,
+          subCategoryCount: item.subCategories.length,
+          createdAt: this.formatDate(item.createdAt),
+        }));
+    }
+    return this.filteredSubCategories()
       .slice(start, start + this.pageSize())
-      .map((item) => ({ ...item }) as Record<string, unknown>);
+      .map((item) => ({
+        id: item.id,
+        name: item.name,
+        priorityLevelName: item.priorityLevelName,
+        positionName: item.positionName,
+      }));
   });
 
   protected readonly addButtonLabel = computed(() => {
@@ -252,12 +258,6 @@ export class TicketTypeListComponent {
     if (tab === 'category') return 'ค้นหาหมวดหมู่';
     return 'ค้นหาหมวดหมู่ย่อย';
   });
-
-  protected prioritySymbol(priority: unknown): string {
-    if (priority === 'มาก') return '▲';
-    if (priority === 'ปานกลาง') return '●';
-    return '▼';
-  }
 
   protected setActiveTab(tab: TabType): void {
     this.activeTab.set(tab);
@@ -294,11 +294,15 @@ export class TicketTypeListComponent {
   }
 
   protected onView(): void {
-    this.router.navigate([`/ticket-type-management/${this.activeTab()}/detail`]);
+    const id = this.activeRow()?.['id'] as string;
+    if (!id) return;
+    this.router.navigate([`/ticket-type-management/${this.activeTab()}/detail`, id]);
   }
 
   protected onEdit(): void {
-    this.router.navigate([`/ticket-type-management/${this.activeTab()}/edit`]);
+    const id = this.activeRow()?.['id'] as string;
+    if (!id) return;
+    this.router.navigate([`/ticket-type-management/${this.activeTab()}/edit`, id]);
   }
 
   protected onDelete(): void {
@@ -314,12 +318,42 @@ export class TicketTypeListComponent {
   }
 
   protected onDeleteConfirmed(_password: string): void {
-    this.messageService.add({
-      severity: 'success',
-      summary: 'ลบสำเร็จ',
-      detail: 'ลบรายการเรียบร้อยแล้ว',
-      life: 4000,
+    const id = this.activeRow()?.['id'] as string;
+    if (!id) return;
+    this.deleting.set(true);
+
+    const tab = this.activeTab();
+    const delete$ =
+      tab === 'ticket-type'
+        ? this.ticketTypeService.delete(id)
+        : tab === 'category'
+          ? this.ticketCategoryService.delete(id)
+          : this.ticketSubCategoryService.delete(id);
+
+    delete$.subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'ลบสำเร็จ',
+          detail: 'ลบรายการเรียบร้อยแล้ว',
+          life: 4000,
+        });
+        this.showDeleteDialog.set(false);
+        this.deletingItem.set(null);
+        this.deleting.set(false);
+        if (tab === 'ticket-type') this.loadTicketTypes();
+        else if (tab === 'category') this.loadCategories();
+        else this.loadSubCategories();
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถลบรายการได้',
+          life: 4000,
+        });
+        this.deleting.set(false);
+      },
     });
-    this.deletingItem.set(null);
   }
 }

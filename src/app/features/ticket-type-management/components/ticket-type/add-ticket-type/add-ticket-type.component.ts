@@ -14,6 +14,8 @@ import {
   SelectItemsDialogComponent,
   SelectItemOption,
 } from '../../../../../shared/components/dialogs';
+import { TicketTypeService } from '../../../services/ticket-type.service';
+import { TicketCategoryService } from '../../../services/ticket-category.service';
 
 @Component({
   selector: 'app-add-ticket-type',
@@ -25,27 +27,41 @@ export class AddTicketTypeComponent {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly ticketTypeService = inject(TicketTypeService);
+  private readonly ticketCategoryService = inject(TicketCategoryService);
 
   protected readonly submitting = signal(false);
   protected readonly showCategoryDialog = signal(false);
   protected readonly selectedCategoryValues = signal<string[]>([]);
+  protected readonly categoryOptions = signal<SelectItemOption[]>([]);
 
   protected readonly form = this.fb.group({
     name: ['', Validators.required],
   });
 
-  protected readonly categoryOptions: SelectItemOption[] = [
-    { value: 'system', label: 'System' },
-    { value: 'application', label: 'Application' },
-    { value: 'network', label: 'Network' },
-    { value: 'security', label: 'Security' },
-    { value: 'software', label: 'Software' },
-    { value: 'hardware-upgrades', label: 'Hardware Upgrades' },
-    { value: 'access-permissions', label: 'Access Permissions' },
-  ];
+  constructor() {
+    this.loadCategories();
+  }
+
+  private loadCategories(): void {
+    this.ticketCategoryService.getAll(0, 1000).subscribe({
+      next: (res) => {
+        this.categoryOptions.set(
+          res.content.map((c) => ({ value: c.id, label: c.name })),
+        );
+      },
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูล Category ได้',
+          life: 4000,
+        }),
+    });
+  }
 
   protected readonly selectedCategories = computed(() =>
-    this.categoryOptions.filter((opt) => this.selectedCategoryValues().includes(opt.value)),
+    this.categoryOptions().filter((opt) => this.selectedCategoryValues().includes(opt.value)),
   );
 
   protected readonly canSubmit = computed(
@@ -73,14 +89,27 @@ export class AddTicketTypeComponent {
     this.form.markAllAsTouched();
     if (!this.canSubmit()) return;
     this.submitting.set(true);
-    // TODO: call create ticket type API
-    this.messageService.add({
-      severity: 'success',
-      summary: 'เพิ่มสำเร็จ',
-      detail: 'เพิ่มประเภท Ticket เรียบร้อยแล้ว',
-      life: 4000,
-    });
-    this.router.navigate(['/ticket-type-management/list']);
-    this.submitting.set(false);
+    this.ticketTypeService
+      .create({ name: this.form.value.name!, categoryIds: this.selectedCategoryValues() })
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'เพิ่มสำเร็จ',
+            detail: 'เพิ่มประเภท Ticket เรียบร้อยแล้ว',
+            life: 4000,
+          });
+          this.router.navigate(['/ticket-type-management/list']);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'เกิดข้อผิดพลาด',
+            detail: 'ไม่สามารถเพิ่มประเภท Ticket ได้',
+            life: 4000,
+          });
+          this.submitting.set(false);
+        },
+      });
   }
 }

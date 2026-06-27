@@ -44,25 +44,25 @@
         }
       </div>
 
-      <!-- สถานะ -->
+      <!-- Status Flow -->
       <div class="flex flex-col gap-1.5">
-        <label for="categoryStatus" class="text-sm font-semibold text-slate-800">สถานะ</label>
+        <label for="statusFlowId" class="text-sm font-semibold text-slate-800">Status Flow</label>
         <p-select
-          inputId="categoryStatus"
-          formControlName="status"
-          [options]="statusOptions"
+          inputId="statusFlowId"
+          formControlName="statusFlowId"
+          [options]="statusFlowOptions()"
           optionLabel="label"
           optionValue="value"
-          placeholder="เลือกสถานะ"
+          placeholder="เลือก Status Flow"
           styleClass="w-full"
-          [class.ng-invalid]="isStatusInvalid()"
-          [class.ng-dirty]="isStatusInvalid()"
+          [class.ng-invalid]="isStatusFlowInvalid()"
+          [class.ng-dirty]="isStatusFlowInvalid()"
           aria-required="true"
-          [attr.aria-invalid]="isStatusInvalid()"
-          aria-describedby="statusError"
+          [attr.aria-invalid]="isStatusFlowInvalid()"
+          aria-describedby="statusFlowError"
         />
-        @if (isStatusInvalid()) {
-          <span id="statusError" class="text-sm text-error-600">กรุณาเลือกสถานะ</span>
+        @if (isStatusFlowInvalid()) {
+          <span id="statusFlowError" class="text-sm text-error-600">กรุณาเลือก Status Flow</span>
         }
       </div>
 
@@ -120,7 +120,7 @@
   [(visible)]="showSubCategoryDialog"
   title="Sub-Category"
   subtitle="เลือก Sub-Category ที่เกี่ยวข้อง"
-  [items]="subCategoryOptions"
+  [items]="subCategoryOptions()"
   [selected]="selectedSubCategoryValues()"
   (confirmed)="onSubCategoryConfirmed($event)"
 />

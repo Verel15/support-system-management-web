@@ -44,16 +44,16 @@
         }
       </div>
 
-      <!-- ระดับความสำคัญ -->
+      <!-- ลำดับความสำคัญ -->
       <div class="flex flex-col gap-1.5">
-        <label for="priority" class="text-sm font-semibold text-slate-800">ระดับความสำคัญ</label>
+        <label for="priorityLevelId" class="text-sm font-semibold text-slate-800">ลำดับความสำคัญ</label>
         <p-select
-          inputId="priority"
-          formControlName="priority"
-          [options]="priorityOptions"
+          inputId="priorityLevelId"
+          formControlName="priorityLevelId"
+          [options]="priorityOptions()"
           optionLabel="label"
           optionValue="value"
-          placeholder="เลือกระดับความสำคัญ"
+          placeholder="เลือกลำดับความสำคัญ"
           styleClass="w-full"
           [class.ng-invalid]="isPriorityInvalid()"
           [class.ng-dirty]="isPriorityInvalid()"
@@ -62,29 +62,29 @@
           aria-describedby="priorityError"
         />
         @if (isPriorityInvalid()) {
-          <span id="priorityError" class="text-sm text-error-600">กรุณาเลือกระดับความสำคัญ</span>
+          <span id="priorityError" class="text-sm text-error-600">กรุณาเลือกลำดับความสำคัญ</span>
         }
       </div>
 
       <!-- ตำแหน่งที่เกี่ยวข้อง -->
       <div class="flex flex-col gap-1.5">
-        <label for="relatedPosition" class="text-sm font-semibold text-slate-800">ตำแหน่งที่เกี่ยวข้อง</label>
+        <label for="positionId" class="text-sm font-semibold text-slate-800">ตำแหน่งที่เกี่ยวข้อง</label>
         <p-select
-          inputId="relatedPosition"
-          formControlName="relatedPosition"
-          [options]="relatedPositionOptions"
+          inputId="positionId"
+          formControlName="positionId"
+          [options]="positionOptions()"
           optionLabel="label"
           optionValue="value"
           placeholder="เลือกตำแหน่งที่เกี่ยวข้อง"
           styleClass="w-full"
-          [class.ng-invalid]="isRelatedPositionInvalid()"
-          [class.ng-dirty]="isRelatedPositionInvalid()"
+          [class.ng-invalid]="isPositionInvalid()"
+          [class.ng-dirty]="isPositionInvalid()"
           aria-required="true"
-          [attr.aria-invalid]="isRelatedPositionInvalid()"
-          aria-describedby="relatedPositionError"
+          [attr.aria-invalid]="isPositionInvalid()"
+          aria-describedby="positionError"
         />
-        @if (isRelatedPositionInvalid()) {
-          <span id="relatedPositionError" class="text-sm text-error-600">กรุณาเลือกตำแหน่งที่เกี่ยวข้อง</span>
+        @if (isPositionInvalid()) {
+          <span id="positionError" class="text-sm text-error-600">กรุณาเลือกตำแหน่งที่เกี่ยวข้อง</span>
         }
       </div>
 

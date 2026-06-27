@@ -5,24 +5,16 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
-import { Select } from 'primeng/select';
 import { MenuItem, MessageService } from 'primeng/api';
 import {
   ConfirmDialogComponent,
   DeleteConfirmDialogComponent,
 } from '../../../../../shared/components/dialogs';
-
-interface CategoryDetail {
-  name: string;
-  subCategories: string[];
-  createdDate: string;
-  createdTime: string;
-  createdBy: string;
-}
+import { TicketCategoryService } from '../../../services/ticket-category.service';
+import { TicketCategoryResponse } from '../../../interfaces/ticket-type.interface';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -30,45 +22,61 @@ interface ActionMenuItem extends MenuItem {
 
 @Component({
   selector: 'app-category-detail',
-  imports: [FormsModule, Button, Menu, Select, ConfirmDialogComponent, DeleteConfirmDialogComponent],
+  imports: [Button, Menu, ConfirmDialogComponent, DeleteConfirmDialogComponent],
   templateUrl: './category-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoryDetailComponent {
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  private readonly ticketCategoryService = inject(TicketCategoryService);
+
+  private readonly id = this.route.snapshot.paramMap.get('id')!;
+
   protected readonly menu = viewChild.required<Menu>('actionMenu');
   protected readonly showConfirmDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly deleting = signal(false);
-
-  // TODO: receive via route params / service
-  protected readonly category = signal<CategoryDetail>({
-    name: 'Network',
-    subCategories: [
-      'Network Design',
-      'Network Configuration',
-      'Network Security',
-      'Network Monitoring',
-      'Network Troubleshooting',
-    ],
-    createdDate: 'วันจันทร์ที่ 3 ก.ค. 2566',
-    createdTime: '15:30',
-    createdBy: 'ชื่อ นามสกุล',
-  });
-
-  protected readonly selectedStatus = signal<string>('active');
-
-  protected readonly statusOptions = [
-    { value: 'active', label: 'ใช้งาน' },
-    { value: 'inactive', label: 'ไม่ใช้งาน' },
-  ];
+  protected readonly category = signal<TicketCategoryResponse | null>(null);
 
   protected readonly menuItems: ActionMenuItem[] = [
     { label: 'แก้ไข Category', command: () => this.onEdit() },
     { separator: true },
     { label: 'ลบ', danger: true, command: () => this.showConfirmDialog.set(true) },
   ];
+
+  constructor() {
+    this.loadData();
+  }
+
+  private loadData(): void {
+    this.ticketCategoryService.getById(this.id).subscribe({
+      next: (res) => this.category.set(res),
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูลได้',
+          life: 4000,
+        });
+        this.router.navigate(['/ticket-type-management/list']);
+      },
+    });
+  }
+
+  protected formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString('th-TH', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
+
+  protected formatTime(iso: string): string {
+    return new Date(iso).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+  }
 
   protected onBack(): void {
     this.router.navigate(['/ticket-type-management/list']);
@@ -79,18 +87,7 @@ export class CategoryDetailComponent {
   }
 
   protected onEdit(): void {
-    this.router.navigate(['/ticket-type-management/category/edit']);
-  }
-
-  protected onStatusChange(value: string): void {
-    this.selectedStatus.set(value);
-    // TODO: call update status API
-    this.messageService.add({
-      severity: 'success',
-      summary: 'บันทึกสำเร็จ',
-      detail: 'อัปเดตสถานะเรียบร้อยแล้ว',
-      life: 3000,
-    });
+    this.router.navigate(['/ticket-type-management/category/edit', this.id]);
   }
 
   protected onDeleteFirstStepConfirmed(): void {
@@ -100,14 +97,25 @@ export class CategoryDetailComponent {
 
   protected onDeleteConfirmed(_password: string): void {
     this.deleting.set(true);
-    // TODO: call delete API with _password
-    this.messageService.add({
-      severity: 'success',
-      summary: 'ลบสำเร็จ',
-      detail: 'ลบ Category เรียบร้อยแล้ว',
-      life: 4000,
+    this.ticketCategoryService.delete(this.id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'ลบสำเร็จ',
+          detail: 'ลบ Category เรียบร้อยแล้ว',
+          life: 4000,
+        });
+        this.router.navigate(['/ticket-type-management/list']);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถลบข้อมูลได้',
+          life: 4000,
+        });
+        this.deleting.set(false);
+      },
     });
-    this.router.navigate(['/ticket-type-management/list']);
-    this.deleting.set(false);
   }
 }

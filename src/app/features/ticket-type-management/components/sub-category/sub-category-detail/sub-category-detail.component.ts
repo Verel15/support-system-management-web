@@ -5,38 +5,16 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
-import { StatusChipComponent } from '../../../../../shared/components/status-chip';
 import { MenuItem, MessageService } from 'primeng/api';
-import {
-  DataTableComponent,
-  DataTableCellDirective,
-  TableColumn,
-} from '../../../../../shared/components/data-table';
 import {
   ConfirmDialogComponent,
   DeleteConfirmDialogComponent,
 } from '../../../../../shared/components/dialogs';
-
-interface SubCategoryDetail {
-  name: string;
-  priority: string;
-  relatedPosition: string;
-  createdDate: string;
-  createdTime: string;
-  createdBy: string;
-}
-
-interface TicketItem {
-  title: string;
-  project: string;
-  assignee: string;
-  team: string;
-  status: string;
-}
+import { TicketSubCategoryService } from '../../../services/ticket-sub-category.service';
+import { TicketSubCategoryResponse } from '../../../interfaces/ticket-type.interface';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -44,43 +22,23 @@ interface ActionMenuItem extends MenuItem {
 
 @Component({
   selector: 'app-sub-category-detail',
-  imports: [
-    FormsModule,
-    Button,
-    Menu,
-    StatusChipComponent,
-    DataTableComponent,
-    DataTableCellDirective,
-    ConfirmDialogComponent,
-    DeleteConfirmDialogComponent,
-  ],
+  imports: [Button, Menu, ConfirmDialogComponent, DeleteConfirmDialogComponent],
   templateUrl: './sub-category-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SubCategoryDetailComponent {
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  private readonly ticketSubCategoryService = inject(TicketSubCategoryService);
+
+  private readonly id = this.route.snapshot.paramMap.get('id')!;
+
   protected readonly menu = viewChild.required<Menu>('actionMenu');
   protected readonly showConfirmDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly deleting = signal(false);
-
-  // TODO: receive via route params / service
-  protected readonly subCategory = signal<SubCategoryDetail>({
-    name: 'Network Design',
-    priority: 'น้อย',
-    relatedPosition: 'Back-end',
-    createdDate: 'วันจันทร์ที่ 3 ก.ค. 2566',
-    createdTime: '15:30',
-    createdBy: 'ชื่อ นามสกุล',
-  });
-
-  protected readonly selectedStatus = signal<string>('active');
-
-  protected readonly statusOptions = [
-    { value: 'active', label: 'ใช้งาน' },
-    { value: 'inactive', label: 'ไม่ใช้งาน' },
-  ];
+  protected readonly subCategory = signal<TicketSubCategoryResponse | null>(null);
 
   protected readonly menuItems: ActionMenuItem[] = [
     { label: 'แก้ไข Sub-Category', command: () => this.onEdit() },
@@ -88,32 +46,37 @@ export class SubCategoryDetailComponent {
     { label: 'ลบ', danger: true, command: () => this.showConfirmDialog.set(true) },
   ];
 
-  protected readonly ticketColumns: TableColumn[] = [
-    { field: 'title', header: 'หัวข้องาน', sortable: true },
-    { field: 'project', header: 'โครงการ', sortable: true },
-    { field: 'assignee', header: 'ผู้รับผิดชอบ', sortable: true },
-    { field: 'team', header: 'ทีมรับเรื่อง', sortable: true },
-    { field: 'status', header: '' },
-  ];
+  constructor() {
+    this.loadData();
+  }
 
-  private readonly allTickets: TicketItem[] = [
-    { title: 'Network Design', project: 'Helpdesk', assignee: 'ใจงาม สุดใจจริง', team: 'EVT-DEV', status: 'Open' },
-    { title: 'Network Design', project: 'Helpdesk', assignee: 'ใจงาม สุดใจจริง', team: 'EVT-DEV', status: 'Pending' },
-    { title: 'Network Design', project: 'Helpdesk', assignee: 'ใจงาม สุดใจจริง', team: 'EVT-DEV', status: 'Return' },
-    { title: 'Network Design', project: 'Helpdesk', assignee: 'ใจงาม สุดใจจริง', team: 'EVT-DEV', status: 'In Progress' },
-    { title: 'Network Design', project: 'Helpdesk', assignee: 'ใจงาม สุดใจจริง', team: 'EVT-DEV', status: 'In Review' },
-    { title: 'Network Design', project: 'Helpdesk', assignee: 'ใจงาม สุดใจจริง', team: 'EVT-DEV', status: 'Done' },
-    { title: 'Network Design', project: 'Helpdesk', assignee: 'ใจงาม สุดใจจริง', team: 'EVT-DEV', status: 'Reject' },
-    { title: 'Network Design', project: 'Helpdesk', assignee: 'ใจงาม สุดใจจริง', team: 'EVT-DEV', status: 'Close' },
-  ];
+  private loadData(): void {
+    this.ticketSubCategoryService.getById(this.id).subscribe({
+      next: (res) => this.subCategory.set(res),
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูลได้',
+          life: 4000,
+        });
+        this.router.navigate(['/ticket-type-management/list']);
+      },
+    });
+  }
 
-  protected readonly tickets = signal<Record<string, unknown>[]>(
-    this.allTickets.map((t) => ({ ...t }) as Record<string, unknown>),
-  );
-  protected readonly totalRecords = signal(this.allTickets.length);
-  protected readonly currentPage = signal(1);
-  protected readonly pageSize = signal(10);
-  protected readonly loading = signal(false);
+  protected formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString('th-TH', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
+
+  protected formatTime(iso: string): string {
+    return new Date(iso).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+  }
 
   protected onBack(): void {
     this.router.navigate(['/ticket-type-management/list']);
@@ -124,17 +87,7 @@ export class SubCategoryDetailComponent {
   }
 
   protected onEdit(): void {
-    this.router.navigate(['/ticket-type-management/sub-category/edit']);
-  }
-
-  protected onStatusChange(value: string): void {
-    this.selectedStatus.set(value);
-    this.messageService.add({
-      severity: 'success',
-      summary: 'บันทึกสำเร็จ',
-      detail: 'อัปเดตสถานะเรียบร้อยแล้ว',
-      life: 3000,
-    });
+    this.router.navigate(['/ticket-type-management/sub-category/edit', this.id]);
   }
 
   protected onDeleteFirstStepConfirmed(): void {
@@ -144,13 +97,25 @@ export class SubCategoryDetailComponent {
 
   protected onDeleteConfirmed(_password: string): void {
     this.deleting.set(true);
-    this.messageService.add({
-      severity: 'success',
-      summary: 'ลบสำเร็จ',
-      detail: 'ลบ Sub-Category เรียบร้อยแล้ว',
-      life: 4000,
+    this.ticketSubCategoryService.delete(this.id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'ลบสำเร็จ',
+          detail: 'ลบ Sub-Category เรียบร้อยแล้ว',
+          life: 4000,
+        });
+        this.router.navigate(['/ticket-type-management/list']);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถลบข้อมูลได้',
+          life: 4000,
+        });
+        this.deleting.set(false);
+      },
     });
-    this.router.navigate(['/ticket-type-management/list']);
-    this.deleting.set(false);
   }
 }

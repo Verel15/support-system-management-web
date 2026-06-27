@@ -5,7 +5,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
@@ -16,6 +16,8 @@ import {
   SelectItemsDialogComponent,
   SelectItemOption,
 } from '../../../../../shared/components/dialogs';
+import { TicketTypeService } from '../../../services/ticket-type.service';
+import { TicketCategoryService } from '../../../services/ticket-category.service';
 
 @Component({
   selector: 'app-edit-ticket-type',
@@ -31,34 +33,62 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditTicketTypeComponent {
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly ticketTypeService = inject(TicketTypeService);
+  private readonly ticketCategoryService = inject(TicketCategoryService);
+
+  private readonly id = this.route.snapshot.paramMap.get('id')!;
 
   protected readonly submitting = signal(false);
   protected readonly showCategoryDialog = signal(false);
   protected readonly showConfirmDialog = signal(false);
   protected readonly showPasswordDialog = signal(false);
-
-  // TODO: pre-fill from route params / service
-  protected readonly selectedCategoryValues = signal<string[]>(['system', 'security']);
+  protected readonly selectedCategoryValues = signal<string[]>([]);
+  protected readonly categoryOptions = signal<SelectItemOption[]>([]);
 
   protected readonly form = this.fb.group({
-    name: ['Incident', Validators.required],
+    name: ['', Validators.required],
   });
 
-  protected readonly categoryOptions: SelectItemOption[] = [
-    { value: 'system', label: 'System' },
-    { value: 'application', label: 'Application' },
-    { value: 'network', label: 'Network' },
-    { value: 'security', label: 'Security' },
-    { value: 'software', label: 'Software' },
-    { value: 'hardware-upgrades', label: 'Hardware Upgrades' },
-    { value: 'access-permissions', label: 'Access Permissions' },
-  ];
+  constructor() {
+    this.loadData();
+  }
+
+  private loadData(): void {
+    this.ticketCategoryService.getAll(0, 1000).subscribe({
+      next: (res) => {
+        this.categoryOptions.set(res.content.map((c) => ({ value: c.id, label: c.name })));
+      },
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูล Category ได้',
+          life: 4000,
+        }),
+    });
+
+    this.ticketTypeService.getById(this.id).subscribe({
+      next: (res) => {
+        this.form.patchValue({ name: res.name });
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูลได้',
+          life: 4000,
+        });
+        this.router.navigate(['/ticket-type-management/list']);
+      },
+    });
+  }
 
   protected readonly selectedCategories = computed(() =>
-    this.categoryOptions.filter((opt) => this.selectedCategoryValues().includes(opt.value)),
+    this.categoryOptions().filter((opt) => this.selectedCategoryValues().includes(opt.value)),
   );
 
   protected readonly canSubmit = computed(
@@ -81,7 +111,7 @@ export class EditTicketTypeComponent {
   }
 
   protected onBack(): void {
-    this.router.navigate(['/ticket-type-management/ticket-type/detail']);
+    this.router.navigate(['/ticket-type-management/ticket-type/detail', this.id]);
   }
 
   protected onSubmit(): void {
@@ -97,14 +127,27 @@ export class EditTicketTypeComponent {
 
   protected onSaveConfirmed(_password: string): void {
     this.submitting.set(true);
-    // TODO: call update API with _password
-    this.messageService.add({
-      severity: 'success',
-      summary: 'บันทึกสำเร็จ',
-      detail: 'แก้ไขประเภท Ticket เรียบร้อยแล้ว',
-      life: 4000,
-    });
-    this.router.navigate(['/ticket-type-management/ticket-type/detail']);
-    this.submitting.set(false);
+    this.ticketTypeService
+      .update(this.id, { name: this.form.value.name!, categoryIds: this.selectedCategoryValues() })
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'บันทึกสำเร็จ',
+            detail: 'แก้ไขประเภท Ticket เรียบร้อยแล้ว',
+            life: 4000,
+          });
+          this.router.navigate(['/ticket-type-management/ticket-type/detail', this.id]);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'เกิดข้อผิดพลาด',
+            detail: 'ไม่สามารถบันทึกข้อมูลได้',
+            life: 4000,
+          });
+          this.submitting.set(false);
+        },
+      });
   }
 }

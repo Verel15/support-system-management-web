@@ -79,18 +79,6 @@
     (pageSizeChange)="onPageSizeChange($event)"
     (sortChange)="onSort($event)"
   >
-    <ng-template dataTableCell="priority" let-value="value">
-      <span
-        class="inline-flex items-center gap-1.5 text-sm font-medium"
-        [class.text-error-600]="value === 'มาก'"
-        [class.text-secondary-500]="value === 'ปานกลาง'"
-        [class.text-primary-600]="value === 'น้อย'"
-      >
-        <span aria-hidden="true">{{ prioritySymbol(value) }}</span>
-        {{ value }}
-      </span>
-    </ng-template>
-
     <ng-template dataTableCell="_actions" let-row>
       <button
         type="button"
@@ -120,6 +108,7 @@
 <app-delete-confirm-dialog
   [(visible)]="showDeleteDialog"
   [targetLabel]="deletingItem() ?? ''"
+  [loading]="deleting()"
   (confirmed)="onDeleteConfirmed($event)"
 />
 

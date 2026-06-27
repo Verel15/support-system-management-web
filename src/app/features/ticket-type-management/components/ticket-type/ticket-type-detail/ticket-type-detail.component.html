@@ -13,80 +13,66 @@
     <h1
       class="absolute inset-0 flex items-center justify-center text-xl font-semibold text-slate-800 pointer-events-none"
     >
-      {{ ticketType().name }}
+      @if (ticketType()) { {{ ticketType()!.name }} } @else { กำลังโหลด... }
     </h1>
   </div>
 
-  <!-- Content -->
-  <div class="flex-1 p-6 grid grid-cols-12 gap-5 items-start">
-    <!-- Left: Category list -->
-    <div class="col-span-12 md:col-span-8 flex flex-col gap-4">
-      <h2 class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
-        Category
-      </h2>
+  @if (ticketType(); as tt) {
+    <!-- Content -->
+    <div class="flex-1 p-6 flex justify-center">
+      <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white overflow-hidden">
+        <!-- Card header -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+          <h3 class="font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">ข้อมูล</h3>
+          <button
+            type="button"
+            class="w-8 h-8 flex items-center justify-center rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+            aria-label="การดำเนินการ"
+            aria-haspopup="true"
+            (click)="onMenuOpen($event)"
+          >
+            <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+          </button>
+        </div>
 
-      <ul class="flex flex-col gap-3" aria-label="รายการ Category">
-        @for (cat of ticketType().categories; track cat) {
-          <li class="px-4 py-3.5 rounded-xl bg-blue-50 text-blue-900 text-sm font-medium">
-            {{ cat }}
-          </li>
-        }
-      </ul>
-    </div>
+        <!-- Card info -->
+        <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 items-baseline p-4">
+          <dt class="text-sm text-slate-500 whitespace-nowrap">ชื่อ:</dt>
+          <dd class="text-sm font-medium text-slate-800">{{ tt.name }}</dd>
 
-    <!-- Right: Info card -->
-    <div class="col-span-12 md:col-span-4 rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <!-- Card header -->
-      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-        <h3 class="font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">ข้อมูล</h3>
-        <button
-          type="button"
-          class="w-8 h-8 flex items-center justify-center rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-          aria-label="การดำเนินการ"
-          aria-haspopup="true"
-          (click)="onMenuOpen($event)"
-        >
-          <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
-        </button>
+          <dt class="text-sm text-slate-500 whitespace-nowrap">วันที่สร้าง:</dt>
+          <dd class="text-sm font-medium text-slate-800">{{ formatDate(tt.createdAt) }}</dd>
+
+          <dt class="text-sm text-slate-500 whitespace-nowrap">เวลา:</dt>
+          <dd class="text-sm font-medium text-slate-800">{{ formatTime(tt.createdAt) }}</dd>
+
+          <dt class="text-sm text-slate-500 whitespace-nowrap">อัปเดตล่าสุด:</dt>
+          <dd class="text-sm font-medium text-slate-800">{{ formatDate(tt.updatedAt) }}</dd>
+        </dl>
       </div>
-
-      <!-- Card info -->
-      <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 items-baseline p-4">
-        <dt class="text-sm text-slate-500 whitespace-nowrap">วันที่สร้าง:</dt>
-        <dd class="text-sm font-medium text-slate-800">{{ ticketType().createdDate }}</dd>
-
-        <dt class="text-sm text-slate-500 whitespace-nowrap">เวลา:</dt>
-        <dd class="text-sm font-medium text-slate-800">{{ ticketType().createdTime }}</dd>
-
-        <dt class="text-sm text-slate-500 whitespace-nowrap">Category:</dt>
-        <dd class="text-sm font-medium text-slate-800">{{ ticketType().categories.length }}</dd>
-
-        <dt class="text-sm text-slate-500 whitespace-nowrap">สร้างโดย:</dt>
-        <dd class="text-sm font-medium text-slate-800">{{ ticketType().createdBy }}</dd>
-      </dl>
     </div>
-  </div>
+
+    <app-confirm-dialog
+      [(visible)]="showConfirmDialog"
+      type="warning"
+      title="ยืนยันการลบประเภท Ticket"
+      confirmLabel="ยืนยัน"
+      cancelLabel="ยกเลิก"
+      (confirmed)="onDeleteFirstStepConfirmed()"
+    >
+      คุณแน่ใจที่จะลบประเภท
+      <strong class="text-primary-600">{{ tt.name }}</strong>
+      ออกหรือไม่?
+    </app-confirm-dialog>
+
+    <app-delete-confirm-dialog
+      [(visible)]="showDeleteDialog"
+      [targetLabel]="tt.name"
+      [loading]="deleting()"
+      (confirmed)="onDeleteConfirmed($event)"
+    />
+  }
 </div>
-
-<app-confirm-dialog
-  [(visible)]="showConfirmDialog"
-  type="warning"
-  title="ยืนยันการลบประเภท Ticket"
-  confirmLabel="ยืนยัน"
-  cancelLabel="ยกเลิก"
-  (confirmed)="onDeleteFirstStepConfirmed()"
->
-  คุณแน่ใจที่จะลบประเภท
-  <strong class="text-primary-600">{{ ticketType().name }}</strong>
-  ออกหรือไม่?
-</app-confirm-dialog>
-
-<app-delete-confirm-dialog
-  [(visible)]="showDeleteDialog"
-  [targetLabel]="ticketType().name"
-  [loading]="deleting()"
-  (confirmed)="onDeleteConfirmed($event)"
-/>
 
 <p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
   <ng-template #item let-item pTemplate="item">

@@ -123,7 +123,7 @@
   [(visible)]="showCategoryDialog"
   title="Category"
   subtitle="เลือก Category ที่เกี่ยวข้อง"
-  [items]="categoryOptions"
+  [items]="categoryOptions()"
   [selected]="selectedCategoryValues()"
   (confirmed)="onCategoryConfirmed($event)"
 />

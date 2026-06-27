@@ -11,8 +11,9 @@ import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Select } from 'primeng/select';
 import { MessageService } from 'primeng/api';
-
-type Priority = 'น้อย' | 'ปานกลาง' | 'มาก';
+import { TicketSubCategoryService } from '../../../services/ticket-sub-category.service';
+import { PriorityService } from '../../../../../features/priority-management/services/priority.service';
+import { PositionService } from '../../../../../features/user-management/services/position.service';
 
 @Component({
   selector: 'app-add-sub-category',
@@ -24,31 +25,51 @@ export class AddSubCategoryComponent {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly ticketSubCategoryService = inject(TicketSubCategoryService);
+  private readonly priorityService = inject(PriorityService);
+  private readonly positionService = inject(PositionService);
 
   protected readonly submitting = signal(false);
+  protected readonly priorityOptions = signal<{ value: string; label: string }[]>([]);
+  protected readonly positionOptions = signal<{ value: string; label: string }[]>([]);
 
   protected readonly form = this.fb.group({
     name: ['', Validators.required],
-    priority: [null as Priority | null, Validators.required],
-    relatedPosition: ['', Validators.required],
+    priorityLevelId: [null as string | null, Validators.required],
+    positionId: [null as string | null, Validators.required],
   });
 
-  protected readonly priorityOptions: { value: Priority; label: string }[] = [
-    { value: 'น้อย', label: 'น้อย' },
-    { value: 'ปานกลาง', label: 'ปานกลาง' },
-    { value: 'มาก', label: 'มาก' },
-  ];
+  constructor() {
+    this.loadOptions();
+  }
 
-  protected readonly relatedPositionOptions: { value: string; label: string }[] = [
-    { value: 'Front-end', label: 'Front-end' },
-    { value: 'Back-end', label: 'Back-end' },
-    { value: 'Full-stack', label: 'Full-stack' },
-    { value: 'DevOps', label: 'DevOps' },
-    { value: 'QA', label: 'QA' },
-    { value: 'UX/UI', label: 'UX/UI' },
-    { value: 'Database', label: 'Database' },
-    { value: 'Network', label: 'Network' },
-  ];
+  private loadOptions(): void {
+    this.priorityService.getAll(0, 1000).subscribe({
+      next: (res) => {
+        this.priorityOptions.set(res.content.map((p) => ({ value: p.id, label: p.name })));
+      },
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูลลำดับความสำคัญได้',
+          life: 4000,
+        }),
+    });
+
+    this.positionService.getAll().subscribe({
+      next: (res) => {
+        this.positionOptions.set(res.map((p) => ({ value: p.id, label: p.name })));
+      },
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูลตำแหน่งได้',
+          life: 4000,
+        }),
+    });
+  }
 
   protected readonly canSubmit = computed(() => this.form.valid);
 
@@ -58,12 +79,12 @@ export class AddSubCategoryComponent {
   }
 
   protected isPriorityInvalid(): boolean {
-    const ctrl = this.form.get('priority');
+    const ctrl = this.form.get('priorityLevelId');
     return !!(ctrl?.invalid && ctrl?.touched);
   }
 
-  protected isRelatedPositionInvalid(): boolean {
-    const ctrl = this.form.get('relatedPosition');
+  protected isPositionInvalid(): boolean {
+    const ctrl = this.form.get('positionId');
     return !!(ctrl?.invalid && ctrl?.touched);
   }
 
@@ -75,14 +96,31 @@ export class AddSubCategoryComponent {
     this.form.markAllAsTouched();
     if (!this.canSubmit()) return;
     this.submitting.set(true);
-    // TODO: call create sub-category API
-    this.messageService.add({
-      severity: 'success',
-      summary: 'เพิ่มสำเร็จ',
-      detail: 'เพิ่ม Sub-Category เรียบร้อยแล้ว',
-      life: 4000,
-    });
-    this.router.navigate(['/ticket-type-management/list']);
-    this.submitting.set(false);
+    this.ticketSubCategoryService
+      .create({
+        name: this.form.value.name!,
+        priorityLevelId: this.form.value.priorityLevelId!,
+        positionId: this.form.value.positionId!,
+      })
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'เพิ่มสำเร็จ',
+            detail: 'เพิ่ม Sub-Category เรียบร้อยแล้ว',
+            life: 4000,
+          });
+          this.router.navigate(['/ticket-type-management/list']);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'เกิดข้อผิดพลาด',
+            detail: 'ไม่สามารถเพิ่ม Sub-Category ได้',
+            life: 4000,
+          });
+          this.submitting.set(false);
+        },
+      });
   }
 }

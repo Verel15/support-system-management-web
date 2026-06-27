@@ -15,6 +15,9 @@ import {
   SelectItemsDialogComponent,
   SelectItemOption,
 } from '../../../../../shared/components/dialogs';
+import { TicketCategoryService } from '../../../services/ticket-category.service';
+import { TicketSubCategoryService } from '../../../services/ticket-sub-category.service';
+import { StatusFlowService } from '../../../../../features/status-management/services/status-flow.service';
 
 @Component({
   selector: 'app-add-category',
@@ -26,46 +29,73 @@ export class AddCategoryComponent {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly ticketCategoryService = inject(TicketCategoryService);
+  private readonly ticketSubCategoryService = inject(TicketSubCategoryService);
+  private readonly statusFlowService = inject(StatusFlowService);
 
   protected readonly submitting = signal(false);
   protected readonly showSubCategoryDialog = signal(false);
   protected readonly selectedSubCategoryValues = signal<string[]>([]);
+  protected readonly statusFlowOptions = signal<{ value: string; label: string }[]>([]);
+  protected readonly subCategoryOptions = signal<SelectItemOption[]>([]);
 
   protected readonly form = this.fb.group({
     name: ['', Validators.required],
-    status: [null as string | null, Validators.required],
+    statusFlowId: [null as string | null, Validators.required],
   });
 
-  protected readonly statusOptions = [
-    { value: 'active', label: 'ใช้งาน' },
-    { value: 'inactive', label: 'ไม่ใช้งาน' },
-  ];
+  constructor() {
+    this.loadStatusFlows();
+    this.loadSubCategories();
+  }
 
-  protected readonly subCategoryOptions: SelectItemOption[] = [
-    { value: 'network-design', label: 'Network Design' },
-    { value: 'network-configuration', label: 'Network Configuration' },
-    { value: 'network-security', label: 'Network Security' },
-    { value: 'network-monitoring', label: 'Network Monitoring' },
-    { value: 'software-usage', label: 'Software Usage' },
-    { value: 'printer-not-working', label: 'Printer Not Working' },
-    { value: 'access-request', label: 'Access Request' },
-  ];
+  private loadStatusFlows(): void {
+    this.statusFlowService.getAll(0, 1000).subscribe({
+      next: (res) => {
+        this.statusFlowOptions.set(res.content.map((sf) => ({ value: sf.id, label: sf.name })));
+      },
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูล Status Flow ได้',
+          life: 4000,
+        }),
+    });
+  }
+
+  private loadSubCategories(): void {
+    this.ticketSubCategoryService.getAll(0, 1000).subscribe({
+      next: (res) => {
+        this.subCategoryOptions.set(res.content.map((s) => ({ value: s.id, label: s.name })));
+      },
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูล Sub-Category ได้',
+          life: 4000,
+        }),
+    });
+  }
 
   protected readonly selectedSubCategories = computed(() =>
-    this.subCategoryOptions.filter((opt) =>
+    this.subCategoryOptions().filter((opt) =>
       this.selectedSubCategoryValues().includes(opt.value),
     ),
   );
 
-  protected readonly canSubmit = computed(() => this.form.valid);
+  protected readonly canSubmit = computed(
+    () => this.form.valid && this.selectedSubCategoryValues().length > 0,
+  );
 
   protected isNameInvalid(): boolean {
     const ctrl = this.form.get('name');
     return !!(ctrl?.invalid && ctrl?.touched);
   }
 
-  protected isStatusInvalid(): boolean {
-    const ctrl = this.form.get('status');
+  protected isStatusFlowInvalid(): boolean {
+    const ctrl = this.form.get('statusFlowId');
     return !!(ctrl?.invalid && ctrl?.touched);
   }
 
@@ -85,14 +115,31 @@ export class AddCategoryComponent {
     this.form.markAllAsTouched();
     if (!this.canSubmit()) return;
     this.submitting.set(true);
-    // TODO: call create category API
-    this.messageService.add({
-      severity: 'success',
-      summary: 'เพิ่มสำเร็จ',
-      detail: 'เพิ่ม Category เรียบร้อยแล้ว',
-      life: 4000,
-    });
-    this.router.navigate(['/ticket-type-management/list']);
-    this.submitting.set(false);
+    this.ticketCategoryService
+      .create({
+        name: this.form.value.name!,
+        statusFlowId: this.form.value.statusFlowId!,
+        subCategoryIds: this.selectedSubCategoryValues(),
+      })
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'เพิ่มสำเร็จ',
+            detail: 'เพิ่ม Category เรียบร้อยแล้ว',
+            life: 4000,
+          });
+          this.router.navigate(['/ticket-type-management/list']);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'เกิดข้อผิดพลาด',
+            detail: 'ไม่สามารถเพิ่ม Category ได้',
+            life: 4000,
+          });
+          this.submitting.set(false);
+        },
+      });
   }
 }
