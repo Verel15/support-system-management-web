@@ -89,17 +89,15 @@
   cancelLabel="ยกเลิก"
   (confirmed)="onDeleteFirstStepConfirmed()"
 >
-  ขณะนี้ลำดับความสำคัญ
+  คุณแน่ใจที่จะลบลำดับความสำคัญ
   <strong class="text-primary-600">{{ deletingPriority()?.name }}</strong>
-  มี tickets ที่ใช้ลำดับความสำคัญนี้อยู่จำนวน
-  <strong class="text-primary-600">{{ deletingPriority()?.ticketCount }} tickets</strong>
-  หากทำการนำลำดับความสำคัญนี้ออก tickets ที่ใช้ลำดับนี้จะถูกลบออกด้วย
-  คุณแน่ใจที่จะลบลำดับความสำคัญนี้ออกหรือไม่?
+  ออกหรือไม่? tickets ที่ใช้ลำดับนี้จะถูกกระทบด้วย
 </app-confirm-dialog>
 
 <app-delete-confirm-dialog
   [(visible)]="showDeleteDialog"
   [targetLabel]="deletingPriority()?.name ?? ''"
+  [loading]="deleting()"
   (confirmed)="onDeleteConfirmed($event)"
 />
 

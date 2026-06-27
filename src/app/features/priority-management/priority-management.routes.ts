@@ -16,14 +16,14 @@ export const priorityManagementRoutes: Routes = [
       ),
   },
   {
-    path: 'detail',
+    path: 'detail/:id',
     loadComponent: () =>
       import('./components/priority-detail/priority-detail.component').then(
         (m) => m.PriorityDetailComponent,
       ),
   },
   {
-    path: 'edit',
+    path: 'edit/:id',
     loadComponent: () =>
       import('./components/edit-priority/edit-priority.component').then(
         (m) => m.EditPriorityComponent,

@@ -1,11 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  signal,
-  viewChild,
-} from '@angular/core';
-import { Router } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
@@ -19,7 +13,15 @@ import {
   ICON_KEYS,
   COLOR_HEX,
   COLOR_KEYS,
-} from '../../priority.types';
+  DURATION_OPTIONS,
+  ICON_SHAPE_MAP,
+  ICON_COLOR_MAP,
+  SHAPE_TO_ICON_KEY,
+  COLOR_TO_COLOR_KEY,
+  getDurationInterval,
+  findDurationValue,
+} from '../../interfaces/priority.interface';
+import { PriorityService } from '../../services/priority.service';
 
 @Component({
   selector: 'app-edit-priority',
@@ -29,37 +31,57 @@ import {
 })
 export class EditPriorityComponent {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly priorityService = inject(PriorityService);
+
+  private readonly id = this.route.snapshot.paramMap.get('id')!;
+
   protected readonly submitting = signal(false);
+  protected readonly loading = signal(true);
   protected readonly iconPicker = viewChild.required<Popover>('iconPicker');
 
-  // TODO: pre-fill from route params / service
   protected readonly selectedIcon = signal<PriorityIconKey>('tri-up');
-  protected readonly selectedColor = signal<PriorityColorKey>('red');
+  protected readonly selectedColor = signal<PriorityColorKey>('orange');
 
   protected readonly iconKeys = ICON_KEYS;
   protected readonly colorKeys = COLOR_KEYS;
+  protected readonly durationOptions = DURATION_OPTIONS;
 
-  protected readonly durationOptions = [
-    { label: '30 นาที', value: '30m' },
-    { label: '1 ชั่วโมง', value: '1h' },
-    { label: '2 ชั่วโมง', value: '2h' },
-    { label: '4 ชั่วโมง', value: '4h' },
-    { label: '8 ชั่วโมง', value: '8h' },
-    { label: '1 วัน', value: '1d' },
-    { label: '2 วัน', value: '2d' },
-    { label: '3 วัน', value: '3d' },
-    { label: '5 วัน', value: '5d' },
-    { label: '7 วัน', value: '7d' },
-  ];
-
-  // TODO: pre-fill from route params / service
   protected readonly form = this.fb.group({
-    name: ['มากมาก', Validators.required],
-    duration: ['1d' as string | null, Validators.required],
+    name: ['', Validators.required],
+    duration: [null as string | null, Validators.required],
     description: [''],
   });
+
+  constructor() {
+    this.loadPriority();
+  }
+
+  private loadPriority(): void {
+    this.priorityService.getById(this.id).subscribe({
+      next: (res) => {
+        this.selectedIcon.set(SHAPE_TO_ICON_KEY[res.iconShape]);
+        this.selectedColor.set(COLOR_TO_COLOR_KEY[res.iconColor]);
+        this.form.patchValue({
+          name: res.name,
+          duration: findDurationValue(res.intervalValue, res.intervalUnit),
+          description: res.description ?? '',
+        });
+        this.loading.set(false);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูลลำดับความสำคัญได้',
+          life: 4000,
+        });
+        this.router.navigate(['/ticket-priority-management/list']);
+      },
+    });
+  }
 
   protected iconClass(icon: PriorityIconKey): string {
     return ICON_CLASSES[icon];
@@ -92,21 +114,46 @@ export class EditPriorityComponent {
   }
 
   protected onBack(): void {
-    this.router.navigate(['/ticket-priority-management/detail']);
+    this.router.navigate(['/ticket-priority-management/detail', this.id]);
   }
 
   protected onSubmit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
+
+    const { name, duration, description } = this.form.value;
+    const interval = getDurationInterval(duration!);
+    if (!interval) return;
+
     this.submitting.set(true);
-    // TODO: call update priority API with this.selectedIcon(), this.selectedColor(), this.form.value
-    this.messageService.add({
-      severity: 'success',
-      summary: 'บันทึกสำเร็จ',
-      detail: 'แก้ไขลำดับความสำคัญเรียบร้อยแล้ว',
-      life: 4000,
-    });
-    this.router.navigate(['/ticket-priority-management/detail']);
-    this.submitting.set(false);
+    this.priorityService
+      .update(this.id, {
+        name: name!,
+        description: description || undefined,
+        iconShape: ICON_SHAPE_MAP[this.selectedIcon()],
+        iconColor: ICON_COLOR_MAP[this.selectedColor()],
+        intervalValue: interval.intervalValue,
+        intervalUnit: interval.intervalUnit,
+      })
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'บันทึกสำเร็จ',
+            detail: 'แก้ไขลำดับความสำคัญเรียบร้อยแล้ว',
+            life: 4000,
+          });
+          this.router.navigate(['/ticket-priority-management/detail', this.id]);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'เกิดข้อผิดพลาด',
+            detail: 'ไม่สามารถแก้ไขลำดับความสำคัญได้',
+            life: 4000,
+          });
+          this.submitting.set(false);
+        },
+      });
   }
 }

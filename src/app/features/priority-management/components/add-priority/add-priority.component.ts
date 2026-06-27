@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
@@ -19,7 +13,12 @@ import {
   ICON_KEYS,
   COLOR_HEX,
   COLOR_KEYS,
-} from '../../priority.types';
+  DURATION_OPTIONS,
+  ICON_SHAPE_MAP,
+  ICON_COLOR_MAP,
+  getDurationInterval,
+} from '../../interfaces/priority.interface';
+import { PriorityService } from '../../services/priority.service';
 
 @Component({
   selector: 'app-add-priority',
@@ -31,6 +30,8 @@ export class AddPriorityComponent {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly priorityService = inject(PriorityService);
+
   protected readonly submitting = signal(false);
   protected readonly iconPicker = viewChild.required<Popover>('iconPicker');
 
@@ -39,19 +40,7 @@ export class AddPriorityComponent {
 
   protected readonly iconKeys = ICON_KEYS;
   protected readonly colorKeys = COLOR_KEYS;
-
-  protected readonly durationOptions = [
-    { label: '30 นาที', value: '30m' },
-    { label: '1 ชั่วโมง', value: '1h' },
-    { label: '2 ชั่วโมง', value: '2h' },
-    { label: '4 ชั่วโมง', value: '4h' },
-    { label: '8 ชั่วโมง', value: '8h' },
-    { label: '1 วัน', value: '1d' },
-    { label: '2 วัน', value: '2d' },
-    { label: '3 วัน', value: '3d' },
-    { label: '5 วัน', value: '5d' },
-    { label: '7 วัน', value: '7d' },
-  ];
+  protected readonly durationOptions = DURATION_OPTIONS;
 
   protected readonly form = this.fb.group({
     name: ['', Validators.required],
@@ -96,15 +85,40 @@ export class AddPriorityComponent {
   protected onSubmit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
+
+    const { name, duration, description } = this.form.value;
+    const interval = getDurationInterval(duration!);
+    if (!interval) return;
+
     this.submitting.set(true);
-    // TODO: call create priority API with this.selectedIcon(), this.selectedColor(), this.form.value
-    this.messageService.add({
-      severity: 'success',
-      summary: 'เพิ่มลำดับความสำคัญสำเร็จ',
-      detail: 'สร้างลำดับความสำคัญใหม่เรียบร้อยแล้ว',
-      life: 4000,
-    });
-    this.router.navigate(['/ticket-priority-management/list']);
-    this.submitting.set(false);
+    this.priorityService
+      .create({
+        name: name!,
+        description: description || undefined,
+        iconShape: ICON_SHAPE_MAP[this.selectedIcon()],
+        iconColor: ICON_COLOR_MAP[this.selectedColor()],
+        intervalValue: interval.intervalValue,
+        intervalUnit: interval.intervalUnit,
+      })
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'เพิ่มลำดับความสำคัญสำเร็จ',
+            detail: 'สร้างลำดับความสำคัญใหม่เรียบร้อยแล้ว',
+            life: 4000,
+          });
+          this.router.navigate(['/ticket-priority-management/list']);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'เกิดข้อผิดพลาด',
+            detail: 'ไม่สามารถสร้างลำดับความสำคัญได้',
+            life: 4000,
+          });
+          this.submitting.set(false);
+        },
+      });
   }
 }

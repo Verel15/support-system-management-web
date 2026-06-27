@@ -30,15 +30,17 @@ import {
   type PriorityColorKey,
   ICON_CLASSES,
   COLOR_HEX,
-} from '../../priority.types';
+  SHAPE_TO_ICON_KEY,
+  COLOR_TO_COLOR_KEY,
+} from '../../interfaces/priority.interface';
+import { PriorityService } from '../../services/priority.service';
 
-export interface Priority {
+interface Priority {
+  id: string;
   name: string;
   icon: PriorityIconKey;
   color: PriorityColorKey;
-  createdBy: string;
-  ticketCount: number;
-  createdDate: string;
+  createdAt: string;
 }
 
 interface ActionMenuItem extends MenuItem {
@@ -66,11 +68,14 @@ interface ActionMenuItem extends MenuItem {
 export class PriorityListComponent {
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  private readonly priorityService = inject(PriorityService);
+
   protected readonly menu = viewChild.required<Menu>('actionMenu');
   protected readonly activeRow = signal<Record<string, unknown> | null>(null);
   protected readonly showConfirmDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly deletingPriority = signal<Priority | null>(null);
+  protected readonly deleting = signal(false);
 
   protected readonly menuItems: ActionMenuItem[] = [
     { label: 'ดูรายละเอียด', command: () => this.onViewPriority() },
@@ -81,8 +86,7 @@ export class PriorityListComponent {
 
   protected readonly columns: TableColumn[] = [
     { field: 'name', header: 'ชื่อลำดับความสำคัญ', sortable: true },
-    { field: 'ticketCount', header: 'จำนวนที่ Ticket ใช้', sortable: true },
-    { field: 'createdBy', header: 'ผู้สร้าง', sortable: true },
+    { field: 'createdAt', header: 'วันที่สร้าง', sortable: true },
   ];
 
   protected readonly dateOptions = [
@@ -98,40 +102,69 @@ export class PriorityListComponent {
   protected readonly pageSize = signal(10);
   protected readonly loading = signal(false);
 
-  private readonly allPriorities: Priority[] = [
-    { name: 'น้อยมาก', icon: 'arrow-down', color: 'green', createdBy: 'ใจดี งามมากมาย', ticketCount: 100, createdDate: '2026-06-01' },
-    { name: 'น้อย', icon: 'tri-down', color: 'lime', createdBy: 'ใจดี งามมากมาย', ticketCount: 100, createdDate: '2026-06-02' },
-    { name: 'ปานกลาง', icon: 'circle', color: 'blue', createdBy: 'ใจดี งามมากมาย', ticketCount: 100, createdDate: '2026-06-03' },
-    { name: 'มาก', icon: 'tri-up', color: 'orange', createdBy: 'ใจดี งามมากมาย', ticketCount: 100, createdDate: '2026-06-04' },
-    { name: 'มากมาก', icon: 'tri-up', color: 'red', createdBy: 'ใจดี งามมากมาย', ticketCount: 100, createdDate: '2026-06-05' },
-    { name: 'มากมากมาก', icon: 'arrow-up', color: 'red', createdBy: 'ใจดี งามมากมาย', ticketCount: 100, createdDate: '2026-05-28' },
-    { name: 'มากมากมากมาก', icon: 'chevron-up', color: 'pink', createdBy: 'ใจดี งามมากมาย', ticketCount: 100, createdDate: '2026-05-29' },
-    { name: 'มากมากมากมากมาก', icon: 'chevron-up', color: 'red', createdBy: 'ใจดี งามมากมาย', ticketCount: 100, createdDate: '2026-05-30' },
-    { name: 'น้อยมากมาก', icon: 'chevron-down', color: 'lime', createdBy: 'ใจดี งามมากมาย', ticketCount: 100, createdDate: '2026-05-31' },
-    { name: 'น้อยมากมากมาก', icon: 'arrow-down', color: 'green', createdBy: 'ใจดี งามมากมาย', ticketCount: 100, createdDate: '2026-06-06' },
-  ];
+  private readonly allPriorities = signal<Priority[]>([]);
+
+  constructor() {
+    this.loadPriorities();
+  }
+
+  private loadPriorities(): void {
+    this.loading.set(true);
+    this.priorityService.getAll(0, 1000).subscribe({
+      next: (res) => {
+        this.allPriorities.set(
+          res.content.map((p) => ({
+            id: p.id,
+            name: p.name,
+            icon: SHAPE_TO_ICON_KEY[p.iconShape],
+            color: COLOR_TO_COLOR_KEY[p.iconColor],
+            createdAt: new Date(p.createdAt).toLocaleDateString('th-TH', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            }),
+          })),
+        );
+        this.loading.set(false);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูลลำดับความสำคัญได้',
+          life: 4000,
+        });
+        this.loading.set(false);
+      },
+    });
+  }
 
   protected readonly filteredPriorities = computed(() => {
     const query = this.searchQuery().toLowerCase();
     const date = this.selectedDate();
     const now = new Date();
-    const todayStr = now.toISOString().slice(0, 10);
 
-    return this.allPriorities.filter((p) => {
+    return this.allPriorities().filter((p) => {
       const matchesSearch = !query || p.name.toLowerCase().includes(query);
-      let matchesDate = true;
+      if (!matchesSearch) return false;
+      if (!date) return true;
+
+      const createdDate = new Date(p.createdAt);
       if (date === 'today') {
-        matchesDate = p.createdDate === todayStr;
-      } else if (date === 'week') {
+        const todayStr = now.toLocaleDateString('th-TH');
+        return createdDate.toLocaleDateString('th-TH') === todayStr;
+      }
+      if (date === 'week') {
         const weekAgo = new Date(now);
         weekAgo.setDate(now.getDate() - 7);
-        matchesDate = new Date(p.createdDate) >= weekAgo;
-      } else if (date === 'month') {
+        return createdDate >= weekAgo;
+      }
+      if (date === 'month') {
         const monthAgo = new Date(now);
         monthAgo.setMonth(now.getMonth() - 1);
-        matchesDate = new Date(p.createdDate) >= monthAgo;
+        return createdDate >= monthAgo;
       }
-      return matchesSearch && matchesDate;
+      return true;
     });
   });
 
@@ -185,11 +218,15 @@ export class PriorityListComponent {
   }
 
   protected onViewPriority(): void {
-    this.router.navigate(['/ticket-priority-management/detail']);
+    const id = this.activeRow()?.['id'] as string;
+    if (!id) return;
+    this.router.navigate(['/ticket-priority-management/detail', id]);
   }
 
   protected onEditPriority(): void {
-    this.router.navigate(['/ticket-priority-management/edit']);
+    const id = this.activeRow()?.['id'] as string;
+    if (!id) return;
+    this.router.navigate(['/ticket-priority-management/edit', id]);
   }
 
   protected onDeletePriority(): void {
@@ -205,13 +242,31 @@ export class PriorityListComponent {
   }
 
   protected onDeleteConfirmed(_password: string): void {
-    // TODO: call delete API
-    this.messageService.add({
-      severity: 'success',
-      summary: 'ลบสำเร็จ',
-      detail: 'ลบลำดับความสำคัญเรียบร้อยแล้ว',
-      life: 4000,
+    const id = this.deletingPriority()?.id;
+    if (!id) return;
+    this.deleting.set(true);
+    this.priorityService.delete(id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'ลบสำเร็จ',
+          detail: 'ลบลำดับความสำคัญเรียบร้อยแล้ว',
+          life: 4000,
+        });
+        this.showDeleteDialog.set(false);
+        this.deletingPriority.set(null);
+        this.deleting.set(false);
+        this.loadPriorities();
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถลบลำดับความสำคัญได้',
+          life: 4000,
+        });
+        this.deleting.set(false);
+      },
     });
-    this.deletingPriority.set(null);
   }
 }

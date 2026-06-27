@@ -6,7 +6,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
 import { MenuItem, MessageService } from 'primeng/api';
@@ -24,15 +24,19 @@ import {
   type PriorityColorKey,
   ICON_CLASSES,
   COLOR_HEX,
-} from '../../priority.types';
+  SHAPE_TO_ICON_KEY,
+  COLOR_TO_COLOR_KEY,
+  findDurationValue,
+  DURATION_OPTIONS,
+} from '../../interfaces/priority.interface';
+import { PriorityService } from '../../services/priority.service';
 
 interface PriorityData {
   name: string;
   icon: PriorityIconKey;
   color: PriorityColorKey;
   duration: string;
-  createdBy: string;
-  createdDate: string;
+  createdAt: string;
 }
 
 interface TicketRow {
@@ -66,20 +70,24 @@ const TICKET_STATUSES = [
 })
 export class PriorityDetailComponent {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly messageService = inject(MessageService);
+  private readonly priorityService = inject(PriorityService);
+
+  private readonly id = this.route.snapshot.paramMap.get('id')!;
+
   protected readonly menu = viewChild.required<Menu>('actionMenu');
   protected readonly showConfirmDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
   protected readonly deleting = signal(false);
+  protected readonly loading = signal(true);
 
-  // TODO: receive via route params / service
   protected readonly priority = signal<PriorityData>({
-    name: 'มากมาก',
-    icon: 'tri-up',
-    color: 'red',
-    duration: '1 วัน',
-    createdBy: 'ชื่อ นามสกุล',
-    createdDate: 'วันจันทร์ที่ 3 ก.ค. 2566 เวลา 15:30 น.',
+    name: '',
+    icon: 'circle',
+    color: 'blue',
+    duration: '',
+    createdAt: '',
   });
 
   protected readonly ticketColumns: TableColumn[] = [
@@ -114,6 +122,45 @@ export class PriorityDetailComponent {
     { label: 'ลบ', danger: true, command: () => this.showConfirmDialog.set(true) },
   ];
 
+  constructor() {
+    this.loadPriority();
+  }
+
+  private loadPriority(): void {
+    this.priorityService.getById(this.id).subscribe({
+      next: (res) => {
+        const durationLabel =
+          DURATION_OPTIONS.find(
+            (d) =>
+              d.value === findDurationValue(res.intervalValue, res.intervalUnit),
+          )?.label ?? `${res.intervalValue} ${res.intervalUnit}`;
+
+        this.priority.set({
+          name: res.name,
+          icon: SHAPE_TO_ICON_KEY[res.iconShape],
+          color: COLOR_TO_COLOR_KEY[res.iconColor],
+          duration: durationLabel,
+          createdAt: new Date(res.createdAt).toLocaleDateString('th-TH', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long',
+          }),
+        });
+        this.loading.set(false);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูลลำดับความสำคัญได้',
+          life: 4000,
+        });
+        this.router.navigate(['/ticket-priority-management/list']);
+      },
+    });
+  }
+
   protected iconClass(icon: PriorityIconKey): string {
     return ICON_CLASSES[icon];
   }
@@ -124,28 +171,28 @@ export class PriorityDetailComponent {
 
   protected statusBgColor(status: string): string {
     const map: Record<string, string> = {
-      'Open': '#dbeafe',
-      'Pending': '#fed7aa',
-      'Return': '#fee2e2',
+      Open: '#dbeafe',
+      Pending: '#fed7aa',
+      Return: '#fee2e2',
       'In Progress': '#fff7ed',
       'In Review': '#fef3c7',
-      'Done': '#dcfce7',
-      'Reject': '#fee2e2',
-      'Close': '#f1f5f9',
+      Done: '#dcfce7',
+      Reject: '#fee2e2',
+      Close: '#f1f5f9',
     };
     return map[status] ?? '#f1f5f9';
   }
 
   protected statusTextColor(status: string): string {
     const map: Record<string, string> = {
-      'Open': '#2563eb',
-      'Pending': '#c2410c',
-      'Return': '#dc2626',
+      Open: '#2563eb',
+      Pending: '#c2410c',
+      Return: '#dc2626',
       'In Progress': '#ea580c',
       'In Review': '#d97706',
-      'Done': '#16a34a',
-      'Reject': '#dc2626',
-      'Close': '#64748b',
+      Done: '#16a34a',
+      Reject: '#dc2626',
+      Close: '#64748b',
     };
     return map[status] ?? '#64748b';
   }
@@ -168,7 +215,7 @@ export class PriorityDetailComponent {
   }
 
   protected onEdit(): void {
-    this.router.navigate(['/ticket-priority-management/edit']);
+    this.router.navigate(['/ticket-priority-management/edit', this.id]);
   }
 
   protected onDeleteFirstStepConfirmed(): void {
@@ -177,13 +224,26 @@ export class PriorityDetailComponent {
   }
 
   protected onDeleteConfirmed(_password: string): void {
-    // TODO: call delete API with _password
-    this.messageService.add({
-      severity: 'success',
-      summary: 'ลบสำเร็จ',
-      detail: 'ลบลำดับความสำคัญเรียบร้อยแล้ว',
-      life: 4000,
+    this.deleting.set(true);
+    this.priorityService.delete(this.id).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'ลบสำเร็จ',
+          detail: 'ลบลำดับความสำคัญเรียบร้อยแล้ว',
+          life: 4000,
+        });
+        this.router.navigate(['/ticket-priority-management/list']);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถลบลำดับความสำคัญได้',
+          life: 4000,
+        });
+        this.deleting.set(false);
+      },
     });
-    this.router.navigate(['/ticket-priority-management/list']);
   }
 }
