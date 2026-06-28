@@ -12,7 +12,7 @@ export const companyManagementRoutes: Routes = [
       import('./add-company/add-company.component').then((m) => m.AddCompanyComponent),
   },
   {
-    path: 'edit/:companyName',
+    path: 'edit/:id',
     loadComponent: () =>
       import('./edit-company/edit-company.component').then((m) => m.EditCompanyComponent),
   },

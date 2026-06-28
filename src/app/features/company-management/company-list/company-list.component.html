@@ -86,6 +86,6 @@
   [(visible)]="showDeleteDialog"
   title="ยืนยันการลบบริษัท"
   descriptionPrefix="คุณกำลังจะลบบริษัท"
-  [targetLabel]="deletingCompany()?.companyName ?? ''"
+  [targetLabel]="activeRow()?.name ?? ''"
   (confirmed)="onDeleteConfirmed($event)"
 />

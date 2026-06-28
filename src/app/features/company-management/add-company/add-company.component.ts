@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
+import { CompanyService } from '../services/company.service';
 
 @Component({
   selector: 'app-add-company',
@@ -15,11 +16,12 @@ export class AddCompanyComponent {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
+  private readonly companyService = inject(CompanyService);
 
   protected readonly saving = signal(false);
 
   protected readonly form = this.fb.group({
-    companyName: ['', [Validators.required, Validators.maxLength(200)]],
+    name: ['', [Validators.required, Validators.maxLength(200)]],
   });
 
   protected isInvalid(field: string): boolean {
@@ -34,15 +36,30 @@ export class AddCompanyComponent {
   protected onSubmit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
+
+    const { name } = this.form.getRawValue();
     this.saving.set(true);
-    // TODO: call save API
-    this.messageService.add({
-      severity: 'success',
-      summary: 'สำเร็จ',
-      detail: 'เพิ่มบริษัทเรียบร้อยแล้ว',
-      life: 4000,
+
+    this.companyService.create({ name: name!, status: 'ACTIVE' }).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'สำเร็จ',
+          detail: 'เพิ่มบริษัทเรียบร้อยแล้ว',
+          life: 4000,
+        });
+        this.saving.set(false);
+        this.router.navigate(['/company-management/list']);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถเพิ่มบริษัทได้ กรุณาลองใหม่อีกครั้ง',
+          life: 4000,
+        });
+        this.saving.set(false);
+      },
     });
-    this.saving.set(false);
-    this.router.navigate(['/company-management/list']);
   }
 }

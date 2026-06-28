@@ -15,39 +15,48 @@
 
   <!-- Content -->
   <div class="p-6">
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="max-w-2xl mx-auto flex flex-col gap-6">
+    @if (loadingData()) {
+      <div class="flex justify-center py-12">
+        <i class="pi pi-spin pi-spinner text-3xl text-primary-500" aria-label="กำลังโหลด"></i>
+      </div>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="max-w-2xl mx-auto flex flex-col gap-6">
+
         <!-- ชื่อบริษัท -->
-        <div class="flex flex-col gap-1 mb-12">
-          <label for="companyName" class="text-sm font-medium text-slate-700">
+        <div class="flex flex-col gap-1">
+          <label for="name" class="text-sm font-medium text-slate-700">
             ชื่อบริษัท <span class="text-error-500" aria-hidden="true">*</span>
           </label>
           <input
-            id="companyName"
+            id="name"
             pInputText
-            formControlName="companyName"
+            formControlName="name"
             placeholder="กรุณากรอกชื่อบริษัท"
             class="w-full"
-            [class.ng-invalid]="isInvalid('companyName')"
-            [class.ng-dirty]="isInvalid('companyName')"
+            [class.ng-invalid]="isInvalid('name')"
+            [class.ng-dirty]="isInvalid('name')"
             aria-required="true"
-            [attr.aria-describedby]="isInvalid('companyName') ? 'companyName-error' : null"
+            [attr.aria-describedby]="isInvalid('name') ? 'name-error' : null"
           />
-          @if (isInvalid('companyName')) {
-            <span id="companyName-error" class="text-xs text-error-600" role="alert">
-              @if (form.controls.companyName.hasError('required')) { กรุณากรอกชื่อบริษัท }
-              @else if (form.controls.companyName.hasError('maxlength')) { ชื่อบริษัทต้องไม่เกิน 200 ตัวอักษร }
+          @if (isInvalid('name')) {
+            <span id="name-error" class="text-xs text-error-600" role="alert">
+              @if (form.controls.name.hasError('required')) { กรุณากรอกชื่อบริษัท }
+              @else if (form.controls.name.hasError('maxlength')) { ชื่อบริษัทต้องไม่เกิน 200 ตัวอักษร }
             </span>
           }
         </div>
 
-      <!-- Action Buttons -->
-      <p-button
-        type="submit"
-        label="บันทึก"
-        severity="primary"
-        [loading]="saving()"
-        fluid
-      />
-    </form>
+        <!-- Action Buttons -->
+        <div class="mb-6">
+          <p-button
+            type="submit"
+            label="บันทึก"
+            severity="primary"
+            [loading]="saving()"
+            fluid
+          />
+        </div>
+      </form>
+    }
   </div>
 </div>

@@ -53,7 +53,7 @@ export class DataTableComponent {
   });
 
   getFieldValue(row: Record<string, unknown>, field: string): unknown {
-    return row[field];
+    return row[field] ?? '-';
   }
 
   getSortIcon(field: string): string {

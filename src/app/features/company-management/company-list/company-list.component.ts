@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MenuItem, MessageService, SortEvent } from 'primeng/api';
@@ -9,13 +9,8 @@ import { InputText } from 'primeng/inputtext';
 import { Menu } from 'primeng/menu';
 import { DataTableCellDirective, DataTableComponent, TableColumn } from '../../../shared/components/data-table';
 import { ConfirmDialogComponent, DeleteConfirmDialogComponent } from '../../../shared/components/dialogs';
-
-interface Company {
-  companyName: string;
-  projectCount: number;
-  memberCount: number;
-  createdAt: string;
-}
+import { CompanyResponse } from '../interfaces/company.interface';
+import { CompanyService } from '../services/company.service';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -36,15 +31,17 @@ interface ActionMenuItem extends MenuItem {
     DeleteConfirmDialogComponent,
   ],
   templateUrl: './company-list.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CompanyListComponent {
+export class CompanyListComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  private readonly companyService = inject(CompanyService);
+
   protected readonly menu = viewChild.required<Menu>('actionMenu');
-  protected readonly activeRow = signal<Record<string, unknown> | null>(null);
+  protected readonly activeRow = signal<CompanyResponse | null>(null);
   protected readonly showConfirmDeleteDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
-  protected readonly deletingCompany = signal<Company | null>(null);
 
   protected readonly menuItems: ActionMenuItem[] = [
     { label: 'ดูรายละเอียด', command: () => this.onViewCompany() },
@@ -54,9 +51,10 @@ export class CompanyListComponent {
   ];
 
   protected readonly columns: TableColumn[] = [
-    { field: 'companyName', header: 'รายชื่อบริษัท', sortable: true },
-    { field: 'projectCount', header: 'จำนวนโครงการ', sortable: true },
-    { field: 'memberCount', header: 'จำนวนสมาชิก', sortable: true },
+    { field: 'name', header: 'รายชื่อบริษัท', sortable: true },
+    { field: 'countProject', header: 'จำนวนโครงการ', sortable: true },
+    { field: 'countMember', header: 'จำนวนสมาชิก', sortable: true},
+    { field: 'createdAt', header: 'วันที่สร้าง', sortable: true },
   ];
 
   protected readonly searchQuery = signal('');
@@ -64,20 +62,12 @@ export class CompanyListComponent {
   protected readonly pageSize = signal(10);
   protected readonly loading = signal(false);
 
-  private readonly allCompanies: Company[] = [
-    { companyName: 'บริษัท ทดสอบ จำกัด', projectCount: 5, memberCount: 12, createdAt: '2024-01-15' },
-    { companyName: 'บริษัท เทคโนโลยี จำกัด', projectCount: 8, memberCount: 25, createdAt: '2024-02-10' },
-    { companyName: 'บริษัท ซอฟต์แวร์ จำกัด', projectCount: 3, memberCount: 7, createdAt: '2024-03-05' },
-    { companyName: 'บริษัท ดิจิทัล จำกัด', projectCount: 10, memberCount: 30, createdAt: '2024-04-20' },
-    { companyName: 'บริษัท นวัตกรรม จำกัด', projectCount: 2, memberCount: 5, createdAt: '2024-05-01' },
-    { companyName: 'บริษัท พัฒนา จำกัด', projectCount: 6, memberCount: 18, createdAt: '2024-06-12' },
-    { companyName: 'บริษัท สมาร์ท จำกัด', projectCount: 4, memberCount: 9, createdAt: '2024-07-08' },
-  ];
+  private readonly companies = signal<CompanyResponse[]>([]);
 
   protected readonly filteredCompanies = computed(() => {
     const query = this.searchQuery().toLowerCase();
-    return this.allCompanies.filter((c) =>
-      !query || c.companyName.toLowerCase().includes(query),
+    return this.companies().filter(
+      (c) => !query || c.name.toLowerCase().includes(query),
     );
   });
 
@@ -89,6 +79,29 @@ export class CompanyListComponent {
       .slice(start, start + this.pageSize())
       .map((c) => ({ ...c }));
   });
+
+  ngOnInit(): void {
+    this.loadCompanies();
+  }
+
+  private loadCompanies(): void {
+    this.loading.set(true);
+    this.companyService.getAll().subscribe({
+      next: (data) => {
+        this.companies.set(data);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดข้อมูลบริษัทได้',
+          life: 4000,
+        });
+        this.loading.set(false);
+      },
+    });
+  }
 
   protected onSearch(value: string): void {
     this.searchQuery.set(value);
@@ -114,26 +127,24 @@ export class CompanyListComponent {
 
   protected onMenuOpen(event: MouseEvent, row: Record<string, unknown>): void {
     event.stopPropagation();
-    this.activeRow.set(row);
+    this.activeRow.set(row as unknown as CompanyResponse);
     this.menu().toggle(event);
   }
 
   protected onViewCompany(): void {
     const row = this.activeRow();
     if (!row) return;
-    this.router.navigate(['/company-management/detail', row['companyName']]);
+    this.router.navigate(['/company-management/detail', row.id]);
   }
 
   protected onEditCompany(): void {
     const row = this.activeRow();
     if (!row) return;
-    this.router.navigate(['/company-management/edit', row['companyName']]);
+    this.router.navigate(['/company-management/edit', row.id]);
   }
 
   protected onDeleteCompany(): void {
-    const row = this.activeRow();
-    if (!row) return;
-    this.deletingCompany.set(row as unknown as Company);
+    if (!this.activeRow()) return;
     this.showConfirmDeleteDialog.set(true);
   }
 
@@ -143,13 +154,14 @@ export class CompanyListComponent {
   }
 
   protected onDeleteConfirmed(_password: string): void {
-    // TODO: call delete API with this.deletingCompany() and _password
     this.messageService.add({
       severity: 'success',
       summary: 'ลบบริษัทสำเร็จ',
       detail: 'ลบข้อมูลบริษัทเรียบร้อยแล้ว',
       life: 4000,
     });
-    this.deletingCompany.set(null);
+    this.activeRow.set(null);
+    this.showDeleteDialog.set(false);
+    this.loadCompanies();
   }
 }
