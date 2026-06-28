@@ -2,14 +2,14 @@ import { ChangeDetectionStrategy, Component, inject, output, viewChild } from '@
 import { ReactiveFormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { DatePicker } from 'primeng/datepicker';
-import { InputText } from 'primeng/inputtext';
 import { Popover } from 'primeng/popover';
+import { Select } from 'primeng/select';
 import { FileUploadComponent } from '../../../../../../shared/components/file-upload';
 import { AddProjectStore } from '../../../../store/add-project.store';
 
 @Component({
   selector: 'app-step1-project-info',
-  imports: [ReactiveFormsModule, Button, DatePicker, InputText, Popover, FileUploadComponent],
+  imports: [ReactiveFormsModule, Button, DatePicker, Popover, Select, FileUploadComponent],
   templateUrl: './step1-project-info.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

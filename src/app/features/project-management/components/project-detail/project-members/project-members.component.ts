@@ -2,8 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
+  OnInit,
   signal,
   viewChild,
 } from '@angular/core';
@@ -16,6 +18,7 @@ import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { Menu } from 'primeng/menu';
 import { MenuItem, MessageService } from 'primeng/api';
+import { catchError, forkJoin, of } from 'rxjs';
 import {
   DataTableComponent,
   DataTableCellDirective,
@@ -27,6 +30,15 @@ import {
   SelectItemOption,
 } from '../../../../../shared/components/dialogs';
 import { ProjectMember } from '../project-detail.types';
+import { ProjectService } from '../../../services/project.service';
+import { ProjectMemberResponse } from '../../../interfaces/project.interface';
+import { UserService } from '../../../../user-management/services/user.service';
+import { UserResponse } from '../../../../user-management/interfaces/user.interface';
+
+const AVATAR_COLORS = [
+  '#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6',
+  '#ec4899', '#06b6d4', '#f97316', '#10b981', '#eab308',
+];
 
 @Component({
   selector: 'app-project-members',
@@ -48,23 +60,30 @@ import { ProjectMember } from '../project-detail.types';
 })
 export class ProjectMembersComponent {
   private readonly router = inject(Router);
+  private readonly projectService = inject(ProjectService);
+  private readonly userService = inject(UserService);
+  private readonly messageService = inject(MessageService);
+
   readonly readOnly = input(false);
+  readonly projectId = input('');
 
   protected readonly actionMenu = viewChild.required<Menu>('actionMenu');
   protected readonly showRemoveDialog = signal(false);
   protected readonly removing = signal(false);
   protected readonly showAddDialog = signal(false);
-  private readonly messageService = inject(MessageService);
 
-  protected readonly memberCandidates: SelectItemOption[] = [
-    { value: 'c1', label: 'แสนดี ที่สุดเลย', sublabel: 'ลูกค้า' },
-    { value: 'c2', label: 'สดใส สวยงาม', sublabel: 'ลูกค้า' },
-    { value: 'c3', label: 'สมศรี มีเกียติ', sublabel: 'ลูกค้า' },
-    { value: 'c4', label: 'มาโมรุ มุคาวะ', sublabel: 'ลูกค้า' },
-    { value: 'c5', label: 'สุชาติ มีกลิ่น', sublabel: 'ลูกค้า' },
-    { value: 'c6', label: 'กรถนก หลากสี', sublabel: 'ลูกค้า' },
-    { value: 'c7', label: 'อรชร ชมรส', sublabel: 'ลูกค้า' },
-  ];
+  private readonly membersRaw = signal<ProjectMemberResponse[]>([]);
+  private readonly allUsers = signal<UserResponse[]>([]);
+  private readonly selectedMemberMid = signal<string | null>(null);
+
+  protected readonly memberCandidates = computed<SelectItemOption[]>(() =>
+    this.allUsers().map((u, i) => ({
+      value: u.id,
+      label: `${u.firstName} ${u.lastName}`,
+      sublabel: u.accountType === 'CUSTOMER' ? 'ลูกค้า' : 'ผู้พัฒนา',
+      avatar: u.profileImageUrl || undefined,
+    })),
+  );
 
   protected readonly userTypeFilter = signal<string | null>(null);
   protected readonly positionFilter = signal<string | null>(null);
@@ -74,40 +93,31 @@ export class ProjectMembersComponent {
 
   protected readonly userTypeOptions = [
     { label: 'ประเภทผู้ใช้ทั้งหมด', value: null },
-    { label: 'แอดมิน', value: 'แอดมิน' },
     { label: 'ลูกค้า', value: 'ลูกค้า' },
     { label: 'ผู้พัฒนา', value: 'ผู้พัฒนา' },
   ];
 
   protected readonly positionOptions = [
     { label: 'ตำแหน่งทั้งหมด', value: null },
-    { label: 'Develop', value: 'Develop' },
-    { label: 'Design', value: 'Design' },
-    { label: 'QA', value: 'QA' },
   ];
 
-  private readonly allMembers: ProjectMember[] = [
-    { id: '1', name: 'ใจงาม สุดใจจริง', userType: 'แอดมิน', position: 'Develop', email: 'Jaiknam@gmail.com' },
-    { id: '2', name: 'แสนดี ที่สุดเลย', userType: 'ลูกค้า', position: '-', email: 'Sansee@gmail.com' },
-    { id: '3', name: 'มานี มิตา', userType: 'ผู้พัฒนา', position: 'Develop', email: 'Manee@gmail.com' },
-    { id: '4', name: 'ตุ๊กตุ๊ก ตุ๊กแก', userType: 'ผู้พัฒนา', position: 'Develop', email: 'Tuktuk@gmail.com' },
-    { id: '5', name: 'สิริ สวัสดิ์', userType: 'ผู้พัฒนา', position: 'Develop', email: 'Siri@gmail.com' },
-    { id: '6', name: 'มิตัง ต้นเดือน', userType: 'ผู้พัฒนา', position: 'Develop', email: 'Metung@gmail.com' },
-    { id: '7', name: 'ชูใจ ใจดี', userType: 'ผู้พัฒนา', position: 'Develop', email: 'Shujai@gmail.com' },
-    { id: '8', name: 'ปิดิ ยินดี', userType: 'ลูกค้า', position: '-', email: 'Piti@gmail.com' },
-    { id: '9', name: 'แก้ว กันน้ำ', userType: 'ผู้พัฒนา', position: 'Develop', email: 'Kwaw@gmail.com' },
-    { id: '10', name: 'มะลิลา ขึ้นต้นเป็นมะลิซ้อน', userType: 'ผู้พัฒนา', position: 'Develop', email: 'Malila@gmail.com' },
-  ];
+  private readonly allMembers = computed<ProjectMember[]>(() =>
+    this.membersRaw().map((m) => ({
+      id: m.id,
+      name: `${m.firstName} ${m.lastName}`,
+      userType: m.role === 'CUSTOMER' ? 'ลูกค้า' : 'ผู้พัฒนา',
+      position: '-',
+      email: m.email,
+    })),
+  );
 
   protected readonly filteredMembers = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
     const userType = this.userTypeFilter();
-    const position = this.positionFilter();
-    return this.allMembers.filter(m => {
+    return this.allMembers().filter(m => {
       const matchesSearch = !query || m.name.toLowerCase().includes(query) || m.email.toLowerCase().includes(query);
       const matchesType = !userType || m.userType === userType;
-      const matchesPosition = !position || m.position === position;
-      return matchesSearch && matchesType && matchesPosition;
+      return matchesSearch && matchesType;
     });
   });
 
@@ -135,8 +145,35 @@ export class ProjectMembersComponent {
     { label: 'ลบ', command: () => this.showRemoveDialog.set(true) },
   ];
 
-  protected onActionClick(event: MouseEvent): void {
+  constructor() {
+    effect(() => {
+      const id = this.projectId();
+      if (id) {
+        this.loadMembers(id);
+        this.loadAllUsers();
+      }
+    });
+  }
+
+  private loadMembers(projectId: string): void {
+    this.projectService.getMembers(projectId).subscribe({
+      next: (members) => this.membersRaw.set(members),
+      error: () => this.membersRaw.set([]),
+    });
+  }
+
+  private loadAllUsers(): void {
+    forkJoin([
+      this.userService.getAll({ accountType: 'CUSTOMER' }, 0, 200).pipe(catchError(() => of({ content: [] as UserResponse[] }))),
+      this.userService.getAll({ accountType: 'EXTERNAL' }, 0, 200).pipe(catchError(() => of({ content: [] as UserResponse[] }))),
+    ]).subscribe(([customers, externals]) => {
+      this.allUsers.set([...customers.content, ...externals.content]);
+    });
+  }
+
+  protected onActionClick(event: MouseEvent, row: Record<string, unknown>): void {
     event.stopPropagation();
+    this.selectedMemberMid.set(row['id'] as string);
     this.actionMenu().toggle(event);
   }
 
@@ -145,18 +182,57 @@ export class ProjectMembersComponent {
   }
 
   protected onRemoveConfirmed(): void {
+    const mid = this.selectedMemberMid();
+    const pid = this.projectId();
+    if (!mid || !pid) {
+      this.showRemoveDialog.set(false);
+      return;
+    }
     this.removing.set(true);
-    this.removing.set(false);
-    this.showRemoveDialog.set(false);
+    this.projectService.removeMember(pid, mid).subscribe({
+      next: () => {
+        this.membersRaw.update((ms) => ms.filter((m) => m.id !== mid));
+        this.removing.set(false);
+        this.showRemoveDialog.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'ลบสำเร็จ',
+          detail: 'ลบสมาชิกเรียบร้อยแล้ว',
+          life: 3000,
+        });
+      },
+      error: () => {
+        this.removing.set(false);
+        this.showRemoveDialog.set(false);
+      },
+    });
   }
 
-  protected onAddConfirmed(_selected: string[]): void {
-    this.showAddDialog.set(false);
-    this.messageService.add({
-      severity: 'success',
-      summary: 'บันทึกสำเร็จ',
-      detail: 'เพิ่มสมาชิกเรียบร้อยแล้ว',
-      life: 3000,
-    })
+  protected onAddConfirmed(selectedUserIds: string[]): void {
+    const pid = this.projectId();
+    if (!pid || selectedUserIds.length === 0) {
+      this.showAddDialog.set(false);
+      return;
+    }
+
+    const requests = selectedUserIds.map((userId) => {
+      const user = this.allUsers().find((u) => u.id === userId);
+      const role = user?.accountType === 'CUSTOMER' ? 'CUSTOMER' : 'ASSIGNEE';
+      return this.projectService.addMember(pid, { userId, role }).pipe(catchError(() => of(null)));
+    });
+
+    forkJoin(requests).subscribe({
+      next: (results) => {
+        const added = results.filter((r): r is NonNullable<typeof r> => r !== null);
+        this.membersRaw.update((ms) => [...ms, ...added]);
+        this.showAddDialog.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'บันทึกสำเร็จ',
+          detail: 'เพิ่มสมาชิกเรียบร้อยแล้ว',
+          life: 3000,
+        });
+      },
+    });
   }
 }

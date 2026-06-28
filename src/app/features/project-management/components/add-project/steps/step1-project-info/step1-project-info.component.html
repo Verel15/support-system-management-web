@@ -42,20 +42,22 @@
 
   <!-- Company -->
   <div class="flex flex-col gap-1.5">
-    <label class="text-sm font-bold text-secondary-700" for="company">บริษัท</label>
-    <input
-      pInputText
-      id="company"
-      formControlName="company"
-      class="w-full"
-      placeholder="ชื่อบริษัท"
+    <label class="text-sm font-bold text-secondary-700" for="companyId">บริษัท</label>
+    <p-select
+      inputId="companyId"
+      formControlName="companyId"
+      [options]="store.companyOptions()"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="เลือกบริษัท"
+      styleClass="w-full"
       [class]="
-        controls.company.invalid && controls.company.touched ? 'ng-invalid ng-dirty' : ''
+        controls.companyId.invalid && controls.companyId.touched ? 'ng-invalid ng-dirty' : ''
       "
       aria-required="true"
     />
-    @if (controls.company.invalid && controls.company.touched) {
-      <span class="text-xs text-error-500" role="alert">กรุณากรอกชื่อบริษัท</span>
+    @if (controls.companyId.invalid && controls.companyId.touched) {
+      <span class="text-xs text-error-500" role="alert">กรุณาเลือกบริษัท</span>
     }
   </div>
 

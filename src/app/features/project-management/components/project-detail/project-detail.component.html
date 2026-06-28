@@ -22,7 +22,7 @@
     (editClick)="onEditProject()"
   />
 
-  <app-project-members />
+  <app-project-members [projectId]="project().id" />
 
   <app-project-tickets />
 </div>

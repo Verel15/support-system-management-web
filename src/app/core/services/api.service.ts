@@ -47,6 +47,11 @@ export class ApiService {
       .pipe(map((res) => res?.data as T));
   }
 
+  downloadBlob(fileUrl: string): Observable<Blob> {
+    const origin = new URL(this.baseUrl).origin;
+    return this.http.get(`${origin}${fileUrl}`, { responseType: 'blob' });
+  }
+
   private url(path: string): string {
     return `${this.baseUrl}${path}`;
   }

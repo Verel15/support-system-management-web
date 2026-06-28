@@ -25,16 +25,19 @@
   <ul class="list-none pb-4" role="list">
     @for (doc of documents(); track doc.id) {
       <li class="flex items-center gap-4 px-6 py-4">
-        <i class="pi pi-file text-xl text-primary-500 shrink-0" aria-hidden="true"></i>
+        <i [class]="getFileIcon(doc.name) + ' text-xl text-primary-500 shrink-0'" aria-hidden="true"></i>
         <span class="flex-1 text-sm text-secondary-800 truncate">{{ doc.name }}</span>
-        <a
-          [href]="doc.url"
-          download
-          class="text-sm text-primary-500 underline hover:text-primary-700 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
+        <p-button
+          [label]="downloadingId() === doc.id ? '' : 'ดาวน์โหลด'"
+          [icon]="downloadingId() === doc.id ? 'pi pi-spin pi-spinner' : 'pi pi-download'"
+          [loading]="downloadingId() === doc.id"
+          [disabled]="downloadingId() !== null"
+          severity="secondary"
+          [text]="true"
+          size="small"
           [attr.aria-label]="'ดาวน์โหลด ' + doc.name"
-        >
-          ดาวน์โหลด
-        </a>
+          (onClick)="download(doc)"
+        />
       </li>
     }
     @empty {

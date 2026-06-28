@@ -113,6 +113,7 @@ export class CompanyDetailComponent {
 
   protected readonly projects: Project[] = [
     {
+      id: '',
       name: 'IT Supporting and Helpdesk',
       status: 'Open',
       date: '10/07/66',
@@ -134,6 +135,7 @@ export class CompanyDetailComponent {
       attachmentCount: 2,
     },
     {
+      id: '',
       name: 'Book Bank System',
       status: 'Open',
       date: '10/07/66',
@@ -154,6 +156,7 @@ export class CompanyDetailComponent {
       attachmentCount: 2,
     },
     {
+      id: '',
       name: 'Life Insurance System',
       status: 'Open',
       date: '10/07/66',
@@ -174,6 +177,7 @@ export class CompanyDetailComponent {
       attachmentCount: 2,
     },
     {
+      id: '',
       name: 'Rent a car System',
       status: 'Open',
       date: '10/07/66',
@@ -194,6 +198,7 @@ export class CompanyDetailComponent {
       attachmentCount: 2,
     },
     {
+      id: '',
       name: 'Library Management System',
       status: 'Open',
       date: '10/07/66',
@@ -214,6 +219,7 @@ export class CompanyDetailComponent {
       attachmentCount: 2,
     },
     {
+      id: '',
       name: 'Room Service System',
       status: 'Open',
       date: '10/07/66',
@@ -234,6 +240,7 @@ export class CompanyDetailComponent {
       attachmentCount: 2,
     },
     {
+      id: '',
       name: 'Tour Ticket Booking System',
       status: 'Open',
       date: '10/07/66',
@@ -254,6 +261,7 @@ export class CompanyDetailComponent {
       attachmentCount: 2,
     },
     {
+      id: '',
       name: 'Manage Pharmacy System',
       status: 'Open',
       date: '10/07/66',

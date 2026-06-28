@@ -38,6 +38,7 @@ export class MyProjectListComponent {
 
   private readonly allProjects: Project[] = [
     {
+      id: '',
       name: 'IT Supporting and Helpdesk',
       status: 'Open',
       date: '31/07/66',
@@ -56,6 +57,7 @@ export class MyProjectListComponent {
       attachmentCount: 2,
     },
     {
+      id: '',
       name: 'Book Bank System',
       status: 'Open',
       date: '31/07/66',
@@ -74,6 +76,7 @@ export class MyProjectListComponent {
       attachmentCount: 2,
     },
     {
+      id: '',
       name: 'Life Insurance System',
       status: 'Open',
       date: '31/07/66',
@@ -92,6 +95,7 @@ export class MyProjectListComponent {
       attachmentCount: 3,
     },
     {
+      id: '',
       name: 'HR Management Platform',
       status: 'Open',
       date: '02/08/66',
@@ -112,6 +116,7 @@ export class MyProjectListComponent {
       attachmentCount: 5,
     },
     {
+      id: '',
       name: 'Smart Billing System',
       status: 'Open',
       date: '12/09/66',

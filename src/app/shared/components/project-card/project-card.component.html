@@ -56,7 +56,9 @@
             class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold border-2 border-white overflow-hidden shrink-0"
             [style.background-color]="member.avatarUrl ? 'transparent' : member.color"
             role="listitem"
-            [attr.aria-label]="member.initials"
+            [attr.aria-label]="member.fullName ?? member.initials"
+            [pTooltip]="member.fullName ?? member.initials"
+            tooltipPosition="top"
           >
             @if (member.avatarUrl) {
               <img [src]="member.avatarUrl" alt="" class="w-full h-full object-cover" />

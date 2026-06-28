@@ -52,8 +52,8 @@ export class CompanyListComponent implements OnInit {
 
   protected readonly columns: TableColumn[] = [
     { field: 'name', header: 'รายชื่อบริษัท', sortable: true },
-    { field: 'countProject', header: 'จำนวนโครงการ', sortable: true },
-    { field: 'countMember', header: 'จำนวนสมาชิก', sortable: true},
+    { field: 'projectCount', header: 'จำนวนโครงการ', sortable: true },
+    { field: 'customerCount', header: 'จำนวนลูกค้า', sortable: true},
     { field: 'createdAt', header: 'วันที่สร้าง', sortable: true },
   ];
 

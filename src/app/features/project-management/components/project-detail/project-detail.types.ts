@@ -1,4 +1,5 @@
 export interface ProjectDetail {
+  id: string;
   name: string;
   color: string;
   status: 'Open' | 'Closed';

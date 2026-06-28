@@ -21,6 +21,7 @@ export class MyProjectDetailComponent {
   private readonly router = inject(Router);
 
   protected readonly project = signal<ProjectDetail>({
+    id: '',
     name: 'Manage Pharmacy System',
     color: '#3b82f6',
     status: 'Open',

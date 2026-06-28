@@ -1,7 +1,11 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, map, of } from 'rxjs';
 import { SelectItemOption } from '../../../shared/components/dialogs';
+import { CompanyService } from '../../company-management/services/company.service';
+import { UserService } from '../../user-management/services/user.service';
+import { UserResponse } from '../../user-management/interfaces/user.interface';
 
 export interface UserDetail {
   id: string;
@@ -11,15 +15,34 @@ export interface UserDetail {
   color: string;
 }
 
+const AVATAR_COLORS = [
+  '#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6',
+  '#ec4899', '#06b6d4', '#f97316', '#10b981', '#eab308',
+];
+
+function toUserDetail(u: UserResponse, role: string, index: number): UserDetail {
+  const name = `${u.firstName} ${u.lastName}`;
+  return {
+    id: u.id,
+    name,
+    role,
+    initials: u.firstName?.[0] ?? '?',
+    color: AVATAR_COLORS[index % AVATAR_COLORS.length],
+  };
+}
+
 @Injectable()
 export class AddProjectStore {
+  private readonly companyService = inject(CompanyService);
+  private readonly userService = inject(UserService);
+
   readonly step1Form = new FormGroup({
     projectColor: new FormControl('#3b82f6', { nonNullable: true }),
     projectName: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required],
     }),
-    company: new FormControl('', {
+    companyId: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required],
     }),
@@ -39,15 +62,12 @@ export class AddProjectStore {
     initialValue: this.step1Form.status,
   });
 
-  // Derived signals from form (same API as before — step 2 & 3 components unaffected)
   readonly projectColor = computed(() => this.formValues().projectColor ?? '#3b82f6');
   readonly projectName = computed(() => this.formValues().projectName ?? '');
-  readonly company = computed(() => this.formValues().company ?? '');
   readonly startDate = computed(() => this.formValues().startDate ?? null);
   readonly endDate = computed(() => this.formValues().endDate ?? null);
   readonly step1Valid = computed(() => this.formStatus() === 'VALID');
 
-  // Step 2 state (not form-based)
   readonly uploadedFiles = signal<File[]>([]);
   readonly selectedCustomerIds = signal<string[]>([]);
   readonly selectedManagerIds = signal<string[]>([]);
@@ -63,43 +83,61 @@ export class AddProjectStore {
     { value: '#f97316', label: 'ส้ม' },
   ];
 
-  readonly customerUsers: UserDetail[] = [
-    { id: '1', name: 'แสนดี ที่สุดเลย', role: 'ลูกค้า', initials: 'แ', color: '#3b82f6' },
-    { id: '2', name: 'สดใส สวยงาม', role: 'ลูกค้า', initials: 'ส', color: '#f59e0b' },
-    { id: '3', name: 'สมศรี มีเกียติ', role: 'ลูกค้า', initials: 'ส', color: '#ec4899' },
-    { id: '4', name: 'มาโมรุ มุคาวะ', role: 'ลูกค้า', initials: 'ม', color: '#10b981' },
-    { id: '5', name: 'สุชาติ มีกลิ่น', role: 'ลูกค้า', initials: 'ส', color: '#8b5cf6' },
-    { id: '6', name: 'กรถนก หลากสี', role: 'ลูกค้า', initials: 'ก', color: '#ef4444' },
-    { id: '7', name: 'อธชร ชิมรส', role: 'ลูกค้า', initials: 'อ', color: '#f97316' },
-  ];
+  private readonly companiesRaw = toSignal(
+    this.companyService.getAll().pipe(catchError(() => of([]))),
+    { initialValue: [] },
+  );
 
-  readonly managerUsers: UserDetail[] = [
-    { id: '8', name: 'มานี มีตา', role: 'ผู้พัฒนา', initials: 'ม', color: '#f59e0b' },
-    { id: '9', name: 'ชูใจ ใจดี', role: 'ผู้พัฒนา', initials: 'ช', color: '#3b82f6' },
-    { id: '10', name: 'แก้ว กินน้ำ', role: 'ผู้พัฒนา', initials: 'แ', color: '#ec4899' },
-    { id: '11', name: 'สมหมาย ใจดี', role: 'ผู้พัฒนา', initials: 'ส', color: '#10b981' },
-    { id: '12', name: 'รัตนา ดีใจ', role: 'ผู้พัฒนา', initials: 'ร', color: '#8b5cf6' },
-  ];
+  private readonly customerUsersRaw = toSignal(
+    this.userService.getAll({ accountType: 'CUSTOMER' }, 0, 200).pipe(
+      map((page) => page.content),
+      catchError(() => of([])),
+    ),
+    { initialValue: [] as UserResponse[] },
+  );
 
-  readonly customerOptions: SelectItemOption[] = this.customerUsers.map((u) => ({
-    value: u.id,
-    label: u.name,
-  }));
+  private readonly assigneeUsersRaw = toSignal(
+    this.userService.getAll({ accountType: 'EXTERNAL' }, 0, 200).pipe(
+      map((page) => page.content),
+      catchError(() => of([])),
+    ),
+    { initialValue: [] as UserResponse[] },
+  );
 
-  readonly managerOptions: SelectItemOption[] = this.managerUsers.map((u) => ({
-    value: u.id,
-    label: u.name,
-  }));
+  readonly companyOptions = computed(() =>
+    this.companiesRaw().map((c) => ({ label: c.name, value: c.id })),
+  );
+
+  readonly company = computed(() => {
+    const id = this.formValues().companyId ?? '';
+    return this.companiesRaw().find((c) => c.id === id)?.name ?? '';
+  });
+
+  readonly customerUsers = computed<UserDetail[]>(() =>
+    this.customerUsersRaw().map((u, i) => toUserDetail(u, 'ลูกค้า', i)),
+  );
+
+  readonly managerUsers = computed<UserDetail[]>(() =>
+    this.assigneeUsersRaw().map((u, i) => toUserDetail(u, 'ผู้พัฒนา', i)),
+  );
+
+  readonly customerOptions = computed<SelectItemOption[]>(() =>
+    this.customerUsers().map((u) => ({ value: u.id, label: u.name, sublabel: u.role })),
+  );
+
+  readonly managerOptions = computed<SelectItemOption[]>(() =>
+    this.managerUsers().map((u) => ({ value: u.id, label: u.name, sublabel: u.role })),
+  );
 
   readonly selectedCustomers = computed(() =>
     this.selectedCustomerIds()
-      .map((id) => this.customerUsers.find((u) => u.id === id))
+      .map((id) => this.customerUsers().find((u) => u.id === id))
       .filter((u): u is UserDetail => !!u),
   );
 
   readonly selectedManagers = computed(() =>
     this.selectedManagerIds()
-      .map((id) => this.managerUsers.find((u) => u.id === id))
+      .map((id) => this.managerUsers().find((u) => u.id === id))
       .filter((u): u is UserDetail => !!u),
   );
 
@@ -147,5 +185,12 @@ export class AddProjectStore {
     if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) return 'pi pi-video';
     if (ext === 'pdf') return 'pi pi-file-pdf';
     return 'pi pi-file';
+  }
+
+  toIsoDate(date: Date): string {
+    const y = date.getFullYear();
+    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+    const d = date.getDate().toString().padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 }

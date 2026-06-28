@@ -19,6 +19,7 @@ import { ArcElement, Chart, DoughnutController, Legend, Tooltip } from 'chart.js
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { ProjectDetail } from '../project-detail.types';
 import { DocumentsDialogComponent, ProjectDocument } from '../../../../../shared/components/dialogs';
+import { ProjectService } from '../../../services/project.service';
 
 Chart.register(ArcElement, DoughnutController, Legend, Tooltip, ChartDataLabels);
 
@@ -35,20 +36,16 @@ export class ProjectInfoComponent {
   readonly deleteClick = output<void>();
 
   private readonly destroyRef = inject(DestroyRef);
+  private readonly projectService = inject(ProjectService);
   protected readonly cardActionMenu = viewChild.required<Menu>('cardActionMenu');
   protected readonly chartCanvas = viewChild<ElementRef<HTMLCanvasElement>>('chartCanvas');
 
   protected readonly documentsVisible = signal(false);
-  protected readonly projectDocuments: ProjectDocument[] = [
-    { id: '1', name: 'เอกสาร A.pdf', url: '#' },
-    { id: '2', name: 'เอกสาร B.pdf', url: '#' },
-    { id: '3', name: 'เอกสาร C.pdf', url: '#' },
-    { id: '4', name: 'เอกสาร D.pdf', url: '#' },
-    { id: '5', name: 'เอกสาร E.pdf', url: '#' },
-  ];
+  protected readonly projectDocuments = signal<ProjectDocument[]>([]);
 
   private chartInstance: Chart | null = null;
   private totalForCenter = 0;
+  private lastFetchedDocId = '';
 
   protected readonly cardMenuItems = computed<MenuItem[]>(() => [
     { label: 'แก้ไขโครงการ', command: () => this.editClick.emit() },
@@ -74,6 +71,20 @@ export class ProjectInfoComponent {
   });
 
   constructor() {
+    effect(() => {
+      const id = this.project().id;
+      if (!id || id === this.lastFetchedDocId) return;
+      this.lastFetchedDocId = id;
+      this.projectService.getDocuments(id).subscribe({
+        next: (docs) => {
+          this.projectDocuments.set(
+            docs.map((d) => ({ id: d.id, name: d.fileName, url: d.fileUrl })),
+          );
+        },
+        error: () => {},
+      });
+    });
+
     effect(() => {
       const data = this.chartData();
       this.totalForCenter = this.totalTickets();

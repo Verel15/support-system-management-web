@@ -11,6 +11,8 @@ export interface CompanyResponse {
   name: string;
   logoImageUrl?: string;
   status: CompanyStatus;
+  customerCount: number;
+  projectCount: number;
   createdAt: string;
   updatedAt: string;
 }

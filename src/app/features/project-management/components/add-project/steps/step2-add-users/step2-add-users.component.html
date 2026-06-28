@@ -116,7 +116,7 @@
   [(visible)]="showCustomerDialog"
   title="เพิ่มลูกค้า"
   [subtitle]="'เพิ่มรายชื่อลูกค้าของโครงการ ' + store.projectName()"
-  [items]="store.customerOptions"
+  [items]="store.customerOptions()"
   [selected]="store.selectedCustomerIds()"
   (confirmed)="store.selectedCustomerIds.set($event)"
 />
@@ -125,7 +125,7 @@
   [(visible)]="showManagerDialog"
   title="เพิ่มผู้ดูแล"
   [subtitle]="'เพิ่มรายชื่อผู้ดูแลของโครงการ ' + store.projectName()"
-  [items]="store.managerOptions"
+  [items]="store.managerOptions()"
   [selected]="store.selectedManagerIds()"
   (confirmed)="store.selectedManagerIds.set($event)"
 />

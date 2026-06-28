@@ -73,7 +73,7 @@
             class="inline-flex items-center justify-center w-8 h-8 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
             aria-label="การดำเนินการ"
             aria-haspopup="true"
-            (click)="onActionClick($event)"
+            (click)="onActionClick($event, row)"
           >
             <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
           </button>
@@ -112,7 +112,7 @@
   title="เพิ่มสมาชิก"
   countLabel="สมาชิก"
   subtitle="เพิ่มรายชื่อสมาชิกของโครงการ"
-  [items]="memberCandidates"
+  [items]="memberCandidates()"
   (confirmed)="onAddConfirmed($event)"
   (cancelled)="showAddDialog.set(false)"
 />

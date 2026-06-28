@@ -133,6 +133,7 @@ export class MyTicketsComponent {
 
   protected readonly recentProjects: Project[] = [
     {
+      id: '',
       name: 'IT Supporting and Helpdesk',
       status: 'Open',
       date: '10/07/66',
@@ -151,6 +152,7 @@ export class MyTicketsComponent {
       attachmentCount: 2,
     },
     {
+      id: '',
       name: 'Book Bank System',
       status: 'Open',
       date: '10/07/66',
@@ -169,6 +171,7 @@ export class MyTicketsComponent {
       attachmentCount: 2,
     },
     {
+      id: '',
       name: 'Life Insurance System',
       status: 'Open',
       date: '10/07/66',
@@ -187,6 +190,7 @@ export class MyTicketsComponent {
       attachmentCount: 2,
     },
     {
+      id: '',
       name: 'Rent a car System',
       status: 'Open',
       date: '10/07/66',

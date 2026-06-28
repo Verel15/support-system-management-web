@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Button } from 'primeng/button';
@@ -15,6 +15,7 @@ import { AccountType, UserRequest } from '../../interfaces/user.interface';
 import { UserTypeService } from '../../../user-type-management/services/user-type.service';
 import { DepartmentService } from '../../services/department.service';
 import { PositionService } from '../../services/position.service';
+import { CompanyService } from '../../../company-management/services/company.service';
 
 @Component({
   selector: 'app-add-user',
@@ -30,6 +31,7 @@ export class AddUserComponent {
   private readonly userTypeService = inject(UserTypeService);
   private readonly departmentService = inject(DepartmentService);
   private readonly positionService = inject(PositionService);
+  private readonly companyService = inject(CompanyService);
 
   protected readonly avatarPreview = signal<string | null>(null);
   protected readonly submitting = signal(false);
@@ -38,6 +40,14 @@ export class AddUserComponent {
     { label: 'ลูกค้า', value: 'CUSTOMER' },
     { label: 'บุคคลภายนอก', value: 'EXTERNAL' },
   ];
+
+  protected readonly companyOptions = toSignal(
+    this.companyService.getAll().pipe(
+      map((companies) => companies.map((c) => ({ label: c.name, value: c.id }))),
+      catchError(() => of([])),
+    ),
+    { initialValue: [] },
+  );
 
   protected readonly userTypeOptions = toSignal(
     this.userTypeService.getAll().pipe(
@@ -65,14 +75,47 @@ export class AddUserComponent {
 
   protected readonly form = this.fb.group({
     userFormat: ['CUSTOMER' as AccountType, Validators.required],
-    userType: [null as string | null, Validators.required],
+    companyId: [null as string | null, Validators.required],
+    userType: [null as string | null],
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
-    department: [null as string | null, Validators.required],
-    position: [null as string | null, Validators.required],
+    department: [null as string | null],
+    position: [null as string | null],
     phone: [''],
     email: ['', [Validators.required, Validators.email]],
   });
+
+  private readonly selectedFormat = toSignal(
+    this.form.get('userFormat')!.valueChanges,
+    { initialValue: 'CUSTOMER' as AccountType },
+  );
+
+  protected readonly isCustomer = computed(() => this.selectedFormat() === 'CUSTOMER');
+
+  constructor() {
+    this.form.get('userFormat')!.valueChanges.subscribe((format) => {
+      this.applyConditionalValidators(format as AccountType);
+    });
+  }
+
+  private applyConditionalValidators(format: AccountType): void {
+    const companyId = this.form.get('companyId')!;
+    const userType = this.form.get('userType')!;
+    const department = this.form.get('department')!;
+    const position = this.form.get('position')!;
+
+    if (format === 'CUSTOMER') {
+      companyId.setValidators(Validators.required);
+      [userType, department, position].forEach((c) => c.clearValidators());
+    } else {
+      companyId.clearValidators();
+      [userType, department, position].forEach((c) => c.setValidators(Validators.required));
+    }
+    [companyId, userType, department, position].forEach((c) => {
+      c.reset(null);
+      c.updateValueAndValidity();
+    });
+  }
 
   protected isInvalid(field: string): boolean {
     const control = this.form.get(field);
@@ -102,6 +145,7 @@ export class AddUserComponent {
       lastName: v.lastName!,
       email: v.email!,
       phone: v.phone || undefined,
+      companyId: v.companyId ?? undefined,
       userTypeId: v.userType ?? undefined,
       departmentId: v.department ?? undefined,
       positionId: v.position ?? undefined,

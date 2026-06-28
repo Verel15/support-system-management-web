@@ -67,32 +67,34 @@
       </div>
     </section>
 
-    <!-- การเข้าถึง -->
-    <section aria-labelledby="access-heading">
-      <h2
-        id="access-heading"
-        class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3 mb-4"
-      >
-        การเข้าถึง
-      </h2>
-      <div class="flex flex-col gap-1">
-        <label for="userType" class="text-sm font-medium text-slate-700">ประเภทผู้ใช้</label>
-        <p-select
-          inputId="userType"
-          formControlName="userType"
-          [options]="userTypeOptions()"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="กรุณาเลือกประเภทผู้ใช้"
-          class="w-full"
-          [class.ng-invalid]="isInvalid('userType')"
-          aria-required="true"
-        />
-        @if (isInvalid('userType')) {
-          <small class="text-error-600 text-xs">กรุณาเลือกประเภทผู้ใช้</small>
-        }
-      </div>
-    </section>
+    <!-- การเข้าถึง (EXTERNAL only) -->
+    @if (!isCustomer()) {
+      <section aria-labelledby="access-heading">
+        <h2
+          id="access-heading"
+          class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3 mb-4"
+        >
+          การเข้าถึง
+        </h2>
+        <div class="flex flex-col gap-1">
+          <label for="userType" class="text-sm font-medium text-slate-700">ประเภทผู้ใช้</label>
+          <p-select
+            inputId="userType"
+            formControlName="userType"
+            [options]="userTypeOptions()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="กรุณาเลือกประเภทผู้ใช้"
+            class="w-full"
+            [class.ng-invalid]="isInvalid('userType')"
+            aria-required="true"
+          />
+          @if (isInvalid('userType')) {
+            <small class="text-error-600 text-xs">กรุณาเลือกประเภทผู้ใช้</small>
+          }
+        </div>
+      </section>
+    }
 
     <!-- ข้อมูลส่วนตัว -->
     <section aria-labelledby="personal-heading">
@@ -103,6 +105,27 @@
         ข้อมูลส่วนตัว
       </h2>
       <div class="flex flex-col gap-4">
+        <!-- บริษัท (CUSTOMER only) -->
+        @if (isCustomer()) {
+          <div class="flex flex-col gap-1">
+            <label for="companyId" class="text-sm font-medium text-slate-700">บริษัท</label>
+            <p-select
+              inputId="companyId"
+              formControlName="companyId"
+              [options]="companyOptions()"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="กรุณาเลือกบริษัท"
+              class="w-full"
+              [class.ng-invalid]="isInvalid('companyId')"
+              aria-required="true"
+            />
+            @if (isInvalid('companyId')) {
+              <small class="text-error-600 text-xs">กรุณาเลือกบริษัท</small>
+            }
+          </div>
+        }
+
         <!-- ชื่อ -->
         <div class="flex flex-col gap-1">
           <label for="firstName" class="text-sm font-medium text-slate-700">ชื่อ</label>
@@ -137,43 +160,44 @@
           }
         </div>
 
-        <!-- แผนก -->
-        <div class="flex flex-col gap-1">
-          <label for="department" class="text-sm font-medium text-slate-700">แผนก</label>
-          <p-select
-            inputId="department"
-            formControlName="department"
-            [options]="departmentOptions()"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="กรุณาเลือกแผนก"
-            class="w-full"
-            [class.ng-invalid]="isInvalid('department')"
-            aria-required="true"
-          />
-          @if (isInvalid('department')) {
-            <small class="text-error-600 text-xs">กรุณาเลือกแผนก</small>
-          }
-        </div>
+        <!-- แผนก + ตำแหน่ง (EXTERNAL only) -->
+        @if (!isCustomer()) {
+          <div class="flex flex-col gap-1">
+            <label for="department" class="text-sm font-medium text-slate-700">แผนก</label>
+            <p-select
+              inputId="department"
+              formControlName="department"
+              [options]="departmentOptions()"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="กรุณาเลือกแผนก"
+              class="w-full"
+              [class.ng-invalid]="isInvalid('department')"
+              aria-required="true"
+            />
+            @if (isInvalid('department')) {
+              <small class="text-error-600 text-xs">กรุณาเลือกแผนก</small>
+            }
+          </div>
 
-        <!-- ตำแหน่ง -->
-        <div class="flex flex-col gap-1">
-          <label for="position" class="text-sm font-medium text-slate-700">ตำแหน่ง</label>
-          <p-select
-            inputId="position"
-            formControlName="position"
-            [options]="positionOptions()"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="กรุณาเลือกตำแหน่ง"
-            class="w-full"
-            [class.ng-invalid]="isInvalid('position')"
-            aria-required="true"
-          />
-          @if (isInvalid('position')) {
-            <small class="text-error-600 text-xs">กรุณาเลือกตำแหน่ง</small>
-          }
-        </div>
+          <div class="flex flex-col gap-1">
+            <label for="position" class="text-sm font-medium text-slate-700">ตำแหน่ง</label>
+            <p-select
+              inputId="position"
+              formControlName="position"
+              [options]="positionOptions()"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="กรุณาเลือกตำแหน่ง"
+              class="w-full"
+              [class.ng-invalid]="isInvalid('position')"
+              aria-required="true"
+            />
+            @if (isInvalid('position')) {
+              <small class="text-error-600 text-xs">กรุณาเลือกตำแหน่ง</small>
+            }
+          </div>
+        }
 
         <!-- เบอร์โทรศัพท์ -->
         <div class="flex flex-col gap-1">
