@@ -112,6 +112,14 @@ export class AddTicketComponent implements CanDeactivateComponent {
     }, 600);
   }
 
+  protected formatInterval(value: number, unit: string): string {
+    const units: Record<string, string> = {
+      MINUTE: 'นาที', HOUR: 'ชั่วโมง', DAY: 'วัน',
+      WEEK: 'สัปดาห์', MONTH: 'เดือน', YEAR: 'ปี',
+    };
+    return `${value} ${units[unit] ?? unit}`;
+  }
+
   private resetForm(): void {
     this.title.set('');
     this.selectedProject.set(null);

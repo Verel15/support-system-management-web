@@ -2,11 +2,11 @@
 <div class="flex items-center justify-between px-4 pt-4 pb-3">
   <button
     type="button"
-    class="inline-flex items-center gap-2 px-4 py-2 bg-[#1e3a5f] text-white rounded-lg font-semibold text-sm hover:bg-[#162d4a] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#1e3a5f]"
-    [attr.aria-label]="'สถานะ: ' + selectedStatusLabel()"
+    [class]="statusButtonClass()"
+    [attr.aria-label]="'สถานะ: ' + ticket().currentStatusName"
     (click)="onStatusMenuOpen($event)"
   >
-    {{ selectedStatusLabel() }}
+    {{ ticket().currentStatusName }}
     <i class="pi pi-chevron-down text-xs" aria-hidden="true"></i>
   </button>
 
@@ -24,101 +24,45 @@
 <div class="px-4 py-4 grid grid-cols-[auto_1fr] gap-x-4">
 
   <span class="py-3 text-sm text-slate-500 flex items-center">Ticket ID:</span>
-  <span class="py-3 text-sm font-semibold text-slate-800 flex items-center justify-start">TK-1</span>
+  <span class="py-3 text-sm font-semibold text-slate-800 flex items-center justify-start">{{ ticket().ticketId }}</span>
   <div class="col-span-2 h-0 border-t border-slate-100"></div>
 
   <span class="py-3 text-sm text-slate-500">วันที่สร้าง:</span>
-  <span class="py-3 text-sm text-slate-800 text-left">วันจันทร์ที่ 3 ก.ค. 2566 เวลา 15:30 น.</span>
+  <span class="py-3 text-sm text-slate-800 text-left">{{ createdAtDisplay() }}</span>
   <div class="col-span-2 h-0 border-t border-slate-100"></div>
 
   <span class="py-3 text-sm text-slate-500">การอัพเดตล่าสุด:</span>
-  <span class="py-3 text-sm text-slate-800 text-left">วันจันทร์ที่ 3 ก.ค. 2566 เวลา 16:00 น.</span>
+  <span class="py-3 text-sm text-slate-800 text-left">{{ updatedAtDisplay() }}</span>
   <div class="col-span-2 h-0 border-t border-slate-100"></div>
 
-  <label for="panel-project" class="py-3 text-sm text-slate-500 flex items-center">โครงการ:</label>
-  <div class="py-2 min-w-0 flex items-center">
-    <p-select
-      inputId="panel-project"
-      [options]="projectOptions"
-      [ngModel]="selectedProject()"
-      (ngModelChange)="selectedProject.set($event)"
-      optionLabel="label"
-      optionValue="value"
-      class="w-full"
-    />
-  </div>
+  <span class="py-3 text-sm text-slate-500 flex items-center">โครงการ:</span>
+  <span class="py-3 text-sm text-slate-800 flex items-center">{{ ticket().projectName }}</span>
   <div class="col-span-2 h-0 border-t border-slate-100"></div>
 
   <span class="py-3 text-sm text-slate-500 flex items-center">ประเภท Ticket:</span>
-  <div class="py-2 min-w-0 flex items-center">
-    <button
-      type="button"
-      class="w-full flex items-center justify-between gap-2 px-3 py-2 h-11 border border-slate-300 rounded-md text-sm text-slate-800 bg-white hover:border-primary-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-      aria-haspopup="dialog"
-      aria-label="เลือกประเภท Ticket"
-      (click)="openTicketTypeDialog()"
-    >
-      <span class="truncate">{{ selectedTicketTypeLabel() ?? 'เลือกประเภท' }}</span>
-      <i class="pi pi-chevron-down text-xs shrink-0 text-primary-700" aria-hidden="true"></i>
-    </button>
-  </div>
+  <span class="py-3 text-sm text-slate-800 flex items-center">{{ ticket().ticketTypeName }}</span>
   <div class="col-span-2 h-0 border-t border-slate-100"></div>
 
-  <label for="panel-team" class="py-3 text-sm text-slate-500 flex items-center">สถานะ:</label>
-  <div class="py-2 min-w-0 flex items-center">
-    <p-select
-      inputId="panel-team"
-      [options]="teamOptions"
-      [ngModel]="selectedTeam()"
-      (ngModelChange)="selectedTeam.set($event)"
-      optionLabel="label"
-      optionValue="value"
-      class="w-full"
-    />
-  </div>
+  <span class="py-3 text-sm text-slate-500 flex items-center">StatusFlow:</span>
+  <span class="py-3 text-sm text-slate-800 flex items-center">{{ ticket().statusFlowName }}</span>
   <div class="col-span-2 h-0 border-t border-slate-100"></div>
 
-  <label for="panel-priority" class="py-3 text-sm text-slate-500 flex items-center">ลำดับความสำคัญ:</label>
-  <div class="py-2 min-w-0 flex items-center">
-    <p-select
-      inputId="panel-priority"
-      [options]="priorityOptions"
-      [ngModel]="selectedPriority()"
-      (ngModelChange)="selectedPriority.set($event)"
-      optionLabel="label"
-      optionValue="value"
-      class="w-full"
-    >
-      <ng-template pTemplate="selectedItem" let-opt>
-        @if (opt) {
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full shrink-0" [style.background-color]="opt.color" aria-hidden="true"></span>
-            <span class="truncate">{{ opt.label }}</span>
-          </div>
-        }
-      </ng-template>
-      <ng-template pTemplate="item" let-opt>
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full shrink-0" [style.background-color]="opt.color" aria-hidden="true"></span>
-          <span>{{ opt.label }}</span>
-        </div>
-      </ng-template>
-    </p-select>
-  </div>
+  <span class="py-3 text-sm text-slate-500 flex items-center">ลำดับความสำคัญ:</span>
+  <span class="py-3 text-sm text-slate-800 flex items-center">{{ ticket().priorityName }}</span>
   <div class="col-span-2 h-0 border-t border-slate-100"></div>
 
-  <label for="panel-resolution" class="py-3 text-sm text-slate-500 flex items-center">ระยะเวลาแก้ไข:</label>
-  <div class="py-2 min-w-0 flex items-center">
-    <p-select
-      inputId="panel-resolution"
-      [options]="resolutionTimeOptions"
-      [ngModel]="selectedResolutionTime()"
-      (ngModelChange)="selectedResolutionTime.set($event)"
-      optionLabel="label"
-      optionValue="value"
-      class="w-full"
-    />
-  </div>
+  <span class="py-3 text-sm text-slate-500 flex items-center">ระยะเวลาแก้ไข:</span>
+  <span class="py-3 text-sm text-slate-800 flex items-center">{{ resolutionTimeDisplay() }}</span>
+  <div class="col-span-2 h-0 border-t border-slate-100"></div>
+
+  <span class="py-3 text-sm text-slate-500 flex items-center">ครบกำหนด:</span>
+  <span class="py-3 text-sm text-slate-800 flex items-center">
+    @if (ticket().dueDate) {
+      {{ ticket().dueDate | date:'dd/MM/yyyy HH:mm' }}
+    } @else {
+      —
+    }
+  </span>
 
 </div>
 
@@ -138,7 +82,6 @@
         >{{ selectedAssignees()[0].avatarInitial }}</div>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-semibold text-slate-800 truncate">{{ selectedAssignees()[0].name }}</p>
-          <p class="text-xs text-slate-500">{{ selectedAssignees()[0].role }}</p>
         </div>
         <button
           type="button"
@@ -212,7 +155,7 @@
             class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:bg-slate-50"
             role="option"
             [attr.aria-selected]="user.selected"
-            (click)="onAssigneeToggle(user.id)"
+            (click)="onAssigneeToggle(user.userId, user.selected)"
           >
             <div
               class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 select-none"
@@ -221,7 +164,6 @@
             >{{ user.avatarInitial }}</div>
             <div class="flex-1 text-left min-w-0">
               <p class="text-sm font-semibold text-slate-800 truncate">{{ user.name }}</p>
-              <p class="text-xs text-slate-500">{{ user.role }}</p>
             </div>
             @if (user.selected) {
               <i class="pi pi-check text-primary-500 text-sm shrink-0" aria-hidden="true"></i>
@@ -246,17 +188,10 @@
     >{{ requester().avatarInitial }}</div>
     <div class="flex-1 min-w-0">
       <p class="text-sm font-semibold text-slate-800 truncate">{{ requester().name }}</p>
-      <p class="text-xs text-slate-500">ตำแหน่ง</p>
     </div>
   </div>
 </div>
 
 <!-- Popup menus -->
-<p-menu #statusMenu [model]="statusMenuItems" [popup]="true" />
+<p-menu #statusMenu [model]="statusMenuItems()" [popup]="true" />
 <p-menu #moreMenu [model]="moreMenuItems" [popup]="true" />
-
-<!-- Ticket Type Dialog -->
-<app-ticket-type-dialog
-  [(visible)]="showTicketTypeDialog"
-  (confirmed)="onTicketTypeConfirmed($event)"
-/>

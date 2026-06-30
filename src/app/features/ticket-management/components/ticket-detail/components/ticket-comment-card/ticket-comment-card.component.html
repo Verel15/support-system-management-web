@@ -21,7 +21,7 @@
               <i class="pi pi-ellipsis-h text-sm" aria-hidden="true"></i>
             </button>
           </div>
-          <p class="mt-3 text-sm text-slate-700 leading-relaxed">{{ comment().content }}</p>
+          <div class="rich-content mt-3 text-sm text-slate-700 leading-relaxed" [innerHTML]="comment().content"></div>
         </div>
       </div>
     </article>

@@ -18,6 +18,7 @@ export interface ActivityItem {
   actor: string;
   action: string;
   statusLabel: string;
+  statusGroup: 'START' | 'PROCESS' | 'SUCCESS' | 'FAILED' | null;
   timestamp: string;
 }
 
@@ -25,6 +26,7 @@ export type FeedItem = CommentItem | ActivityItem;
 
 export interface AssigneeUser extends FeedUser {
   id: string;
+  userId: string;
   role: string;
   selected: boolean;
 }

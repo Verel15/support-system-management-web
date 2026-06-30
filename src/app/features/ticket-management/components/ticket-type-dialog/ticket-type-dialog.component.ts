@@ -1,8 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  OnInit,
   computed,
   effect,
+  inject,
   model,
   output,
   signal,
@@ -20,141 +22,10 @@ import {
   TicketSubCategory,
   TicketTypeNode,
 } from './ticket-type-dialog.types';
+import { TicketService } from '../../services/ticket.service';
+import { PriorityResponse, TicketSubCategoryDetail } from '../../interfaces/ticket.interface';
 
 export type { SelectedTicketType } from './ticket-type-dialog.types';
-
-const TICKET_TYPES: TicketTypeNode[] = [
-  {
-    id: 'incident',
-    name: 'Incident',
-    categories: [
-      {
-        id: 'network',
-        name: 'Network',
-        subCategories: [
-          { id: 'network-outage', name: 'Network Outage', team: 'EVT-TEAM', level: 'Critical', resolutionTime: '1 ชั่วโมง' },
-          { id: 'network-slow', name: 'Network Slow Performance', team: 'EVT-TEAM', level: 'Important', resolutionTime: '4 ชั่วโมง' },
-          { id: 'network-security', name: 'Network Security Breach', team: 'EVT-TEAM', level: 'Critical', resolutionTime: '1 ชั่วโมง' },
-        ],
-      },
-      {
-        id: 'server',
-        name: 'Server',
-        subCategories: [
-          { id: 'server-down', name: 'Server Down', team: 'EVT-TEAM', level: 'Critical', resolutionTime: '2 ชั่วโมง' },
-          { id: 'server-high-cpu', name: 'High CPU Usage', team: 'EVT-TEAM', level: 'Important', resolutionTime: '4 ชั่วโมง' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'service-request',
-    name: 'Service request',
-    categories: [
-      {
-        id: 'software-install',
-        name: 'Software Installation',
-        subCategories: [
-          { id: 'new-software', name: 'New Software Request', team: 'EVT-TEAM', level: 'Normal', resolutionTime: '8 ชั่วโมง' },
-          { id: 'software-update', name: 'Software Update', team: 'EVT-TEAM', level: 'Normal', resolutionTime: '4 ชั่วโมง' },
-        ],
-      },
-      {
-        id: 'hardware',
-        name: 'Hardware',
-        subCategories: [
-          { id: 'hardware-replace', name: 'Hardware Replacement', team: 'EVT-TEAM', level: 'Normal', resolutionTime: '1 วัน' },
-          { id: 'new-device', name: 'New Device Setup', team: 'EVT-TEAM', level: 'Normal', resolutionTime: '1 วัน' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'change-request',
-    name: 'Change Request',
-    categories: [
-      {
-        id: 'software',
-        name: 'Software',
-        subCategories: [
-          { id: 'feature-enhancement', name: 'Feature Enhancement', team: 'EVT-TEAM', level: 'Important', resolutionTime: '3 วัน' },
-          { id: 'bug-fix', name: 'Bug Fix', team: 'EVT-TEAM', level: 'Important', resolutionTime: '1 วัน' },
-        ],
-      },
-      {
-        id: 'hardware-upgrades',
-        name: 'Hardware Upgrades',
-        subCategories: [
-          { id: 'storage-upgrade', name: 'Storage Device Upgrade', team: 'EVT-TEAM', level: 'Normal', resolutionTime: '2 วัน' },
-          { id: 'memory-upgrade', name: 'Memory Upgrade', team: 'EVT-TEAM', level: 'Normal', resolutionTime: '1 วัน' },
-        ],
-      },
-      {
-        id: 'access-permissions',
-        name: 'Access Permissions',
-        subCategories: [
-          { id: 'new-user-onboarding', name: 'New User Onboarding', team: 'EVT-TEAM', level: 'Normal', resolutionTime: '4 ชั่วโมง' },
-          { id: 'permission-update', name: 'Permission Update', team: 'EVT-TEAM', level: 'Normal', resolutionTime: '4 ชั่วโมง' },
-        ],
-      },
-      {
-        id: 'user-support',
-        name: 'User Support',
-        subCategories: [
-          { id: 'software-compat', name: 'Software Compatibility', team: 'EVT-TEAM', level: 'Normal', resolutionTime: '2 ชั่วโมง' },
-          { id: 'training', name: 'User Training', team: 'EVT-TEAM', level: 'Normal', resolutionTime: '1 วัน' },
-        ],
-      },
-      {
-        id: 'security',
-        name: 'Security',
-        subCategories: [
-          { id: 'iam', name: 'Security Identity and Access Management (IAM)', team: 'EVT-TEAM', level: 'Important', resolutionTime: '2 ชั่วโมง' },
-          { id: 'security-policies', name: 'Security Policies and Procedures', team: 'EVT-TEAM', level: 'Important', resolutionTime: '3 วัน' },
-          { id: 'security-incident', name: 'Security Incident Management', team: 'EVT-TEAM', level: 'Critical', resolutionTime: '1 ชั่วโมง' },
-          { id: 'vuln-assessment', name: 'Vulnerability Assessment', team: 'EVT-TEAM', level: 'Important', resolutionTime: '2 วัน' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'information',
-    name: 'Information',
-    categories: [
-      {
-        id: 'general-inquiry',
-        name: 'General Inquiry',
-        subCategories: [
-          { id: 'product-info', name: 'Product Information', team: 'EVT-TEAM', level: 'Low', resolutionTime: '1 วัน' },
-          { id: 'service-info', name: 'Service Information', team: 'EVT-TEAM', level: 'Low', resolutionTime: '1 วัน' },
-        ],
-      },
-    ],
-  },
-];
-
-const TEAM_OPTIONS = [
-  { label: 'EVT-TEAM', value: 'EVT-TEAM' },
-  { label: 'DEV-TEAM', value: 'DEV-TEAM' },
-  { label: 'OPS-TEAM', value: 'OPS-TEAM' },
-];
-
-const LEVEL_OPTIONS = [
-  { label: 'Critical', value: 'Critical' },
-  { label: 'Important', value: 'Important' },
-  { label: 'Normal', value: 'Normal' },
-  { label: 'Low', value: 'Low' },
-];
-
-const RESOLUTION_OPTIONS = [
-  { label: '1 ชั่วโมง', value: '1 ชั่วโมง' },
-  { label: '2 ชั่วโมง', value: '2 ชั่วโมง' },
-  { label: '4 ชั่วโมง', value: '4 ชั่วโมง' },
-  { label: '8 ชั่วโมง', value: '8 ชั่วโมง' },
-  { label: '1 วัน', value: '1 วัน' },
-  { label: '2 วัน', value: '2 วัน' },
-  { label: '3 วัน', value: '3 วัน' },
-];
 
 @Component({
   selector: 'app-ticket-type-dialog',
@@ -162,24 +33,23 @@ const RESOLUTION_OPTIONS = [
   templateUrl: './ticket-type-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TicketTypeDialogComponent {
+export class TicketTypeDialogComponent implements OnInit {
+  private readonly ticketService = inject(TicketService);
+
   readonly visible = model(false);
   readonly confirmed = output<SelectedTicketType>();
   readonly cancelled = output<void>();
 
-  protected readonly ticketTypes = TICKET_TYPES;
-  protected readonly teamOptions = TEAM_OPTIONS;
-  protected readonly levelOptions = LEVEL_OPTIONS;
-  protected readonly resolutionOptions = RESOLUTION_OPTIONS;
+  protected readonly ticketTypes = signal<TicketTypeNode[]>([]);
+  protected readonly loadingTypes = signal(false);
+  protected readonly loadingSubCategory = signal(false);
+  protected readonly subCategoryDetail = signal<TicketSubCategoryDetail | null>(null);
+  protected readonly priorityDetail = signal<PriorityResponse | null>(null);
 
   protected readonly searchQuery = signal('');
   protected readonly selectedTypeId = signal<string | null>(null);
   protected readonly selectedCategoryId = signal<string | null>(null);
   protected readonly selectedSubCategoryId = signal<string | null>(null);
-
-  protected readonly selectedTeam = signal<string>('EVT-TEAM');
-  protected readonly selectedLevel = signal<string>('Normal');
-  protected readonly selectedResolution = signal<string>('1 วัน');
 
   constructor() {
     effect(() => {
@@ -188,26 +58,34 @@ export class TicketTypeDialogComponent {
         this.selectedTypeId.set(null);
         this.selectedCategoryId.set(null);
         this.selectedSubCategoryId.set(null);
-        this.selectedTeam.set('EVT-TEAM');
-        this.selectedLevel.set('Normal');
-        this.selectedResolution.set('1 วัน');
+        this.subCategoryDetail.set(null);
+        this.priorityDetail.set(null);
+        if (this.ticketTypes().length === 0) {
+          this.loadTypes();
+        }
       }
     });
+  }
 
-    effect(() => {
-      const sub = this.activeSubCategory();
-      if (sub) {
-        this.selectedTeam.set(sub.team);
-        this.selectedLevel.set(sub.level);
-        this.selectedResolution.set(sub.resolutionTime);
-      }
+  ngOnInit(): void {
+    this.loadTypes();
+  }
+
+  private loadTypes(): void {
+    this.loadingTypes.set(true);
+    this.ticketService.getTicketTypeSelector().subscribe({
+      next: (data) => {
+        this.ticketTypes.set(data);
+        this.loadingTypes.set(false);
+      },
+      error: () => this.loadingTypes.set(false),
     });
   }
 
   protected readonly filteredTypes = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
-    if (!query) return this.ticketTypes;
-    return this.ticketTypes.filter(
+    if (!query) return this.ticketTypes();
+    return this.ticketTypes().filter(
       (t) =>
         t.name.toLowerCase().includes(query) ||
         t.categories.some(
@@ -219,7 +97,7 @@ export class TicketTypeDialogComponent {
   });
 
   protected readonly activeType = computed<TicketTypeNode | null>(
-    () => this.ticketTypes.find((t) => t.id === this.selectedTypeId()) ?? null,
+    () => this.ticketTypes().find((t) => t.id === this.selectedTypeId()) ?? null,
   );
 
   protected readonly activeCategory = computed<TicketCategory | null>(
@@ -241,48 +119,94 @@ export class TicketTypeDialogComponent {
   });
 
   protected readonly canConfirm = computed(
-    () => !!this.activeType() && !!this.activeCategory() && !!this.activeSubCategory(),
+    () =>
+      !!this.activeType() &&
+      !!this.activeCategory() &&
+      !!this.activeSubCategory() &&
+      !!this.subCategoryDetail() &&
+      !!this.priorityDetail() &&
+      !this.loadingSubCategory(),
   );
 
   protected selectType(typeId: string): void {
     this.selectedTypeId.set(typeId);
     this.selectedCategoryId.set(null);
     this.selectedSubCategoryId.set(null);
+    this.subCategoryDetail.set(null);
+    this.priorityDetail.set(null);
   }
 
   protected selectCategory(categoryId: string): void {
     this.selectedCategoryId.set(categoryId);
     this.selectedSubCategoryId.set(null);
+    this.subCategoryDetail.set(null);
+    this.priorityDetail.set(null);
   }
 
   protected selectSubCategory(subCategoryId: string): void {
     this.selectedSubCategoryId.set(subCategoryId);
+    this.subCategoryDetail.set(null);
+    this.priorityDetail.set(null);
+    this.loadingSubCategory.set(true);
+    this.ticketService.getSubCategoryDetail(subCategoryId).subscribe({
+      next: (detail) => {
+        this.subCategoryDetail.set(detail);
+        this.ticketService.getPriorityById(detail.priorityLevelId).subscribe({
+          next: (priority) => {
+            this.priorityDetail.set(priority);
+            this.loadingSubCategory.set(false);
+          },
+          error: () => this.loadingSubCategory.set(false),
+        });
+      },
+      error: () => this.loadingSubCategory.set(false),
+    });
   }
 
   protected onReset(): void {
     this.selectedTypeId.set(null);
     this.selectedCategoryId.set(null);
     this.selectedSubCategoryId.set(null);
-    this.selectedTeam.set('EVT-TEAM');
-    this.selectedLevel.set('Normal');
-    this.selectedResolution.set('1 วัน');
+    this.subCategoryDetail.set(null);
+    this.priorityDetail.set(null);
   }
 
   protected onConfirm(): void {
     const type = this.activeType();
     const category = this.activeCategory();
     const sub = this.activeSubCategory();
-    if (!type || !category || !sub) return;
+    const detail = this.subCategoryDetail();
+    const priority = this.priorityDetail();
+    if (!type || !category || !sub || !detail || !priority) return;
 
     this.confirmed.emit({
+      typeId: type.id,
       type: type.name,
+      categoryId: category.id,
       category: category.name,
+      subCategoryId: sub.id,
       subCategory: sub.name,
-      team: this.selectedTeam(),
-      level: this.selectedLevel(),
-      resolutionTime: this.selectedResolution(),
+      statusFlowId: category.statusFlowId,
+      statusFlowName: category.statusFlowName,
+      priorityId: detail.priorityLevelId,
+      priorityName: detail.priorityLevelName,
+      priorityIntervalValue: priority.intervalValue,
+      priorityIntervalUnit: priority.intervalUnit,
+      positionName: detail.positionName,
     });
     this.visible.set(false);
+  }
+
+  protected intervalUnitLabel(unit: string): string {
+    const map: Record<string, string> = {
+      MINUTE: 'นาที',
+      HOUR: 'ชั่วโมง',
+      DAY: 'วัน',
+      WEEK: 'สัปดาห์',
+      MONTH: 'เดือน',
+      YEAR: 'ปี',
+    };
+    return map[unit] ?? unit;
   }
 
   protected onCancel(): void {

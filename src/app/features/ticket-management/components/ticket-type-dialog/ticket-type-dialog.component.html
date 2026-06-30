@@ -25,135 +25,146 @@
   </ng-template>
 
   <div class="flex flex-col">
-    <!-- 3-column cascading selector -->
-    <div class="grid grid-cols-3 divide-x divide-slate-200 border-y border-slate-200">
-      <!-- Column 1: Ticket Types -->
-      <ul class="flex flex-col py-2 h-80 overflow-y-auto" role="listbox" aria-label="ประเภท Ticket">
-        @for (type of filteredTypes(); track type.id) {
-          <li>
-            <button
-              type="button"
-              class="w-full flex items-center justify-between px-4 py-2.5 text-sm text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
-              [class]="selectedTypeId() === type.id
-                ? 'bg-primary-50 text-primary-700 font-medium'
-                : 'text-slate-700 hover:bg-slate-50'"
-              [attr.aria-selected]="selectedTypeId() === type.id"
-              (click)="selectType(type.id)"
-            >
-              <span class="truncate">{{ type.name }}</span>
-              <i class="pi pi-chevron-right text-xs shrink-0 ml-2 text-primary-700" aria-hidden="true"></i>
-            </button>
-          </li>
-        }
-        @empty {
-          <li class="py-6 text-center text-sm text-slate-400">ไม่พบรายการ</li>
-        }
-      </ul>
-
-      <!-- Column 2: Categories -->
-      <ul class="flex flex-col py-2 h-80 overflow-y-auto" role="listbox" aria-label="หมวดหมู่">
-        @if (activeType()) {
-          @for (cat of activeType()!.categories; track cat.id) {
+    @if (loadingTypes()) {
+      <div class="flex items-center justify-center h-80">
+        <i class="pi pi-spin pi-spinner text-2xl text-primary-500" aria-label="กำลังโหลด"></i>
+      </div>
+    } @else {
+      <!-- 3-column cascading selector -->
+      <div class="grid grid-cols-3 divide-x divide-slate-200 border-y border-slate-200">
+        <!-- Column 1: Ticket Types -->
+        <ul class="flex flex-col py-2 h-80 overflow-y-auto" role="listbox" aria-label="ประเภท Ticket">
+          @for (type of filteredTypes(); track type.id) {
             <li>
               <button
                 type="button"
                 class="w-full flex items-center justify-between px-4 py-2.5 text-sm text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
-                [class]="selectedCategoryId() === cat.id
+                [class]="selectedTypeId() === type.id
                   ? 'bg-primary-50 text-primary-700 font-medium'
                   : 'text-slate-700 hover:bg-slate-50'"
-                [attr.aria-selected]="selectedCategoryId() === cat.id"
-                (click)="selectCategory(cat.id)"
+                [attr.aria-selected]="selectedTypeId() === type.id"
+                (click)="selectType(type.id)"
               >
-                <span class="truncate">{{ cat.name }}</span>
+                <span class="truncate">{{ type.name }}</span>
                 <i class="pi pi-chevron-right text-xs shrink-0 ml-2 text-primary-700" aria-hidden="true"></i>
               </button>
             </li>
           }
-        } @else {
-          <li class="py-6 text-center text-sm text-slate-400">เลือกประเภทก่อน</li>
-        }
-      </ul>
-
-      <!-- Column 3: Sub-categories -->
-      <ul class="flex flex-col py-2 h-80 overflow-y-auto" role="listbox" aria-label="หมวดหมู่ย่อย">
-        @if (activeCategory()) {
-          @for (sub of activeCategory()!.subCategories; track sub.id) {
-            <li>
-              <button
-                type="button"
-                class="w-full px-4 py-2.5 text-sm text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
-                [class]="selectedSubCategoryId() === sub.id
-                  ? 'bg-primary-50 text-primary-700 font-medium'
-                  : 'text-slate-700 hover:bg-slate-50'"
-                [attr.aria-selected]="selectedSubCategoryId() === sub.id"
-                (click)="selectSubCategory(sub.id)"
-              >
-                <span class="line-clamp-2 leading-snug">{{ sub.name }}</span>
-              </button>
-            </li>
+          @empty {
+            <li class="py-6 text-center text-sm text-slate-400">ไม่พบรายการ</li>
           }
-        } @else {
-          <li class="py-6 text-center text-sm text-slate-400">เลือกหมวดหมู่ก่อน</li>
-        }
-      </ul>
-    </div>
+        </ul>
 
-    <!-- Selected path breadcrumb -->
+        <!-- Column 2: Categories -->
+        <ul class="flex flex-col py-2 h-80 overflow-y-auto" role="listbox" aria-label="หมวดหมู่">
+          @if (activeType()) {
+            @for (cat of activeType()!.categories; track cat.id) {
+              <li>
+                <button
+                  type="button"
+                  class="w-full flex items-center justify-between px-4 py-2.5 text-sm text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
+                  [class]="selectedCategoryId() === cat.id
+                    ? 'bg-primary-50 text-primary-700 font-medium'
+                    : 'text-slate-700 hover:bg-slate-50'"
+                  [attr.aria-selected]="selectedCategoryId() === cat.id"
+                  (click)="selectCategory(cat.id)"
+                >
+                  <span class="truncate">{{ cat.name }}</span>
+                  <i class="pi pi-chevron-right text-xs shrink-0 ml-2 text-primary-700" aria-hidden="true"></i>
+                </button>
+              </li>
+            }
+          } @else {
+            <li class="py-6 text-center text-sm text-slate-400">เลือกประเภทก่อน</li>
+          }
+        </ul>
+
+        <!-- Column 3: Sub-categories -->
+        <ul class="flex flex-col py-2 h-80 overflow-y-auto" role="listbox" aria-label="หมวดหมู่ย่อย">
+          @if (activeCategory()) {
+            @for (sub of activeCategory()!.subCategories; track sub.id) {
+              <li>
+                <button
+                  type="button"
+                  class="w-full px-4 py-2.5 text-sm text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
+                  [class]="selectedSubCategoryId() === sub.id
+                    ? 'bg-primary-50 text-primary-700 font-medium'
+                    : 'text-slate-700 hover:bg-slate-50'"
+                  [attr.aria-selected]="selectedSubCategoryId() === sub.id"
+                  (click)="selectSubCategory(sub.id)"
+                >
+                  <span class="line-clamp-2 leading-snug">{{ sub.name }}</span>
+                </button>
+              </li>
+            }
+          } @else {
+            <li class="py-6 text-center text-sm text-slate-400">เลือกหมวดหมู่ก่อน</li>
+          }
+        </ul>
+      </div>
+
+      <!-- Selected path breadcrumb -->
       <div class="px-5 py-3 bg-slate-50 border-b border-slate-200 text-sm text-slate-600">
         <span class="font-medium text-slate-500">ข้อมูลที่เลือก: </span>
-        <span>{{ selectedPath() }}</span>
+        <span>{{ selectedPath() || '—' }}</span>
       </div>
 
-    <!-- Metadata fields (shown when sub-category is selected) -->
-    @if (canConfirm()) {
-      <div class="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-slate-200">
-        <div class="flex flex-col gap-1 min-w-36">
-          <label class="text-xs font-medium text-slate-500" for="team-select">สถานะทีม</label>
-          <p-select
-            inputId="team-select"
-            [options]="teamOptions"
-            [ngModel]="selectedTeam()"
-            (ngModelChange)="selectedTeam.set($event)"
-            optionLabel="label"
-            optionValue="value"
-            appendTo="body"
-            class="w-full"
-          />
+      @if (activeSubCategory()) {
+        <div class="px-5 py-4 ">
+          @if (loadingSubCategory()) {
+            <div class="flex items-center gap-2 text-sm text-slate-500">
+              <i class="pi pi-spin pi-spinner text-primary-500" aria-hidden="true"></i>
+              กำลังโหลดข้อมูล...
+            </div>
+          } @else if (subCategoryDetail()) {
+            <div class="flex flex-wrap items-end gap-4">
+              <div class="flex flex-col gap-1 min-w-36">
+                <label class="text-xs font-medium text-slate-700">สถานะทีม</label>
+                <p-select
+                  [options]="[{ label: activeCategory()?.statusFlowName, value: activeCategory()?.statusFlowId }]"
+                  [ngModel]="activeCategory()?.statusFlowId"
+                  optionLabel="label"
+                  optionValue="value"
+                  [disabled]="true"
+                  styleClass="w-full"
+                  aria-label="สถานะทีม"
+                />
+              </div>
+              <div class="flex flex-col gap-1 min-w-36">
+                <label class="text-xs font-medium text-slate-700">ระดับงาน</label>
+                <p-select
+                  [options]="[{ label: subCategoryDetail()!.priorityLevelName, value: subCategoryDetail()!.priorityLevelId }]"
+                  [ngModel]="subCategoryDetail()!.priorityLevelId"
+                  optionLabel="label"
+                  optionValue="value"
+                  [disabled]="true"
+                  styleClass="w-full"
+                  aria-label="ระดับงาน"
+                />
+              </div>
+              <div class="flex flex-col gap-1 min-w-36">
+                <label class="text-xs font-medium text-slate-700">ระยะเวลาแก้ไข</label>
+                <p-select
+                  [options]="[{ label: priorityDetail() ? priorityDetail()!.intervalValue + ' ' + intervalUnitLabel(priorityDetail()!.intervalUnit) : '', value: 'interval' }]"
+                  ngModel="interval"
+                  optionLabel="label"
+                  optionValue="value"
+                  [disabled]="true"
+                  styleClass="w-full"
+                  aria-label="ระยะเวลาแก้ไข"
+                />
+              </div>
+              <button
+                type="button"
+                class="text-sm text-primary-600 hover:text-primary-700 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded pb-2"
+                (click)="onReset()"
+              >
+                รีเซ็ตข้อมูล
+              </button>
+            </div>
+          }
         </div>
-        <div class="flex flex-col gap-1 min-w-36">
-          <label class="text-xs font-medium text-slate-500" for="level-select">ระดับงาน</label>
-          <p-select
-            inputId="level-select"
-            [options]="levelOptions"
-            [ngModel]="selectedLevel()"
-            (ngModelChange)="selectedLevel.set($event)"
-            optionLabel="label"
-            optionValue="value"
-            appendTo="body"
-            class="w-full"
-          />
-        </div>
-        <div class="flex flex-col gap-1 min-w-40">
-          <label class="text-xs font-medium text-slate-500" for="resolution-select">ระยะเวลาแก้ไข</label>
-          <p-select
-            inputId="resolution-select"
-            [options]="resolutionOptions"
-            [ngModel]="selectedResolution()"
-            (ngModelChange)="selectedResolution.set($event)"
-            optionLabel="label"
-            optionValue="value"
-            appendTo="body"
-            class="w-full"
-          />
-        </div>
-        <button
-          type="button"
-          class="self-end mb-0.5 text-sm text-primary-600 hover:text-primary-700 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
-          (click)="onReset()"
-        >
-          รีเซ็ตข้อมูล
-        </button>
-      </div>
+      }
     }
   </div>
 

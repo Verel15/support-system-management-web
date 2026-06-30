@@ -7,6 +7,7 @@ export interface TableColumn {
   header: string;
   sortable?: boolean;
   width?: string;
+  maxWidth?: string;
   cellTemplate?: TemplateRef<{ $implicit: Record<string, unknown>; value: unknown }>;
 }
 

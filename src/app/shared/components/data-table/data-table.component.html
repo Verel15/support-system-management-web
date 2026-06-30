@@ -74,7 +74,7 @@
                   : 'bg-white hover:bg-slate-50 focus-visible:bg-slate-50')
               " (click)="onRowClick(row)" (keydown.enter)="onRowClick(row)" tabindex="0" role="row">
           @for (col of columns(); track col.field) {
-          <td class="px-4 py-4 text-sm text-slate-700" role="gridcell">
+          <td class="px-4 py-4 text-sm text-slate-700" role="gridcell" [style.max-width]="col.maxWidth" [class.overflow-hidden]="!!col.maxWidth">
             @if (col.cellTemplate; as tpl) {
             <ng-container [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="{
                         $implicit: row,

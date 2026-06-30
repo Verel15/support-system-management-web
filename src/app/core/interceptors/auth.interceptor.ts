@@ -1,11 +1,11 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
-import { getCookie, removeCookie } from '../utils/cookie.util';
+import { AuthStore } from '../../features/authentication/store/auth.store';
+import { getCookie } from '../utils/cookie.util';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const router = inject(Router);
+  const authStore = inject(AuthStore);
   const token = getCookie('access_token');
 
   const authReq = token
@@ -15,10 +15,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        removeCookie('access_token');
-        removeCookie('refresh_token');
-        localStorage.removeItem('auth_user');
-        router.navigate(['/auth/login']);
+        authStore.clearSession();
       }
       return throwError(() => error);
     }),

@@ -25,7 +25,7 @@
       aria-label="กรองตามสถานะ"
     />
     <p-select
-      [options]="priorityOptions"
+      [options]="priorityOptions()"
       [ngModel]="priorityFilter()"
       (ngModelChange)="priorityFilter.set($event); onFilterChange()"
       optionLabel="label"
@@ -35,8 +35,8 @@
     />
     <p-select
       [options]="timeOptions"
-      [ngModel]="timeFilter()"
-      (ngModelChange)="timeFilter.set($event); onFilterChange()"
+      [ngModel]="overdueFilter() ? 'overdue' : null"
+      (ngModelChange)="onTimeFilterChange($event)"
       optionLabel="label"
       optionValue="value"
       class="w-full sm:w-auto sm:min-w-44"
@@ -66,22 +66,22 @@
     [currentPage]="currentPage()"
     [pageSize]="pageSize()"
     [loading]="loading()"
-    (pageChange)="currentPage.set($event)"
-    (pageSizeChange)="pageSize.set($event); currentPage.set(1)"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
     (sortChange)="onSort($event)"
   >
     <!-- Title column with priority icon -->
     <ng-template dataTableCell="title" let-row let-value="value">
-      <div class="flex items-center gap-2">
-        @if (getPriorityIconClass(row['priority']); as iconClass) {
+      <div class="flex items-center gap-2 min-w-0">
+        @if (getPriorityIconClass(row); as iconClass) {
           <i [class]="iconClass + ' text-xs shrink-0'" aria-hidden="true"></i>
         }
-        <span class="truncate">{{ value }}</span>
+        <span class="truncate" [title]="value">{{ value }}</span>
       </div>
     </ng-template>
 
     <!-- Status column -->
-    <ng-template dataTableCell="status" let-value="value">
+    <ng-template dataTableCell="currentStatusName" let-value="value">
       <app-status-chip [status]="$any(value)" />
     </ng-template>
 

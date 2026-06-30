@@ -1,14 +1,13 @@
 export interface TicketSubCategory {
   id: string;
   name: string;
-  team: string;
-  level: string;
-  resolutionTime: string;
 }
 
 export interface TicketCategory {
   id: string;
   name: string;
+  statusFlowId: string;
+  statusFlowName: string;
   subCategories: TicketSubCategory[];
 }
 
@@ -19,10 +18,17 @@ export interface TicketTypeNode {
 }
 
 export interface SelectedTicketType {
+  typeId: string;
   type: string;
+  categoryId: string;
   category: string;
+  subCategoryId: string;
   subCategory: string;
-  team: string;
-  level: string;
-  resolutionTime: string;
+  statusFlowId: string;
+  statusFlowName: string;
+  priorityId: string;
+  priorityName: string;
+  priorityIntervalValue: number;
+  priorityIntervalUnit: string;
+  positionName: string;
 }
