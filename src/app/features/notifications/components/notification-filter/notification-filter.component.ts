@@ -6,7 +6,7 @@ import {
   NotificationCategory,
   NotificationFilterState,
   NotificationSortType,
-} from '../../notification.types';
+} from '../../interfaces/notification.interface';
 
 @Component({
   selector: 'app-notification-filter',
@@ -42,14 +42,14 @@ export class NotificationFilterComponent {
   }
 
   protected toggleSort(value: NotificationSortType): void {
-    this.selectedSorts.update(prev =>
-      prev.includes(value) ? prev.filter(s => s !== value) : [...prev, value],
+    this.selectedSorts.update((prev) =>
+      prev.includes(value) ? prev.filter((s) => s !== value) : [...prev, value],
     );
   }
 
   protected toggleCategory(value: NotificationCategory): void {
-    this.selectedCategories.update(prev =>
-      prev.includes(value) ? prev.filter(c => c !== value) : [...prev, value],
+    this.selectedCategories.update((prev) =>
+      prev.includes(value) ? prev.filter((c) => c !== value) : [...prev, value],
     );
   }
 

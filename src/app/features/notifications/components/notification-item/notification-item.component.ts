@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { Avatar } from 'primeng/avatar';
 import { Tag } from 'primeng/tag';
-import { NotificationItem } from '../../notification.types';
+import { NotificationItem } from '../../interfaces/notification.interface';
 
 @Component({
   selector: 'app-notification-item',
@@ -11,4 +11,9 @@ import { NotificationItem } from '../../notification.types';
 })
 export class NotificationItemComponent {
   readonly notification = input.required<NotificationItem>();
+  readonly clicked = output<string>();
+
+  protected onClick(): void {
+    this.clicked.emit(this.notification().id);
+  }
 }

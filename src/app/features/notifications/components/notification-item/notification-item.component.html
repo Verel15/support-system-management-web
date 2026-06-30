@@ -2,6 +2,7 @@
   class="flex items-start gap-3 sm:gap-4 px-3 sm:px-6 py-3 sm:py-4 border rounded-lg border-secondary-100 cursor-pointer transition-colors hover:bg-secondary-50"
   [class.bg-blue-50]="!notification().isRead"
   role="listitem"
+  (click)="onClick()"
 >
   <!-- Avatar -->
   @if (notification().avatarUrl) {

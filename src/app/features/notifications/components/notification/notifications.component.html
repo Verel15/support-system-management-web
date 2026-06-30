@@ -58,7 +58,7 @@
       </h2>
       <div role="list" class="flex flex-col gap-2">
         @for (item of group.items; track item.id) {
-        <app-notification-item [notification]="item" />
+        <app-notification-item [notification]="item" (clicked)="onItemClick($event)" />
         }
       </div>
     </section>
