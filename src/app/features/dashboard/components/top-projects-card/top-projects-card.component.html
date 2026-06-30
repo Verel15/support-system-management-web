@@ -4,13 +4,6 @@
     <h2 class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
       โครงการที่มีจำนวน tickets มากที่สุด 5 อันดับ
     </h2>
-    <button
-      type="button"
-      class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
-      aria-label="ตัวเลือกเพิ่มเติม"
-    >
-      <i class="pi pi-ellipsis-h text-slate-500" aria-hidden="true"></i>
-    </button>
   </div>
 
   <!-- Month/year picker -->
@@ -25,12 +18,19 @@
     aria-label="เลือกเดือนและปี"
   />
 
-  <!-- Horizontal bar chart -->
-  <div class="relative flex-1 min-h-72">
-    <canvas
-      #chartCanvas
-      role="img"
-      aria-label="กราฟแท่งแนวนอนแสดง 5 โครงการที่มีจำนวน ticket มากที่สุด"
-    ></canvas>
-  </div>
+  @if (loading()) {
+    <div class="flex flex-1 items-center justify-center" aria-live="polite" aria-label="กำลังโหลด">
+      <i class="pi pi-spin pi-spinner text-2xl text-slate-400" aria-hidden="true"></i>
+    </div>
+  } @else if (data()) {
+    <div class="relative flex-1 min-h-72">
+      <canvas
+        #chartCanvas
+        role="img"
+        aria-label="กราฟแท่งแนวนอนแสดง 5 โครงการที่มีจำนวน ticket มากที่สุด"
+      ></canvas>
+    </div>
+  } @else {
+    <div class="flex flex-1 items-center justify-center text-sm text-slate-400">ไม่มีข้อมูล</div>
+  }
 </article>

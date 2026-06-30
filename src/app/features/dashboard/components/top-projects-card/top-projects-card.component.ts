@@ -4,11 +4,15 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  effect,
   inject,
+  signal,
   viewChild,
 } from '@angular/core';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePicker } from 'primeng/datepicker';
+import { switchMap, startWith } from 'rxjs';
 import {
   BarController,
   BarElement,
@@ -18,13 +22,10 @@ import {
   Tooltip,
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { DashboardService } from '../../services/dashboard.service';
+import { TopProjectResponse } from '../../interfaces/dashboard.interface';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, ChartDataLabels);
-
-interface ProjectEntry {
-  name: string;
-  count: number;
-}
 
 @Component({
   selector: 'app-top-projects-card',
@@ -33,38 +34,63 @@ interface ProjectEntry {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TopProjectsCardComponent {
+  private readonly dashboardService = inject(DashboardService);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly chartCanvas = viewChild<ElementRef<HTMLCanvasElement>>('chartCanvas');
 
   protected readonly monthCtrl = new FormControl<Date | null>(new Date());
-
-  protected readonly projects: ProjectEntry[] = [
-    { name: 'Helpdesk',              count: 25 },
-    { name: 'IT Supporting and He.', count: 22 },
-    { name: 'Food Delivery',         count: 18 },
-    { name: 'Bank',                  count: 15 },
-    { name: 'Saving money',          count: 13 },
-  ];
+  protected readonly data = signal<TopProjectResponse | null>(null);
+  protected readonly loading = signal(false);
 
   private chartInstance: Chart<'bar'> | null = null;
+  private chartReady = false;
 
   constructor() {
-    afterNextRender(() => this.createChart());
+    this.monthCtrl.valueChanges.pipe(
+      startWith(this.monthCtrl.value),
+      switchMap((date) => {
+        this.loading.set(true);
+        const year = date ? date.getFullYear() : undefined;
+        const month = date ? date.getMonth() + 1 : undefined;
+        return this.dashboardService.getTopProjects(year, month);
+      }),
+      takeUntilDestroyed(),
+    ).subscribe({
+      next: (res) => {
+        this.data.set(res);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
+
+    afterNextRender(() => {
+      this.chartReady = true;
+      if (this.data()) this.rebuildChart();
+    });
+
+    effect(() => {
+      const res = this.data();
+      if (!res || !this.chartReady) return;
+      this.rebuildChart();
+    });
+
     this.destroyRef.onDestroy(() => this.chartInstance?.destroy());
   }
 
-  private createChart(): void {
+  private rebuildChart(): void {
     const canvas = this.chartCanvas()?.nativeElement;
     if (!canvas) return;
 
-    const { projects } = this;
+    this.chartInstance?.destroy();
+
+    const projects = this.data()?.projects ?? [];
 
     this.chartInstance = new Chart<'bar'>(canvas, {
       type: 'bar',
       data: {
-        labels: projects.map(p => p.name),
+        labels: projects.map(p => p.projectName),
         datasets: [{
-          data: projects.map(p => p.count),
+          data: projects.map(p => p.ticketCount),
           backgroundColor: '#15803d',
           borderRadius: 4,
           barThickness: 44,
