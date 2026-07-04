@@ -13,6 +13,37 @@
     </div>
   </div>
 
+  <!-- Filters -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+    <div class="shrink-0">
+      <p-select
+        [options]="dateOptions"
+        [ngModel]="selectedDate()"
+        (ngModelChange)="selectedDate.set($event); onFilterChange()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="วันที่สร้าง"
+        class="w-full sm:w-auto sm:min-w-44"
+        aria-label="กรองตามวันที่สร้าง"
+      />
+    </div>
+
+    <div class="flex items-center gap-3 w-full sm:w-80 sm:ml-auto">
+      <p-icon-field class="w-full">
+        <p-inputicon class="pi pi-search" />
+        <input
+          pInputText
+          type="search"
+          placeholder="ค้นหา"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)"
+          class="w-full h-12 appearance-none"
+          aria-label="ค้นหาประเภทผู้ใช้"
+        />
+      </p-icon-field>
+    </div>
+  </div>
+
   <!-- Action menu (shared across all rows) -->
   <p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
     <ng-template #item let-item pTemplate="item">

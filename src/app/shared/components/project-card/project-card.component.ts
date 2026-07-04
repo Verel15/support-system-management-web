@@ -5,7 +5,7 @@ import { StatusChipComponent } from '../status-chip';
 export interface Project {
   id: string;
   name: string;
-  status: 'Open' | 'Closed';
+  status: 'OPEN' | 'CLOSED' | 'WAITING';
   date: string;
   owner: string;
   totalTickets: number;

@@ -1,8 +1,10 @@
+import { ProjectStatus } from '../../interfaces/project.interface';
+
 export interface ProjectDetail {
   id: string;
   name: string;
   color: string;
-  status: 'Open' | 'Closed';
+  status: ProjectStatus;
   company: string;
   adminCount: number;
   customerCount: number;

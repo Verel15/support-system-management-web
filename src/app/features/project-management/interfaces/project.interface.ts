@@ -1,3 +1,6 @@
+export type ProjectDateRange = 'TODAY' | 'THIS_WEEK' | 'THIS_MONTH';
+export type ProjectStatus = 'OPEN' | 'WAITING' | 'CLOSED';
+
 export interface ProjectRequest {
   name: string;
   color?: string;
@@ -27,6 +30,7 @@ export interface ProjectResponse {
   members?: ProjectMemberSummary[];
   createdAt: string;
   updatedAt: string;
+  status: ProjectStatus;
 }
 
 export interface ProjectMemberRequest {

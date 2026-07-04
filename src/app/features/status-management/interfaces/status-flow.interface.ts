@@ -1,3 +1,5 @@
+export type StatusFlowDateRange = 'TODAY' | 'THIS_WEEK' | 'THIS_MONTH';
+
 export interface StatusFlowRequest {
   name: string;
   processStatuses?: string[];

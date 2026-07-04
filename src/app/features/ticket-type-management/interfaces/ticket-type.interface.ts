@@ -1,3 +1,5 @@
+export type TicketTypeDateRange = 'TODAY' | 'THIS_WEEK' | 'THIS_MONTH';
+
 export interface TicketTypeRequest {
   name: string;
   categoryIds: string[];

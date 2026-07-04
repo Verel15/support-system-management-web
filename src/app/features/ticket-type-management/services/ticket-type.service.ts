@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import {
+  TicketTypeDateRange,
   TicketTypePageResponse,
   TicketTypeRequest,
   TicketTypeResponse,
@@ -12,8 +13,18 @@ import {
 export class TicketTypeService {
   private readonly api = inject(ApiService);
 
-  getAll(page = 0, size = 10): Observable<TicketTypePageResponse> {
-    return this.api.get<TicketTypePageResponse>('/ticket-types', { page, size });
+  getAll(
+    page = 0,
+    size = 10,
+    keyword?: string,
+    dateRange?: TicketTypeDateRange | null,
+  ): Observable<TicketTypePageResponse> {
+    return this.api.get<TicketTypePageResponse>('/ticket-types', {
+      page,
+      size,
+      keyword: keyword || undefined,
+      dateRange: dateRange || undefined,
+    });
   }
 
   getAllForSelector(): Observable<TicketTypeSelectorResponse[]> {

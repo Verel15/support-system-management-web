@@ -28,7 +28,7 @@
     <p-select
       [options]="dateOptions"
       [ngModel]="selectedDate()"
-      (ngModelChange)="selectedDate.set($event)"
+      (ngModelChange)="selectedDate.set($event); onFilterChange()"
       optionLabel="label"
       optionValue="value"
       placeholder="วันที่สร้าง"

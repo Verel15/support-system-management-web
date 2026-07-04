@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import {
+  StatusFlowDateRange,
   StatusFlowPageResponse,
   StatusFlowRequest,
   StatusFlowResponse,
@@ -11,8 +12,18 @@ import {
 export class StatusFlowService {
   private readonly api = inject(ApiService);
 
-  getAll(page = 0, size = 10): Observable<StatusFlowPageResponse> {
-    return this.api.get<StatusFlowPageResponse>('/status-flows', { page, size });
+  getAll(
+    page = 0,
+    size = 10,
+    keyword?: string,
+    dateRange?: StatusFlowDateRange | null,
+  ): Observable<StatusFlowPageResponse> {
+    return this.api.get<StatusFlowPageResponse>('/status-flows', {
+      page,
+      size,
+      keyword: keyword || undefined,
+      dateRange: dateRange || undefined,
+    });
   }
 
   getById(id: string): Observable<StatusFlowResponse> {

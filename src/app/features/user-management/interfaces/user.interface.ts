@@ -38,5 +38,5 @@ export interface UserResponse {
 export interface UserFilterRequest {
   accountType?: AccountType;
   keyword?: string;
-  createdWithinDays?: number;
+  dateRange?: number;
 }

@@ -1,14 +1,29 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
-import { UserTypePageResponse, UserTypeRequest, UserTypeResponse } from '../interfaces/user-type.interface';
+import {
+  UserTypeDateRange,
+  UserTypePageResponse,
+  UserTypeRequest,
+  UserTypeResponse,
+} from '../interfaces/user-type.interface';
 
 @Injectable({ providedIn: 'root' })
 export class UserTypeService {
   private readonly api = inject(ApiService);
 
-  getAll(page = 0, size = 10): Observable<UserTypePageResponse> {
-    return this.api.get<UserTypePageResponse>('/user-types', { page, size });
+  getAll(
+    page = 0,
+    size = 10,
+    keyword?: string,
+    dateRange?: UserTypeDateRange | null,
+  ): Observable<UserTypePageResponse> {
+    return this.api.get<UserTypePageResponse>('/user-types', {
+      page,
+      size,
+      keyword: keyword || undefined,
+      dateRange: dateRange || undefined,
+    });
   }
 
   getById(id: string): Observable<UserTypeResponse> {

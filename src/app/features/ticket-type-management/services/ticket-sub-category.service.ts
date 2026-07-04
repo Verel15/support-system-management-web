@@ -6,14 +6,25 @@ import {
   TicketSubCategoryRequest,
   TicketSubCategoryResponse,
   TicketSummaryPageResponse,
+  TicketTypeDateRange,
 } from '../interfaces/ticket-type.interface';
 
 @Injectable({ providedIn: 'root' })
 export class TicketSubCategoryService {
   private readonly api = inject(ApiService);
 
-  getAll(page = 0, size = 10): Observable<TicketSubCategoryPageResponse> {
-    return this.api.get<TicketSubCategoryPageResponse>('/ticket-sub-categories', { page, size });
+  getAll(
+    page = 0,
+    size = 10,
+    keyword?: string,
+    dateRange?: TicketTypeDateRange | null,
+  ): Observable<TicketSubCategoryPageResponse> {
+    return this.api.get<TicketSubCategoryPageResponse>('/ticket-sub-categories', {
+      page,
+      size,
+      keyword: keyword || undefined,
+      dateRange: dateRange || undefined,
+    });
   }
 
   getById(id: string): Observable<TicketSubCategoryResponse> {

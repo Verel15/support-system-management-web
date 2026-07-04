@@ -9,7 +9,7 @@ import {
 import { Router } from '@angular/router';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { catchError, map, of, startWith, switchMap } from 'rxjs';
+import { catchError, debounceTime, map, of, startWith, Subject, switchMap } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { Menu } from 'primeng/menu';
@@ -25,7 +25,14 @@ import {
   DeleteConfirmDialogComponent,
 } from '../../../../shared/components/dialogs';
 import { StatusFlowService } from '../../services/status-flow.service';
-import { StatusFlowPageResponse, StatusFlowResponse } from '../../interfaces/status-flow.interface';
+import {
+  StatusFlowDateRange,
+  StatusFlowPageResponse,
+  StatusFlowResponse,
+} from '../../interfaces/status-flow.interface';
+import { InputText } from 'primeng/inputtext';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -42,6 +49,9 @@ interface ActionMenuItem extends MenuItem {
     DataTableCellDirective,
     ConfirmDialogComponent,
     DeleteConfirmDialogComponent,
+    InputText,
+    IconField,
+    InputIcon
   ],
   templateUrl: './status-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -68,24 +78,28 @@ export class StatusListComponent {
   ];
 
   protected readonly columns: TableColumn[] = [
-    { field: 'name', header: 'ชื่อสถานะ', sortable: true },
-    { field: 'createdByName', header: 'สร้างโดย', sortable: true },
-    { field: 'ticketCount', header: 'จำนวน Tickets ที่ใช้ทั้งหมด', sortable: true },
-    { field: 'updatedAt', header: 'วันที่แก้ไข', sortable: true },
+    { field: 'name', header: 'ชื่อสถานะ' },
+    { field: 'createdByName', header: 'สร้างโดย' },
+    { field: 'ticketCount', header: 'จำนวน Tickets ที่ใช้ทั้งหมด' },
+    { field: 'updatedAt', header: 'วันที่แก้ไข' },
   ];
 
-  protected readonly dateOptions = [
-    { label: 'ทั้งหมด', value: null },
-    { label: 'วันนี้', value: 'today' },
-    { label: 'สัปดาห์นี้', value: 'week' },
-    { label: 'เดือนนี้', value: 'month' },
+  protected readonly dateOptions: { label: string; value: StatusFlowDateRange | null }[] = [
+    { label: 'วันที่สร้าง', value: null },
+    { label: 'วันนี้', value: 'TODAY' },
+    { label: 'สัปดาห์นี้', value: 'THIS_WEEK' },
+    { label: 'เดือนนี้', value: 'THIS_MONTH' },
   ];
 
-  protected readonly selectedDate = signal<string | null>(null);
+  protected readonly selectedDate = signal<StatusFlowDateRange | null>(null);
+  protected readonly searchQuery = signal('');
+  private readonly search$ = new Subject<string>();
 
   private readonly queryParams = computed(() => ({
     page: this.currentPage() - 1,
     size: this.pageSize(),
+    keyword: this.searchQuery(),
+    dateRange: this.selectedDate(),
     _refresh: this.refreshTrigger(),
   }));
 
@@ -93,10 +107,15 @@ export class StatusListComponent {
   protected readonly loading = signal(false);
 
   constructor() {
+    this.search$.pipe(debounceTime(300)).subscribe((query) => {
+      this.searchQuery.set(query);
+      this.currentPage.set(1);
+    });
+
     toObservable(this.queryParams)
       .pipe(
-        switchMap(({ page, size }) =>
-          this.statusFlowService.getAll(page, size).pipe(
+        switchMap(({ page, size, keyword, dateRange }) =>
+          this.statusFlowService.getAll(page, size, keyword, dateRange).pipe(
             map((data) => ({ data, loading: false })),
             startWith({ data: null as StatusFlowPageResponse | null, loading: true }),
             catchError(() => of({ data: null as StatusFlowPageResponse | null, loading: false })),
@@ -114,6 +133,14 @@ export class StatusListComponent {
   );
 
   protected readonly totalRecords = computed(() => this.pageData()?.totalElements ?? 0);
+
+  protected onSearch(value: string): void {
+    this.search$.next(value);
+  }
+
+  protected onFilterChange(): void {
+    this.currentPage.set(1);
+  }
 
   protected onSort(_event: SortEvent): void {
     this.currentPage.set(1);

@@ -2,12 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { debounceTime, Subject } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
@@ -28,11 +30,7 @@ import {
 import { TicketTypeService } from '../../services/ticket-type.service';
 import { TicketCategoryService } from '../../services/ticket-category.service';
 import { TicketSubCategoryService } from '../../services/ticket-sub-category.service';
-import {
-  TicketTypeResponse,
-  TicketCategoryResponse,
-  TicketSubCategoryResponse,
-} from '../../interfaces/ticket-type.interface';
+import { TicketTypeDateRange } from '../../interfaces/ticket-type.interface';
 
 type TabType = 'ticket-type' | 'category' | 'sub-category';
 
@@ -87,88 +85,142 @@ export class TicketTypeListComponent {
   ];
 
   protected readonly ticketTypeColumns: TableColumn[] = [
-    { field: 'name', header: 'ประเภท Ticket', sortable: true },
-    { field: 'createdAt', header: 'วันที่สร้าง', sortable: true },
+    { field: 'name', header: 'ประเภท Ticket' },
+    { field: 'createdAt', header: 'วันที่สร้าง' },
   ];
 
   protected readonly categoryColumns: TableColumn[] = [
-    { field: 'name', header: 'หมวดหมู่', sortable: true },
-    { field: 'statusFlowName', header: 'Status Flow', sortable: true },
-    { field: 'subCategoryCount', header: 'จำนวน Sub-Category', sortable: true },
-    { field: 'createdAt', header: 'วันที่สร้าง', sortable: true },
+    { field: 'name', header: 'หมวดหมู่' },
+    { field: 'statusFlowName', header: 'Status Flow' },
+    { field: 'subCategoryCount', header: 'จำนวน Sub-Category' },
+    { field: 'createdAt', header: 'วันที่สร้าง' },
   ];
 
   protected readonly subCategoryColumns: TableColumn[] = [
-    { field: 'name', header: 'หมวดหมู่ย่อย', sortable: true },
-    { field: 'priorityLevelName', header: 'ลำดับความสำคัญ', sortable: true },
-    { field: 'positionName', header: 'ตำแหน่งที่เกี่ยวข้อง', sortable: true },
+    { field: 'name', header: 'หมวดหมู่ย่อย' },
+    { field: 'priorityLevelName', header: 'ลำดับความสำคัญ' },
+    { field: 'positionName', header: 'ตำแหน่งที่เกี่ยวข้อง' },
   ];
 
-  protected readonly dateOptions = [
-    { label: 'ทั้งหมด', value: null },
-    { label: 'วันนี้', value: 'today' },
-    { label: 'สัปดาห์นี้', value: 'week' },
-    { label: 'เดือนนี้', value: 'month' },
+  protected readonly dateOptions: { label: string; value: TicketTypeDateRange | null }[] = [
+    { label: 'วันที่สร้าง', value: null },
+    { label: 'วันนี้', value: 'TODAY' },
+    { label: 'สัปดาห์นี้', value: 'THIS_WEEK' },
+    { label: 'เดือนนี้', value: 'THIS_MONTH' },
   ];
 
-  protected readonly selectedDate = signal<string | null>(null);
+  protected readonly selectedDate = signal<TicketTypeDateRange | null>(null);
   protected readonly searchQuery = signal('');
   protected readonly currentPage = signal(1);
   protected readonly pageSize = signal(10);
   protected readonly loading = signal(false);
+  protected readonly totalRecords = signal(0);
+  protected readonly currentData = signal<Record<string, unknown>[]>([]);
 
-  private readonly allTicketTypes = signal<TicketTypeResponse[]>([]);
-  private readonly allCategories = signal<TicketCategoryResponse[]>([]);
-  private readonly allSubCategories = signal<TicketSubCategoryResponse[]>([]);
+  private readonly search$ = new Subject<string>();
 
   constructor() {
-    this.loadTicketTypes();
-    this.loadCategories();
-    this.loadSubCategories();
+    this.search$.pipe(debounceTime(300)).subscribe((query) => {
+      this.searchQuery.set(query);
+      this.currentPage.set(1);
+    });
+
+    effect(() => {
+      this.loadCurrentTab(
+        this.activeTab(),
+        this.currentPage(),
+        this.pageSize(),
+        this.searchQuery(),
+        this.selectedDate(),
+      );
+    });
   }
 
-  private loadTicketTypes(): void {
+  private loadCurrentTab(
+    tab: TabType,
+    page: number,
+    size: number,
+    keyword: string,
+    dateRange: TicketTypeDateRange | null,
+  ): void {
     this.loading.set(true);
-    this.ticketTypeService.getAll(0, 1000).subscribe({
+
+    if (tab === 'ticket-type') {
+      this.ticketTypeService.getAll(page - 1, size, keyword, dateRange).subscribe({
+        next: (res) => {
+          this.totalRecords.set(res.totalElements);
+          this.currentData.set(
+            res.content.map((item) => ({
+              id: item.id,
+              name: item.name,
+              createdAt: this.formatDate(item.createdAt),
+            })),
+          );
+          this.loading.set(false);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'เกิดข้อผิดพลาด',
+            detail: 'ไม่สามารถโหลดข้อมูล Ticket Type ได้',
+            life: 4000,
+          });
+          this.loading.set(false);
+        },
+      });
+      return;
+    }
+
+    if (tab === 'category') {
+      this.ticketCategoryService.getAll(page - 1, size, keyword, dateRange).subscribe({
+        next: (res) => {
+          this.totalRecords.set(res.totalElements);
+          this.currentData.set(
+            res.content.map((item) => ({
+              id: item.id,
+              name: item.name,
+              statusFlowName: item.statusFlowName,
+              subCategoryCount: item.subCategories.length,
+              createdAt: this.formatDate(item.createdAt),
+            })),
+          );
+          this.loading.set(false);
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'เกิดข้อผิดพลาด',
+            detail: 'ไม่สามารถโหลดข้อมูล Category ได้',
+            life: 4000,
+          });
+          this.loading.set(false);
+        },
+      });
+      return;
+    }
+
+    this.ticketSubCategoryService.getAll(page - 1, size, keyword, dateRange).subscribe({
       next: (res) => {
-        this.allTicketTypes.set(res.content);
+        this.totalRecords.set(res.totalElements);
+        this.currentData.set(
+          res.content.map((item) => ({
+            id: item.id,
+            name: item.name,
+            priorityLevelName: item.priorityLevelName,
+            positionName: item.positionName,
+          })),
+        );
         this.loading.set(false);
       },
       error: () => {
         this.messageService.add({
           severity: 'error',
           summary: 'เกิดข้อผิดพลาด',
-          detail: 'ไม่สามารถโหลดข้อมูล Ticket Type ได้',
+          detail: 'ไม่สามารถโหลดข้อมูล Sub-Category ได้',
           life: 4000,
         });
         this.loading.set(false);
       },
-    });
-  }
-
-  private loadCategories(): void {
-    this.ticketCategoryService.getAll(0, 1000).subscribe({
-      next: (res) => this.allCategories.set(res.content),
-      error: () =>
-        this.messageService.add({
-          severity: 'error',
-          summary: 'เกิดข้อผิดพลาด',
-          detail: 'ไม่สามารถโหลดข้อมูล Category ได้',
-          life: 4000,
-        }),
-    });
-  }
-
-  private loadSubCategories(): void {
-    this.ticketSubCategoryService.getAll(0, 1000).subscribe({
-      next: (res) => this.allSubCategories.set(res.content),
-      error: () =>
-        this.messageService.add({
-          severity: 'error',
-          summary: 'เกิดข้อผิดพลาด',
-          detail: 'ไม่สามารถโหลดข้อมูล Sub-Category ได้',
-          life: 4000,
-        }),
     });
   }
 
@@ -180,69 +232,21 @@ export class TicketTypeListComponent {
     });
   }
 
-  private readonly filteredTicketTypes = computed(() => {
-    const query = this.searchQuery().toLowerCase();
-    return this.allTicketTypes().filter((item) => !query || item.name.toLowerCase().includes(query));
-  });
-
-  private readonly filteredCategories = computed(() => {
-    const query = this.searchQuery().toLowerCase();
-    return this.allCategories().filter((item) => !query || item.name.toLowerCase().includes(query));
-  });
-
-  private readonly filteredSubCategories = computed(() => {
-    const query = this.searchQuery().toLowerCase();
-    return this.allSubCategories().filter(
-      (item) => !query || item.name.toLowerCase().includes(query),
+  private reload(): void {
+    this.loadCurrentTab(
+      this.activeTab(),
+      this.currentPage(),
+      this.pageSize(),
+      this.searchQuery(),
+      this.selectedDate(),
     );
-  });
+  }
 
   protected readonly currentColumns = computed<TableColumn[]>(() => {
     const tab = this.activeTab();
     if (tab === 'ticket-type') return this.ticketTypeColumns;
     if (tab === 'category') return this.categoryColumns;
     return this.subCategoryColumns;
-  });
-
-  protected readonly totalRecords = computed(() => {
-    const tab = this.activeTab();
-    if (tab === 'ticket-type') return this.filteredTicketTypes().length;
-    if (tab === 'category') return this.filteredCategories().length;
-    return this.filteredSubCategories().length;
-  });
-
-  protected readonly currentData = computed<Record<string, unknown>[]>(() => {
-    const tab = this.activeTab();
-    const start = (this.currentPage() - 1) * this.pageSize();
-
-    if (tab === 'ticket-type') {
-      return this.filteredTicketTypes()
-        .slice(start, start + this.pageSize())
-        .map((item) => ({
-          id: item.id,
-          name: item.name,
-          createdAt: this.formatDate(item.createdAt),
-        }));
-    }
-    if (tab === 'category') {
-      return this.filteredCategories()
-        .slice(start, start + this.pageSize())
-        .map((item) => ({
-          id: item.id,
-          name: item.name,
-          statusFlowName: item.statusFlowName,
-          subCategoryCount: item.subCategories.length,
-          createdAt: this.formatDate(item.createdAt),
-        }));
-    }
-    return this.filteredSubCategories()
-      .slice(start, start + this.pageSize())
-      .map((item) => ({
-        id: item.id,
-        name: item.name,
-        priorityLevelName: item.priorityLevelName,
-        positionName: item.positionName,
-      }));
   });
 
   protected readonly addButtonLabel = computed(() => {
@@ -262,11 +266,15 @@ export class TicketTypeListComponent {
   protected setActiveTab(tab: TabType): void {
     this.activeTab.set(tab);
     this.searchQuery.set('');
+    this.selectedDate.set(null);
     this.currentPage.set(1);
   }
 
   protected onSearch(value: string): void {
-    this.searchQuery.set(value);
+    this.search$.next(value);
+  }
+
+  protected onFilterChange(): void {
     this.currentPage.set(1);
   }
 
@@ -341,9 +349,7 @@ export class TicketTypeListComponent {
         this.showDeleteDialog.set(false);
         this.deletingItem.set(null);
         this.deleting.set(false);
-        if (tab === 'ticket-type') this.loadTicketTypes();
-        else if (tab === 'category') this.loadCategories();
-        else this.loadSubCategories();
+        this.reload();
       },
       error: () => {
         this.messageService.add({

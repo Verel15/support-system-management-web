@@ -1,3 +1,5 @@
+export type UserTypeDateRange = 'TODAY' | 'THIS_WEEK' | 'THIS_MONTH';
+
 export interface UserTypeRequest {
   name: string;
   myTicketAccess: string;

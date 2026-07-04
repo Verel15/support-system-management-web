@@ -7,8 +7,8 @@ import { CompanyRequest, CompanyResponse } from '../interfaces/company.interface
 export class CompanyService {
   private readonly api = inject(ApiService);
 
-  getAll(): Observable<CompanyResponse[]> {
-    return this.api.get<CompanyResponse[]>('/companies');
+  getAll(keyword?: string): Observable<CompanyResponse[]> {
+    return this.api.get<CompanyResponse[]>('/companies', { keyword: keyword || undefined });
   }
 
   getById(id: string): Observable<CompanyResponse> {

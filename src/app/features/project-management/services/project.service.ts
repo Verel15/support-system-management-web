@@ -6,11 +6,13 @@ import { ApiService } from '../../../core/services/api.service';
 import { environment } from '../../../../environments/environment';
 import {
   PageResponse,
+  ProjectDateRange,
   ProjectDocumentResponse,
   ProjectMemberRequest,
   ProjectMemberResponse,
   ProjectRequest,
   ProjectResponse,
+  ProjectStatus,
 } from '../interfaces/project.interface';
 
 @Injectable({ providedIn: 'root' })
@@ -19,16 +21,40 @@ export class ProjectService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiUrl;
 
-  getAll(page = 0, size = 100): Observable<PageResponse<ProjectResponse>> {
-    return this.api.get<PageResponse<ProjectResponse>>('/projects', { page, size });
+  getAll(
+    page = 0,
+    size = 100,
+    keyword?: string,
+    dateRange?: ProjectDateRange | null,
+    status?: ProjectStatus | null,
+  ): Observable<PageResponse<ProjectResponse>> {
+    return this.api.get<PageResponse<ProjectResponse>>('/projects', {
+      page,
+      size,
+      keyword: keyword || undefined,
+      dateRange: dateRange || undefined,
+      status: status || undefined,
+    });
   }
 
   getById(id: string): Observable<ProjectResponse> {
     return this.api.get<ProjectResponse>(`/projects/${id}`);
   }
 
-  getMy(page = 0, size = 100): Observable<PageResponse<ProjectResponse>> {
-    return this.api.get<PageResponse<ProjectResponse>>('/projects/my', { page, size });
+  getMy(
+    page = 0,
+    size = 100,
+    keyword?: string,
+    dateRange?: ProjectDateRange | null,
+    status?: ProjectStatus | null,
+  ): Observable<PageResponse<ProjectResponse>> {
+    return this.api.get<PageResponse<ProjectResponse>>('/projects/my', {
+      page,
+      size,
+      keyword: keyword || undefined,
+      dateRange: dateRange || undefined,
+      status: status || undefined,
+    });
   }
 
   getMyById(id: string): Observable<ProjectResponse> {

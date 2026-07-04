@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { debounceTime, Subject } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
@@ -8,7 +9,7 @@ import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { ProjectCardComponent, Project } from '../../../../shared/components/project-card';
 import { ProjectService } from '../../services/project.service';
-import { ProjectResponse } from '../../interfaces/project.interface';
+import { ProjectDateRange, ProjectResponse, ProjectStatus } from '../../interfaces/project.interface';
 
 @Component({
   selector: 'app-project-list',
@@ -16,7 +17,7 @@ import { ProjectResponse } from '../../interfaces/project.interface';
   templateUrl: './project-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProjectListComponent implements OnInit {
+export class ProjectListComponent {
   private readonly router = inject(Router);
   private readonly projectService = inject(ProjectService);
 
@@ -25,45 +26,64 @@ export class ProjectListComponent implements OnInit {
     this.isMyProjects() ? 'โครงการของฉัน' : 'โครงการทั้งหมด',
   );
 
-  protected readonly selectedStatus = signal<string | null>(null);
-  protected readonly selectedDate = signal<string | null>(null);
+  protected readonly selectedStatus = signal<ProjectStatus | null>(null);
+  protected readonly selectedDate = signal<ProjectDateRange | null>(null);
   protected readonly searchQuery = signal('');
   protected readonly currentPage = signal(1);
   protected readonly pageSize = signal(8);
   protected readonly loading = signal(false);
+  protected readonly totalRecords = signal(0);
+  protected readonly pagedProjects = signal<Project[]>([]);
 
-  private readonly allProjects = signal<Project[]>([]);
+  private readonly search$ = new Subject<string>();
 
   protected readonly statusOptions = [
-    { label: 'ทั้งหมด', value: null },
-    { label: 'เปิด', value: 'Open' },
-    { label: 'ปิด', value: 'Closed' },
+    { label: 'สถานะ', value: null },
+    { label: 'เปิด', value: 'OPEN' },
+    { label: 'รอดำเนินการ', value: 'WAITING' },
+    { label: 'ปิด', value: 'CLOSED' },
   ];
 
   protected readonly dateOptions = [
     { label: 'วันที่สร้าง', value: null },
-    { label: 'วันนี้', value: 'today' },
-    { label: 'สัปดาห์นี้', value: 'week' },
-    { label: 'เดือนนี้', value: 'month' },
+    { label: 'วันนี้', value: 'TODAY' },
+    { label: 'สัปดาห์นี้', value: 'THIS_WEEK' },
+    { label: 'เดือนนี้', value: 'THIS_MONTH' },
   ];
 
   constructor() {
     this.isMyProjects.set(this.router.url.includes('my-projects'));
-  }
 
-  ngOnInit(): void {
+    this.search$.pipe(debounceTime(300)).subscribe((query) => {
+      this.searchQuery.set(query);
+      this.currentPage.set(1);
+      this.loadProjects();
+    });
+
     this.loadProjects();
   }
 
   private loadProjects(): void {
     this.loading.set(true);
-    this.projectService.getAll(0, 200).subscribe({
-      next: (page) => {
-        this.allProjects.set(page.content.map((r) => this.mapToProject(r)));
+    const page = this.currentPage() - 1;
+    const size = this.pageSize();
+    const keyword = this.searchQuery();
+    const dateRange = this.selectedDate();
+    const status = this.selectedStatus();
+
+    const request$ = this.isMyProjects()
+      ? this.projectService.getMy(page, size, keyword, dateRange, status)
+      : this.projectService.getAll(page, size, keyword, dateRange, status);
+
+    request$.subscribe({
+      next: (res) => {
+        this.pagedProjects.set(res.content.map((r) => this.mapToProject(r)));
+        this.totalRecords.set(res.totalElements);
         this.loading.set(false);
       },
       error: () => {
-        this.allProjects.set([]);
+        this.pagedProjects.set([]);
+        this.totalRecords.set(0);
         this.loading.set(false);
       },
     });
@@ -75,13 +95,10 @@ export class ProjectListComponent implements OnInit {
   ];
 
   private mapToProject(r: ProjectResponse): Project {
-    const now = new Date();
-    const end = new Date(r.endDate);
-    const status: 'Open' | 'Closed' = now > end ? 'Closed' : 'Open';
     return {
       id: r.id,
       name: r.name,
-      status,
+      status: r.status,
       date: this.formatDate(r.endDate),
       owner: r.companyName ?? '',
       totalTickets: 0,
@@ -107,40 +124,24 @@ export class ProjectListComponent implements OnInit {
     return `${day}/${month}/${year}`;
   }
 
-  protected readonly filteredProjects = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim();
-    const status = this.selectedStatus();
-    return this.allProjects().filter((p) => {
-      const matchesSearch =
-        !query || p.name.toLowerCase().includes(query) || p.owner.toLowerCase().includes(query);
-      const matchesStatus = !status || p.status === status;
-      return matchesSearch && matchesStatus;
-    });
-  });
-
-  protected readonly totalRecords = computed(() => this.filteredProjects().length);
-
-  protected readonly pagedProjects = computed(() => {
-    const start = (this.currentPage() - 1) * this.pageSize();
-    return this.filteredProjects().slice(start, start + this.pageSize());
-  });
-
   protected onSearch(value: string): void {
-    this.searchQuery.set(value);
-    this.currentPage.set(1);
+    this.search$.next(value);
   }
 
   protected onFilterChange(): void {
     this.currentPage.set(1);
+    this.loadProjects();
   }
 
   protected onPageChange(page: number): void {
     this.currentPage.set(page);
+    this.loadProjects();
   }
 
   protected onPageSizeChange(size: number): void {
     this.pageSize.set(size);
     this.currentPage.set(1);
+    this.loadProjects();
   }
 
   protected onAddProject(): void {

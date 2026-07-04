@@ -115,7 +115,7 @@ export class CompanyDetailComponent {
     {
       id: '',
       name: 'IT Supporting and Helpdesk',
-      status: 'Open',
+      status: 'OPEN',
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
@@ -137,7 +137,7 @@ export class CompanyDetailComponent {
     {
       id: '',
       name: 'Book Bank System',
-      status: 'Open',
+      status: 'OPEN',
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
@@ -158,7 +158,7 @@ export class CompanyDetailComponent {
     {
       id: '',
       name: 'Life Insurance System',
-      status: 'Open',
+      status: 'OPEN',
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
@@ -179,7 +179,7 @@ export class CompanyDetailComponent {
     {
       id: '',
       name: 'Rent a car System',
-      status: 'Open',
+      status: 'OPEN',
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
@@ -200,7 +200,7 @@ export class CompanyDetailComponent {
     {
       id: '',
       name: 'Library Management System',
-      status: 'Open',
+      status: 'OPEN',
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
@@ -221,7 +221,7 @@ export class CompanyDetailComponent {
     {
       id: '',
       name: 'Room Service System',
-      status: 'Open',
+      status: 'OPEN',
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
@@ -242,7 +242,7 @@ export class CompanyDetailComponent {
     {
       id: '',
       name: 'Tour Ticket Booking System',
-      status: 'Open',
+      status: 'OPEN',
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
@@ -263,7 +263,7 @@ export class CompanyDetailComponent {
     {
       id: '',
       name: 'Manage Pharmacy System',
-      status: 'Open',
+      status: 'OPEN',
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,

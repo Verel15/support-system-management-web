@@ -43,7 +43,7 @@ export class ProjectDetailComponent implements OnInit {
     id: '',
     name: '',
     color: '#3b82f6',
-    status: 'Open',
+    status: 'OPEN',
     company: '',
     adminCount: 0,
     customerCount: 0,
@@ -84,17 +84,14 @@ export class ProjectDetailComponent implements OnInit {
   }
 
   private mapToDetail(r: ProjectResponse): ProjectDetail {
-    const now = new Date();
     const start = new Date(r.startDate);
     const end = new Date(r.endDate);
-    const status: 'Open' | 'Closed' = now > end ? 'Closed' : 'Open';
     const totalDays = Math.ceil((end.getTime() - start.getTime()) / 86_400_000);
-
     return {
       id: r.id,
       name: r.name,
       color: r.color ?? '#3b82f6',
-      status,
+      status: r.status,
       company: r.companyName ?? '',
       adminCount: r.assigneeCount ?? 0,
       customerCount: r.customerCount ?? 0,

@@ -22,6 +22,7 @@
       optionLabel="label"
       optionValue="value"
       class="w-full sm:w-auto sm:min-w-36"
+      placeholder="สถานะ"
       aria-label="กรองตามสถานะ"
     />
     <p-select
@@ -31,15 +32,17 @@
       optionLabel="label"
       optionValue="value"
       class="w-full sm:w-auto sm:min-w-44"
+      placeholder="ลำดับความสำคัญ"
       aria-label="กรองตามความสำคัญ"
     />
     <p-select
       [options]="timeOptions"
-      [ngModel]="overdueFilter() ? 'overdue' : null"
+      [ngModel]="timeFilter()"
       (ngModelChange)="onTimeFilterChange($event)"
       optionLabel="label"
       optionValue="value"
       class="w-full sm:w-auto sm:min-w-44"
+      placeholder="ระยะเวลาที่เหลือ"
       aria-label="กรองตามระยะเวลา"
     />
     <div class="flex items-center gap-3 w-full sm:w-80 sm:ml-auto">

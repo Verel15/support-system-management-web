@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { debounceTime, Subject } from 'rxjs';
 import { MenuItem, MessageService, SortEvent } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { IconField } from 'primeng/iconfield';
@@ -51,10 +52,10 @@ export class CompanyListComponent implements OnInit {
   ];
 
   protected readonly columns: TableColumn[] = [
-    { field: 'name', header: 'รายชื่อบริษัท', sortable: true },
-    { field: 'projectCount', header: 'จำนวนโครงการ', sortable: true },
-    { field: 'customerCount', header: 'จำนวนลูกค้า', sortable: true},
-    { field: 'createdAt', header: 'วันที่สร้าง', sortable: true },
+    { field: 'name', header: 'รายชื่อบริษัท' },
+    { field: 'projectCount', header: 'จำนวนโครงการ' },
+    { field: 'customerCount', header: 'จำนวนลูกค้า'},
+    { field: 'createdAt', header: 'วันที่สร้าง' },
   ];
 
   protected readonly searchQuery = signal('');
@@ -63,30 +64,29 @@ export class CompanyListComponent implements OnInit {
   protected readonly loading = signal(false);
 
   private readonly companies = signal<CompanyResponse[]>([]);
+  private readonly search$ = new Subject<string>();
 
-  protected readonly filteredCompanies = computed(() => {
-    const query = this.searchQuery().toLowerCase();
-    return this.companies().filter(
-      (c) => !query || c.name.toLowerCase().includes(query),
-    );
-  });
-
-  protected readonly totalRecords = computed(() => this.filteredCompanies().length);
+  protected readonly totalRecords = computed(() => this.companies().length);
 
   protected readonly pagedCompanies = computed<Record<string, unknown>[]>(() => {
     const start = (this.currentPage() - 1) * this.pageSize();
-    return this.filteredCompanies()
+    return this.companies()
       .slice(start, start + this.pageSize())
       .map((c) => ({ ...c }));
   });
 
   ngOnInit(): void {
+    this.search$.pipe(debounceTime(300)).subscribe((query) => {
+      this.searchQuery.set(query);
+      this.currentPage.set(1);
+      this.loadCompanies();
+    });
     this.loadCompanies();
   }
 
   private loadCompanies(): void {
     this.loading.set(true);
-    this.companyService.getAll().subscribe({
+    this.companyService.getAll(this.searchQuery()).subscribe({
       next: (data) => {
         this.companies.set(data);
         this.loading.set(false);
@@ -104,8 +104,7 @@ export class CompanyListComponent implements OnInit {
   }
 
   protected onSearch(value: string): void {
-    this.searchQuery.set(value);
-    this.currentPage.set(1);
+    this.search$.next(value);
   }
 
   protected onSort(_event: SortEvent): void {

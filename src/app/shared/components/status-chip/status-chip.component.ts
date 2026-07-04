@@ -22,8 +22,9 @@ export class StatusChipComponent {
         colorClasses = 'bg-[#E3F2FD] text-[#0d6efd]';
         break;
 
-      // Orange statuses (Pending, In Progress, In Review, etc.)
+      // Orange statuses (Pending, Waiting, In Progress, In Review, etc.)
       case 'pending':
+      case 'waiting':
       case 'in progress':
       case 'in review':
       case 'รอดำเนินการ':

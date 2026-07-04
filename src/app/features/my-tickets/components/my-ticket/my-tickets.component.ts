@@ -25,6 +25,8 @@ import {
   TicketListResponse,
   PriorityResponse,
   PriorityIconColor,
+  TicketFilterRequest,
+  TicketRemainingTime,
 } from '../../../ticket-management/interfaces/ticket.interface';
 import { ProjectResponse } from '../../../project-management/interfaces/project.interface';
 
@@ -86,11 +88,12 @@ export class MyTicketsComponent implements OnInit {
   protected readonly recentProjects = signal<Project[]>([]);
 
   protected readonly columns: TableColumn[] = [
-    { field: 'title', header: 'หัวข้องาน', sortable: true },
+    { field: 'title', header: 'หัวข้องาน', sortable: true, maxWidth: '300px' },
     { field: 'projectName', header: 'โครงการ', sortable: true },
     { field: 'assigneesDisplay', header: 'ผู้รับผิดชอบ' },
-    { field: 'dueDateDisplay', header: 'ครบกำหนด' },
-    { field: 'currentStatusName', header: '' },
+    { field: 'remainingTime', header: 'ระยะเวลาที่เหลือ' },
+    { field: 'priorityName', header: 'ลำดับความสำคัญ' },
+    { field: 'currentStatusName', header: 'สถานะ' },
   ];
 
   protected readonly priorityOptions = computed(() => [
@@ -100,7 +103,11 @@ export class MyTicketsComponent implements OnInit {
 
   protected readonly timeOptions = [
     { label: 'ระยะเวลาที่เหลือ', value: null },
-    { label: 'เกินกำหนด', value: 'overdue' },
+    { label: 'น้อยกว่า 30 นาที', value: 'LESS_THAN_30_MIN' },
+    { label: 'น้อยกว่า 1 วัน', value: 'LESS_THAN_1_DAY' },
+    { label: 'น้อยกว่า 3 วัน', value: 'LESS_THAN_3_DAYS' },
+    { label: 'น้อยกว่า 7 วัน', value: 'LESS_THAN_7_DAYS' },
+    { label: 'เกินกำหนด', value: 'OVERDUE' },
   ];
 
   protected readonly statusOptions = [
@@ -243,7 +250,6 @@ export class MyTicketsComponent implements OnInit {
       ...t,
       assigneesDisplay:
         t.assignees.length > 0 ? t.assignees.map((a) => a.fullName).join(', ') : '-',
-      dueDateDisplay: t.dueDate ? this.formatDueDate(t.dueDate) : '-',
     })),
   );
 
@@ -313,11 +319,11 @@ export class MyTicketsComponent implements OnInit {
 
   private loadTickets(): void {
     this.loading.set(true);
-    const filter: Record<string, unknown> = {};
-    if (this.searchQuery().trim()) filter['keyword'] = this.searchQuery().trim();
-    if (this.priorityFilter()) filter['priorityId'] = this.priorityFilter();
-    if (this.statusFilter()) filter['statusId'] = this.statusFilter();
-    if (this.timeFilter() === 'overdue') filter['overdue'] = true;
+    const filter: TicketFilterRequest = {};
+    if (this.searchQuery().trim()) filter.keyword = this.searchQuery().trim();
+    if (this.priorityFilter()) filter.priorityId = this.priorityFilter()!;
+    if (this.statusFilter()) filter.statusGroup = this.statusFilter() as TicketFilterRequest['statusGroup'];
+    if (this.timeFilter()) filter.remainingTime = this.timeFilter() as TicketRemainingTime;
 
     this.ticketService.getMy(filter, this.currentPage() - 1, this.pageSize()).subscribe({
       next: (res) => {
@@ -345,13 +351,10 @@ export class MyTicketsComponent implements OnInit {
   }
 
   private mapToProject(r: ProjectResponse): Project {
-    const now = new Date();
-    const end = new Date(r.endDate);
-    const status: 'Open' | 'Closed' = now > end ? 'Closed' : 'Open';
     return {
       id: r.id,
       name: r.name,
-      status,
+      status: r.status,
       date: this.formatDate(r.endDate),
       owner: r.companyName ?? '',
       totalTickets: 0,

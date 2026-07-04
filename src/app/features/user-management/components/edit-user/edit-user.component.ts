@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Button } from 'primeng/button';
@@ -13,6 +13,7 @@ import { AccountType, UserRequest } from '../../interfaces/user.interface';
 import { UserTypeService } from '../../../user-type-management/services/user-type.service';
 import { DepartmentService } from '../../services/department.service';
 import { PositionService } from '../../services/position.service';
+import { CompanyService } from '../../../company-management/services/company.service';
 
 @Component({
   selector: 'app-edit-user',
@@ -29,6 +30,7 @@ export class EditUserComponent {
   private readonly userTypeService = inject(UserTypeService);
   private readonly departmentService = inject(DepartmentService);
   private readonly positionService = inject(PositionService);
+  private readonly companyService = inject(CompanyService);
 
   private readonly userId = this.route.snapshot.params['id'] as string;
 
@@ -37,6 +39,16 @@ export class EditUserComponent {
 
   protected readonly user = toSignal(
     this.userService.getById(this.userId).pipe(catchError(() => of(null))),
+  );
+
+  protected readonly isCustomer = computed(() => this.user()?.accountType === 'CUSTOMER');
+
+  protected readonly companyOptions = toSignal(
+    this.companyService.getAll().pipe(
+      map((companies) => companies.map((c) => ({ label: c.name, value: c.id }))),
+      catchError(() => of([])),
+    ),
+    { initialValue: [] },
   );
 
   protected readonly userTypeOptions = toSignal(
@@ -64,12 +76,13 @@ export class EditUserComponent {
   );
 
   protected readonly form = this.fb.group({
-    userType: [null as string | null, Validators.required],
+    companyId: [null as string | null],
+    userType: [null as string | null],
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
     phone: [''],
-    department: [null as string | null, Validators.required],
-    position: [null as string | null, Validators.required],
+    department: [null as string | null],
+    position: [null as string | null],
     email: [{ value: '', disabled: true }],
   });
 
@@ -83,7 +96,9 @@ export class EditUserComponent {
         takeUntilDestroyed(),
       )
       .subscribe((u) => {
+        this.applyConditionalValidators(u.accountType);
         this.form.patchValue({
+          companyId: u.companyId,
           userType: u.userTypeId,
           firstName: u.firstName,
           lastName: u.lastName,
@@ -96,6 +111,22 @@ export class EditUserComponent {
           this.avatarPreview.set(u.profileImageUrl);
         }
       });
+  }
+
+  private applyConditionalValidators(accountType: AccountType): void {
+    const companyId = this.form.get('companyId')!;
+    const userType = this.form.get('userType')!;
+    const department = this.form.get('department')!;
+    const position = this.form.get('position')!;
+
+    if (accountType === 'CUSTOMER') {
+      companyId.setValidators(Validators.required);
+      [userType, department, position].forEach((c) => c.clearValidators());
+    } else {
+      companyId.clearValidators();
+      [userType, department, position].forEach((c) => c.setValidators(Validators.required));
+    }
+    [companyId, userType, department, position].forEach((c) => c.updateValueAndValidity());
   }
 
   protected isInvalid(field: string): boolean {
@@ -129,6 +160,7 @@ export class EditUserComponent {
       lastName: v.lastName!,
       email: v.email!,
       phone: v.phone || undefined,
+      companyId: v.companyId ?? undefined,
       userTypeId: v.userType ?? undefined,
       departmentId: v.department ?? undefined,
       positionId: v.position ?? undefined,

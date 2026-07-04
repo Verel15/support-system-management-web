@@ -15,12 +15,20 @@ import { formatDate } from '@angular/common';
 import { ChipComponent } from '../../../../shared/components/chip';
 import { DeleteConfirmDialogComponent } from '../../../../shared/components/dialogs';
 import { UserService } from '../../services/user.service';
+import { AccountType } from '../../interfaces/user.interface';
+
+const ACCOUNT_TYPE_LABEL: Record<AccountType, string> = {
+  CUSTOMER: 'ลูกค้า',
+  EXTERNAL: 'บุคคลภายนอก',
+};
 
 interface UserDetail {
   firstName: string;
   lastName: string;
   avatarUrl?: string;
   company: string;
+  accountType: AccountType;
+  accountTypeLabel: string;
   userType: string;
   phone: string;
   createdAt: string;
@@ -65,6 +73,8 @@ export class UserDetailComponent {
       lastName: u.lastName,
       avatarUrl: u.profileImageUrl || undefined,
       company: u.companyName ?? '',
+      accountType: u.accountType,
+      accountTypeLabel: ACCOUNT_TYPE_LABEL[u.accountType] ?? u.accountType,
       userType: u.userTypeName ?? '',
       phone: u.phone ?? '-',
       createdAt: formatDate(u.createdAt, 'dd/MM/yyyy', 'en-US'),
@@ -79,6 +89,8 @@ export class UserDetailComponent {
     const u = this.user();
     return u ? `${u.firstName} ${u.lastName}` : '';
   });
+
+  protected readonly isCustomer = computed(() => this.user()?.accountType === 'CUSTOMER');
 
   protected onBack(): void {
     this.router.navigate(['/user-management/list']);

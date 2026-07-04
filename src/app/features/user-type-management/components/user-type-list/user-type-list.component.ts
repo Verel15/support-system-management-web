@@ -7,11 +7,16 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
+import { Select } from 'primeng/select';
+import { InputText } from 'primeng/inputtext';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
 import { Menu } from 'primeng/menu';
 import { MenuItem, MessageService } from 'primeng/api';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, map, of, startWith, switchMap } from 'rxjs';
+import { catchError, debounceTime, map, of, startWith, Subject, switchMap } from 'rxjs';
 import { formatDate } from '@angular/common';
 import {
   DataTableCellDirective,
@@ -24,7 +29,7 @@ import {
   DeleteConfirmDialogComponent,
 } from '../../../../shared/components/dialogs';
 import { UserTypeService } from '../../services/user-type.service';
-import { UserTypePageResponse } from '../../interfaces/user-type.interface';
+import { UserTypeDateRange, UserTypePageResponse } from '../../interfaces/user-type.interface';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -33,7 +38,12 @@ interface ActionMenuItem extends MenuItem {
 @Component({
   selector: 'app-user-type-list',
   imports: [
+    FormsModule,
     Button,
+    Select,
+    InputText,
+    IconField,
+    InputIcon,
     Menu,
     DataTableComponent,
     DataTableCellDirective,
@@ -65,23 +75,37 @@ export class UserTypeListComponent {
   ];
 
   protected readonly columns: TableColumn[] = [
-    { field: 'typeName', header: 'ประเภท', sortable: true },
-    { field: 'updatedAt', header: 'วันที่แก้ไขล่าสุด', sortable: true },
+    { field: 'typeName', header: 'ประเภท' },
+    { field: 'createdAt', header: 'วันที่สร้าง'},
+    { field: 'updatedAt', header: 'วันที่แก้ไขล่าสุด' },
   ];
 
   protected readonly currentPage = signal(1);
   protected readonly pageSize = signal(10);
 
+  protected readonly dateOptions: { label: string; value: UserTypeDateRange | null }[] = [
+    { label: 'วันที่สร้าง', value: null },
+    { label: 'วันนี้', value: 'TODAY' },
+    { label: 'สัปดาห์นี้', value: 'THIS_WEEK' },
+    { label: 'เดือนนี้', value: 'THIS_MONTH' },
+  ];
+
+  protected readonly selectedDate = signal<UserTypeDateRange | null>(null);
+  protected readonly searchQuery = signal('');
+  private readonly search$ = new Subject<string>();
+
   private readonly queryParams = computed(() => ({
     page: this.currentPage() - 1,
     size: this.pageSize(),
+    keyword: this.searchQuery(),
+    dateRange: this.selectedDate(),
     _refresh: this.refreshTrigger(),
   }));
 
   private readonly response = toSignal(
     toObservable(this.queryParams).pipe(
-      switchMap(({ page, size }) =>
-        this.userTypeService.getAll(page, size).pipe(
+      switchMap(({ page, size, keyword, dateRange }) =>
+        this.userTypeService.getAll(page, size, keyword, dateRange).pipe(
           map((data) => ({ data, loading: false })),
           startWith({ data: null as UserTypePageResponse | null, loading: true }),
           catchError(() => of({ data: null as UserTypePageResponse | null, loading: false })),
@@ -90,6 +114,13 @@ export class UserTypeListComponent {
       startWith({ data: null as UserTypePageResponse | null, loading: true }),
     ),
   );
+
+  constructor() {
+    this.search$.pipe(debounceTime(300)).subscribe((query) => {
+      this.searchQuery.set(query);
+      this.currentPage.set(1);
+    });
+  }
 
   protected readonly loading = computed(() => this.response()?.loading ?? true);
 
@@ -101,9 +132,18 @@ export class UserTypeListComponent {
     (this.response()?.data?.content ?? []).map((u) => ({
       id: u.id,
       typeName: u.name,
+      createdAt: formatDate(u.createdAt, 'dd/MM/yyyy HH:mm', 'en-US'),
       updatedAt: formatDate(u.updatedAt, 'dd/MM/yyyy HH:mm', 'en-US'),
     })),
   );
+
+  protected onSearch(value: string): void {
+    this.search$.next(value);
+  }
+
+  protected onFilterChange(): void {
+    this.currentPage.set(1);
+  }
 
   protected onSort(_event: SortEvent): void {
     this.currentPage.set(1);

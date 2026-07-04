@@ -92,7 +92,7 @@ export class PriorityListComponent {
   ];
 
   protected readonly dateOptions: { label: string; value: PriorityDateRange | null }[] = [
-    { label: 'ทั้งหมด', value: null },
+    { label: 'วันที่สร้าง', value: null },
     { label: 'วันนี้', value: 'TODAY' },
     { label: 'สัปดาห์นี้', value: 'THIS_WEEK' },
     { label: 'เดือนนี้', value: 'THIS_MONTH' },

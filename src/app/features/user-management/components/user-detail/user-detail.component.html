@@ -71,25 +71,33 @@
         <dd class="text-sm font-medium text-slate-800">{{ u.lastName }}</dd>
       </div>
       <div class="flex gap-3 items-start">
-        <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">ประเภทผู้ใช้</dt>
-        <dd class="text-sm font-medium text-slate-800">{{ u.userType }}</dd>
+        <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">รูปแบบผู้ใช้</dt>
+        <dd class="text-sm font-medium text-slate-800">{{ u.accountTypeLabel }}</dd>
       </div>
+      @if (!isCustomer()) {
+        <div class="flex gap-3 items-start">
+          <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">ประเภทผู้ใช้</dt>
+          <dd class="text-sm font-medium text-slate-800">{{ u.userType }}</dd>
+        </div>
+      }
       <div class="flex gap-3 items-start">
         <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">เบอร์โทรศัพท์</dt>
         <dd class="text-sm font-medium text-slate-800">{{ u.phone }}</dd>
       </div>
-      <div class="flex gap-3 items-start sm:col-span-2">
+      <div class="flex gap-3 items-start">
         <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">วันที่สร้าง</dt>
         <dd class="text-sm font-medium text-slate-800">{{ u.createdAt }}</dd>
       </div>
-      <div class="flex gap-3 items-center">
-        <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">แผนก</dt>
-        <dd><app-chip [label]="u.department" color="primary" /></dd>
-      </div>
-      <div class="flex gap-3 items-center">
-        <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">ตำแหน่ง</dt>
-        <dd><app-chip [label]="u.position" color="primary" /></dd>
-      </div>
+      @if (!isCustomer()) {
+        <div class="flex gap-3 items-center">
+          <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">แผนก</dt>
+          <dd><app-chip [label]="u.department" color="primary" /></dd>
+        </div>
+        <div class="flex gap-3 items-center">
+          <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">ตำแหน่ง</dt>
+          <dd><app-chip [label]="u.position" color="primary" /></dd>
+        </div>
+      }
     </dl>
   </section>
 

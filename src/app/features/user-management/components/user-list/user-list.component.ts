@@ -77,23 +77,25 @@ export class UserListComponent {
   ];
 
   protected readonly columns: TableColumn[] = [
-    { field: 'name', header: 'รายชื่อ', sortable: true },
-    { field: 'userType', header: 'ประเภทผู้ใช้', sortable: true },
-    { field: 'email', header: 'อีเมล', sortable: true },
+    { field: 'name', header: 'รายชื่อ' },
+    { field: 'userType', header: 'ประเภทผู้ใช้' },
+    { field: 'accountType', header: 'รูปแบบผู้ใช้' },
+    { field: 'email', header: 'อีเมล' },
     { field: 'phone', header: 'เบอร์โทรศัพท์' },
+    { field: 'createdAt', header: 'วันที่สร้าง' }
   ];
 
   protected readonly accountTypeOptions = [
-    { label: 'ทั้งหมด', value: null },
+    { label: 'รูปแบบผู้ใช้', value: null },
     { label: 'ลูกค้า', value: 'CUSTOMER' as AccountType },
     { label: 'บุคคลภายนอก', value: 'EXTERNAL' as AccountType },
   ];
 
   protected readonly dateOptions = [
-    { label: 'วันที่สร้าง (ทั้งหมด)', value: null },
-    { label: 'วันนี้', value: 1 },
-    { label: '7 วันที่แล้ว', value: 7 },
-    { label: '30 วันที่แล้ว', value: 30 },
+    { label: 'วันที่สร้าง', value: null },
+    { label: 'วันนี้', value: 'TODAY' },
+    { label: 'สัปดาห์นี้', value: 'THIS_WEEK' },
+    { label: 'เดือนนี้', value: 'THIS_MONTH' },
   ];
 
   protected readonly selectedAccountType = signal<AccountType | null>(null);
@@ -106,7 +108,7 @@ export class UserListComponent {
     filter: {
       accountType: this.selectedAccountType() ?? undefined,
       keyword: this.searchQuery() || undefined,
-      createdWithinDays: this.selectedDate() ?? undefined,
+      dateRange: this.selectedDate() ?? undefined,
     } satisfies UserFilterRequest,
     page: this.currentPage() - 1,
     size: this.pageSize(),
@@ -133,11 +135,18 @@ export class UserListComponent {
     (this.response()?.data?.content ?? []).map((u) => ({
       id: u.id,
       name: `${u.firstName} ${u.lastName}`,
+      accountType: this.accountTypeMap[u.accountType],
       userType: u.userTypeName,
       email: u.email,
       phone: u.phone ?? '-',
+      createdAt: u.createdAt,
     })),
   );
+
+  protected readonly accountTypeMap = {
+    'CUSTOMER': 'ลูกค้า',
+    'EXTERNAL': 'บุคคลภายนอก',
+  };
 
   protected readonly totalRecords = computed(
     () => this.response()?.data?.totalElements ?? 0,

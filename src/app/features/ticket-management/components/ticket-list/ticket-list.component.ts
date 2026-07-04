@@ -28,6 +28,8 @@ import {
   TicketListResponse,
   PriorityResponse,
   PriorityIconColor,
+  TicketFilterRequest,
+  TicketRemainingTime,
 } from '../../interfaces/ticket.interface';
 
 @Component({
@@ -57,7 +59,7 @@ export class TicketListComponent implements OnInit {
 
   protected readonly statusFilter = signal<string | null>(null);
   protected readonly priorityFilter = signal<string | null>(null);
-  protected readonly overdueFilter = signal<boolean | null>(null);
+  protected readonly timeFilter = signal<TicketRemainingTime | null>(null);
   protected readonly searchQuery = signal('');
   protected readonly currentPage = signal(1);
   protected readonly pageSize = signal(10);
@@ -67,7 +69,7 @@ export class TicketListComponent implements OnInit {
   protected readonly priorities = signal<PriorityResponse[]>([]);
 
   protected readonly statusOptions = [
-    { label: 'สถานะทั้งหมด', value: null },
+    { label: 'สถานะ', value: null },
     { label: 'เริ่มต้น', value: 'START' },
     { label: 'กำลังดำเนินการ', value: 'PROCESS' },
     { label: 'สำเร็จ', value: 'SUCCESS' },
@@ -75,13 +77,17 @@ export class TicketListComponent implements OnInit {
   ];
 
   protected readonly priorityOptions = computed(() => [
-    { label: 'ลำดับความสำคัญทั้งหมด', value: null },
+    { label: 'ลำดับความสำคัญ', value: null },
     ...this.priorities().map((p) => ({ label: p.name, value: p.id })),
   ]);
 
   protected readonly timeOptions = [
     { label: 'ระยะเวลาที่เหลือ', value: null },
-    { label: 'เกินกำหนด', value: 'overdue' },
+    { label: 'น้อยกว่า 30 นาที', value: 'LESS_THAN_30_MIN' },
+    { label: 'น้อยกว่า 1 วัน', value: 'LESS_THAN_1_DAY' },
+    { label: 'น้อยกว่า 3 วัน', value: 'LESS_THAN_3_DAYS' },
+    { label: 'น้อยกว่า 7 วัน', value: 'LESS_THAN_7_DAYS' },
+    { label: 'เกินกำหนด', value: 'OVERDUE' },
   ];
 
   protected readonly menuItems: MenuItem[] = [
@@ -90,11 +96,12 @@ export class TicketListComponent implements OnInit {
   ];
 
   protected readonly columns: TableColumn[] = [
-    { field: 'title', header: 'หัวข้องาน', sortable: true, maxWidth: '300px' },
-    { field: 'projectName', header: 'โครงการ', sortable: true },
+    { field: 'title', header: 'หัวข้องาน', maxWidth: '300px' },
+    { field: 'projectName', header: 'โครงการ' },
     { field: 'assigneesDisplay', header: 'ผู้รับผิดชอบ' },
-    { field: 'dueDateDisplay', header: 'ครบกำหนด' },
+    { field: 'remainingTime', header: 'ระยะเวลาที่เหลือ' },
     { field: 'statusFlowName', header: 'StatusFlow' },
+    { field: 'priorityName', header: 'ลำดับความสำคัญ' },
     { field: 'currentStatusName', header: 'สถานะ' },
   ];
 
@@ -121,10 +128,11 @@ export class TicketListComponent implements OnInit {
 
   private loadTickets(): void {
     this.loading.set(true);
-    const filter: Record<string, unknown> = {};
-    if (this.searchQuery().trim()) filter['keyword'] = this.searchQuery().trim();
-    if (this.priorityFilter()) filter['priorityId'] = this.priorityFilter();
-    if (this.overdueFilter()) filter['overdue'] = true;
+    const filter: TicketFilterRequest = {};
+    if (this.searchQuery().trim()) filter.keyword = this.searchQuery().trim();
+    if (this.priorityFilter()) filter.priorityId = this.priorityFilter()!;
+    if (this.statusFilter()) filter.statusGroup = this.statusFilter() as TicketFilterRequest['statusGroup'];
+    if (this.timeFilter()) filter.remainingTime = this.timeFilter()!;
 
     this.ticketService.getAll(filter, this.currentPage() - 1, this.pageSize()).subscribe({
       next: (res) => {
@@ -149,8 +157,8 @@ export class TicketListComponent implements OnInit {
     this.loadTickets();
   }
 
-  protected onTimeFilterChange(value: string | null): void {
-    this.overdueFilter.set(value === 'overdue' ? true : null);
+  protected onTimeFilterChange(value: TicketRemainingTime | null): void {
+    this.timeFilter.set(value);
     this.onFilterChange();
   }
 

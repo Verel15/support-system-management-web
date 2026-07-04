@@ -32,6 +32,7 @@ export interface TicketListResponse {
   dueDate: string | null;
   createdAt: string;
   assignees: TicketAssigneeSummary[];
+  remainingTime: string;
 }
 
 export interface TicketAssigneeResponse {
@@ -86,12 +87,21 @@ export interface TicketTimelineItem {
   note: string | null;
 }
 
+export type TicketRemainingTime =
+  | 'LESS_THAN_30_MIN'
+  | 'LESS_THAN_1_DAY'
+  | 'LESS_THAN_3_DAYS'
+  | 'LESS_THAN_7_DAYS'
+  | 'OVERDUE';
+
 export interface TicketFilterRequest {
   projectId?: string;
   statusId?: string;
+  statusGroup?: 'START' | 'PROCESS' | 'SUCCESS' | 'FAILED';
   priorityId?: string;
   statusFlowId?: string;
   keyword?: string;
+  remainingTime?: TicketRemainingTime;
   overdue?: boolean;
 }
 
