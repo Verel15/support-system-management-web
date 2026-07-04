@@ -19,11 +19,11 @@ export class DeviceSessionService {
     return this.api.get<DeviceSessionResponse[]>('/auth/sessions');
   }
 
-  deleteAllSessions(): Observable<void> {
-    return this.api.delete<void>('/auth/sessions');
+  deleteAllSessions(password: string): Observable<void> {
+    return this.api.delete<void>('/auth/sessions', { password });
   }
 
-  deleteSession(sessionId: string): Observable<void> {
-    return this.api.delete<void>(`/auth/sessions/${sessionId}`);
+  deleteSession(sessionId: string, password: string): Observable<void> {
+    return this.api.delete<void>(`/auth/sessions/${sessionId}`, { password });
   }
 }

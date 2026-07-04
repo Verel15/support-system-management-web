@@ -55,6 +55,8 @@ export type PriorityIconColor =
 export type PriorityIntervalUnit =
   | 'MINUTE' | 'HOUR' | 'DAY' | 'WEEK' | 'MONTH' | 'YEAR';
 
+export type PriorityDateRange = 'TODAY' | 'THIS_WEEK' | 'THIS_MONTH';
+
 // ── API interfaces ─────────────────────────────────────────────────────────────
 
 export interface PriorityRequest {

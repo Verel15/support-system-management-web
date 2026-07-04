@@ -151,11 +151,11 @@ export class UserTypeListComponent {
     this.showDeleteDialog.set(true);
   }
 
-  protected onDeleteConfirmed(_password: string): void {
+  protected onDeleteConfirmed(password: string): void {
     const id = this.deletingId();
     if (!id) return;
     this.deleting.set(true);
-    this.userTypeService.delete(id).subscribe({
+    this.userTypeService.delete(id, password).subscribe({
       next: () => {
         this.deleting.set(false);
         this.showDeleteDialog.set(false);

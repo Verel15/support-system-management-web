@@ -41,9 +41,9 @@ export class ApiService {
       .pipe(map((res) => res.data));
   }
 
-  delete<T>(path: string): Observable<T> {
+  delete<T>(path: string, body?: unknown): Observable<T> {
     return this.http
-      .delete<ApiEnvelope<T> | null>(this.url(path))
+      .delete<ApiEnvelope<T> | null>(this.url(path), body !== undefined ? { body } : undefined)
       .pipe(map((res) => res?.data as T));
   }
 

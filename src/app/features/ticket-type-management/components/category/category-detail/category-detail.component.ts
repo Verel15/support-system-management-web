@@ -95,9 +95,9 @@ export class CategoryDetailComponent {
     this.showDeleteDialog.set(true);
   }
 
-  protected onDeleteConfirmed(_password: string): void {
+  protected onDeleteConfirmed(password: string): void {
     this.deleting.set(true);
-    this.ticketCategoryService.delete(this.id).subscribe({
+    this.ticketCategoryService.delete(this.id, password).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',

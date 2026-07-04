@@ -120,11 +120,11 @@ export class StatusDetailComponent {
     this.showDeleteDialog.set(true);
   }
 
-  protected onDeleteConfirmed(_password: string): void {
+  protected onDeleteConfirmed(password: string): void {
     const id = this.status()?.id;
     if (!id) return;
     this.deleting.set(true);
-    this.statusFlowService.delete(id).subscribe({
+    this.statusFlowService.delete(id, password).subscribe({
       next: () => {
         this.deleting.set(false);
         this.messageService.add({

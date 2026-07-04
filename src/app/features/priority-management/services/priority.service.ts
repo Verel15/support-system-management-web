@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import {
+  PriorityDateRange,
   PriorityPageResponse,
   PriorityRequest,
   PriorityResponse,
@@ -11,8 +12,18 @@ import {
 export class PriorityService {
   private readonly api = inject(ApiService);
 
-  getAll(page = 0, size = 10): Observable<PriorityPageResponse> {
-    return this.api.get<PriorityPageResponse>('/priorities', { page, size });
+  getAll(
+    page = 0,
+    size = 10,
+    keyword?: string,
+    dateRange?: PriorityDateRange | null,
+  ): Observable<PriorityPageResponse> {
+    return this.api.get<PriorityPageResponse>('/priorities', {
+      page,
+      size,
+      keyword: keyword || undefined,
+      dateRange: dateRange || undefined,
+    });
   }
 
   getById(id: string): Observable<PriorityResponse> {
@@ -27,7 +38,7 @@ export class PriorityService {
     return this.api.put<PriorityResponse>(`/priorities/${id}`, payload);
   }
 
-  delete(id: string): Observable<void> {
-    return this.api.delete<void>(`/priorities/${id}`);
+  delete(id: string, password: string): Observable<void> {
+    return this.api.delete<void>(`/priorities/${id}`, { password });
   }
 }

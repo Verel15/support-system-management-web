@@ -27,7 +27,7 @@ export class StatusFlowService {
     return this.api.put<StatusFlowResponse>(`/status-flows/${id}`, payload);
   }
 
-  delete(id: string): Observable<void> {
-    return this.api.delete<void>(`/status-flows/${id}`);
+  delete(id: string, password: string): Observable<void> {
+    return this.api.delete<void>(`/status-flows/${id}`, { password });
   }
 }

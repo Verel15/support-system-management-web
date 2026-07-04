@@ -23,7 +23,7 @@ export class PositionService {
     return this.api.put<PositionResponse>(`/positions/${id}`, payload);
   }
 
-  delete(id: string): Observable<void> {
-    return this.api.delete<void>(`/positions/${id}`);
+  delete(id: string, password: string): Observable<void> {
+    return this.api.delete<void>(`/positions/${id}`, { password });
   }
 }

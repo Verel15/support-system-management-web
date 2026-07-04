@@ -27,7 +27,7 @@ export class TicketCategoryService {
     return this.api.put<TicketCategoryResponse>(`/ticket-categories/${id}`, payload);
   }
 
-  delete(id: string): Observable<void> {
-    return this.api.delete<void>(`/ticket-categories/${id}`);
+  delete(id: string, password: string): Observable<void> {
+    return this.api.delete<void>(`/ticket-categories/${id}`, { password });
   }
 }

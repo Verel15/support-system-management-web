@@ -1,13 +1,14 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
+  effect,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { debounceTime, Subject } from 'rxjs';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
@@ -28,6 +29,7 @@ import {
 import {
   type PriorityIconKey,
   type PriorityColorKey,
+  type PriorityDateRange,
   ICON_CLASSES,
   COLOR_HEX,
   SHAPE_TO_ICON_KEY,
@@ -89,30 +91,49 @@ export class PriorityListComponent {
     { field: 'createdAt', header: 'วันที่สร้าง', sortable: true },
   ];
 
-  protected readonly dateOptions = [
+  protected readonly dateOptions: { label: string; value: PriorityDateRange | null }[] = [
     { label: 'ทั้งหมด', value: null },
-    { label: 'วันนี้', value: 'today' },
-    { label: 'สัปดาห์นี้', value: 'week' },
-    { label: 'เดือนนี้', value: 'month' },
+    { label: 'วันนี้', value: 'TODAY' },
+    { label: 'สัปดาห์นี้', value: 'THIS_WEEK' },
+    { label: 'เดือนนี้', value: 'THIS_MONTH' },
   ];
 
-  protected readonly selectedDate = signal<string | null>(null);
+  protected readonly selectedDate = signal<PriorityDateRange | null>(null);
   protected readonly searchQuery = signal('');
   protected readonly currentPage = signal(1);
   protected readonly pageSize = signal(10);
   protected readonly loading = signal(false);
+  protected readonly totalRecords = signal(0);
+  protected readonly pagedPriorities = signal<Record<string, unknown>[]>([]);
 
-  private readonly allPriorities = signal<Priority[]>([]);
+  private readonly search$ = new Subject<string>();
 
   constructor() {
-    this.loadPriorities();
+    this.search$.pipe(debounceTime(300)).subscribe((query) => {
+      this.searchQuery.set(query);
+      this.currentPage.set(1);
+    });
+
+    effect(() => {
+      this.loadPriorities(
+        this.currentPage(),
+        this.pageSize(),
+        this.searchQuery(),
+        this.selectedDate(),
+      );
+    });
   }
 
-  private loadPriorities(): void {
+  private loadPriorities(
+    page: number,
+    size: number,
+    keyword: string,
+    dateRange: PriorityDateRange | null,
+  ): void {
     this.loading.set(true);
-    this.priorityService.getAll(0, 1000).subscribe({
+    this.priorityService.getAll(page - 1, size, keyword, dateRange).subscribe({
       next: (res) => {
-        this.allPriorities.set(
+        this.pagedPriorities.set(
           res.content.map((p) => ({
             id: p.id,
             name: p.name,
@@ -125,6 +146,7 @@ export class PriorityListComponent {
             }),
           })),
         );
+        this.totalRecords.set(res.totalElements);
         this.loading.set(false);
       },
       error: () => {
@@ -139,44 +161,6 @@ export class PriorityListComponent {
     });
   }
 
-  protected readonly filteredPriorities = computed(() => {
-    const query = this.searchQuery().toLowerCase();
-    const date = this.selectedDate();
-    const now = new Date();
-
-    return this.allPriorities().filter((p) => {
-      const matchesSearch = !query || p.name.toLowerCase().includes(query);
-      if (!matchesSearch) return false;
-      if (!date) return true;
-
-      const createdDate = new Date(p.createdAt);
-      if (date === 'today') {
-        const todayStr = now.toLocaleDateString('th-TH');
-        return createdDate.toLocaleDateString('th-TH') === todayStr;
-      }
-      if (date === 'week') {
-        const weekAgo = new Date(now);
-        weekAgo.setDate(now.getDate() - 7);
-        return createdDate >= weekAgo;
-      }
-      if (date === 'month') {
-        const monthAgo = new Date(now);
-        monthAgo.setMonth(now.getMonth() - 1);
-        return createdDate >= monthAgo;
-      }
-      return true;
-    });
-  });
-
-  protected readonly totalRecords = computed(() => this.filteredPriorities().length);
-
-  protected readonly pagedPriorities = computed<Record<string, unknown>[]>(() => {
-    const start = (this.currentPage() - 1) * this.pageSize();
-    return this.filteredPriorities()
-      .slice(start, start + this.pageSize())
-      .map((p) => ({ ...p }));
-  });
-
   protected iconClass(icon: string): string {
     return ICON_CLASSES[icon as PriorityIconKey] ?? 'pi pi-circle-fill';
   }
@@ -186,8 +170,7 @@ export class PriorityListComponent {
   }
 
   protected onSearch(value: string): void {
-    this.searchQuery.set(value);
-    this.currentPage.set(1);
+    this.search$.next(value);
   }
 
   protected onFilterChange(): void {
@@ -241,11 +224,11 @@ export class PriorityListComponent {
     this.showDeleteDialog.set(true);
   }
 
-  protected onDeleteConfirmed(_password: string): void {
+  protected onDeleteConfirmed(password: string): void {
     const id = this.deletingPriority()?.id;
     if (!id) return;
     this.deleting.set(true);
-    this.priorityService.delete(id).subscribe({
+    this.priorityService.delete(id, password).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',
@@ -256,7 +239,12 @@ export class PriorityListComponent {
         this.showDeleteDialog.set(false);
         this.deletingPriority.set(null);
         this.deleting.set(false);
-        this.loadPriorities();
+        this.loadPriorities(
+          this.currentPage(),
+          this.pageSize(),
+          this.searchQuery(),
+          this.selectedDate(),
+        );
       },
       error: () => {
         this.messageService.add({

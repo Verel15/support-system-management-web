@@ -23,7 +23,7 @@ export class UserTypeService {
     return this.api.put<UserTypeResponse>(`/user-types/${id}`, payload);
   }
 
-  delete(id: string): Observable<void> {
-    return this.api.delete<void>(`/user-types/${id}`);
+  delete(id: string, password: string): Observable<void> {
+    return this.api.delete<void>(`/user-types/${id}`, { password });
   }
 }

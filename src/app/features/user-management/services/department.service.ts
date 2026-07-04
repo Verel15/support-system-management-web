@@ -23,7 +23,7 @@ export class DepartmentService {
     return this.api.put<DepartmentResponse>(`/departments/${id}`, payload);
   }
 
-  delete(id: string): Observable<void> {
-    return this.api.delete<void>(`/departments/${id}`);
+  delete(id: string, password: string): Observable<void> {
+    return this.api.delete<void>(`/departments/${id}`, { password });
   }
 }

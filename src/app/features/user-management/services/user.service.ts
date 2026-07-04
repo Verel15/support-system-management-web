@@ -34,7 +34,7 @@ export class UserService {
     return this.api.put<UserResponse>(`/users/${id}`, payload);
   }
 
-  delete(id: string): Observable<void> {
-    return this.api.delete<void>(`/users/${id}`);
+  delete(id: string, password: string): Observable<void> {
+    return this.api.delete<void>(`/users/${id}`, { password });
   }
 }

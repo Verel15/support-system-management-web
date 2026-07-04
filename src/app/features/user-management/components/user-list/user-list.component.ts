@@ -193,10 +193,10 @@ export class UserListComponent {
     this.showDeleteDialog.set(true);
   }
 
-  protected onDeleteConfirmed(_password: string): void {
+  protected onDeleteConfirmed(password: string): void {
     const id = this.deletingId();
     if (!id) return;
-    this.userService.delete(id).subscribe({
+    this.userService.delete(id, password).subscribe({
       next: () => {
         this.showDeleteDialog.set(false);
         this.deletingId.set(null);

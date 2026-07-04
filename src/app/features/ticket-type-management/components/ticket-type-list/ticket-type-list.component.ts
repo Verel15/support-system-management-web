@@ -317,7 +317,7 @@ export class TicketTypeListComponent {
     this.showDeleteDialog.set(true);
   }
 
-  protected onDeleteConfirmed(_password: string): void {
+  protected onDeleteConfirmed(password: string): void {
     const id = this.activeRow()?.['id'] as string;
     if (!id) return;
     this.deleting.set(true);
@@ -325,10 +325,10 @@ export class TicketTypeListComponent {
     const tab = this.activeTab();
     const delete$ =
       tab === 'ticket-type'
-        ? this.ticketTypeService.delete(id)
+        ? this.ticketTypeService.delete(id, password)
         : tab === 'category'
-          ? this.ticketCategoryService.delete(id)
-          : this.ticketSubCategoryService.delete(id);
+          ? this.ticketCategoryService.delete(id, password)
+          : this.ticketSubCategoryService.delete(id, password);
 
     delete$.subscribe({
       next: () => {

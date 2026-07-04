@@ -43,8 +43,8 @@ export class ProjectService {
     return this.api.put<ProjectResponse>(`/projects/${id}`, payload);
   }
 
-  delete(id: string): Observable<void> {
-    return this.api.delete<void>(`/projects/${id}`);
+  delete(id: string, password: string): Observable<void> {
+    return this.api.delete<void>(`/projects/${id}`, { password });
   }
 
   getMembers(projectId: string): Observable<ProjectMemberResponse[]> {

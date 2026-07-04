@@ -32,7 +32,7 @@ export class TicketTypeService {
     return this.api.put<TicketTypeResponse>(`/ticket-types/${id}`, payload);
   }
 
-  delete(id: string): Observable<void> {
-    return this.api.delete<void>(`/ticket-types/${id}`);
+  delete(id: string, password: string): Observable<void> {
+    return this.api.delete<void>(`/ticket-types/${id}`, { password });
   }
 }

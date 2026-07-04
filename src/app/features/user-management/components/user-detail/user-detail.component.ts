@@ -92,9 +92,9 @@ export class UserDetailComponent {
     this.router.navigate(['/user-management/edit', this.userId]);
   }
 
-  protected onDeleteConfirmed(_password: string): void {
+  protected onDeleteConfirmed(password: string): void {
     this.deleting.set(true);
-    this.userService.delete(this.userId).subscribe({
+    this.userService.delete(this.userId, password).subscribe({
       next: () => {
         this.deleting.set(false);
         this.router.navigate(['/user-management/list']);

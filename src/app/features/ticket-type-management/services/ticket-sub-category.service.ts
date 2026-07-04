@@ -28,8 +28,8 @@ export class TicketSubCategoryService {
     return this.api.put<TicketSubCategoryResponse>(`/ticket-sub-categories/${id}`, payload);
   }
 
-  delete(id: string): Observable<void> {
-    return this.api.delete<void>(`/ticket-sub-categories/${id}`);
+  delete(id: string, password: string): Observable<void> {
+    return this.api.delete<void>(`/ticket-sub-categories/${id}`, { password });
   }
 
   getTickets(id: string, page = 0, size = 10): Observable<TicketSummaryPageResponse> {
