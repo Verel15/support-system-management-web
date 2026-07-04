@@ -27,6 +27,14 @@ export class ProjectService {
     return this.api.get<ProjectResponse>(`/projects/${id}`);
   }
 
+  getMy(page = 0, size = 100): Observable<PageResponse<ProjectResponse>> {
+    return this.api.get<PageResponse<ProjectResponse>>('/projects/my', { page, size });
+  }
+
+  getMyById(id: string): Observable<ProjectResponse> {
+    return this.api.get<ProjectResponse>(`/projects/my/${id}`);
+  }
+
   create(payload: ProjectRequest): Observable<ProjectResponse> {
     return this.api.post<ProjectResponse>('/projects', payload);
   }

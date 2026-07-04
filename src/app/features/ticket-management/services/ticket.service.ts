@@ -39,6 +39,18 @@ export class TicketService {
     return this.api.get<TicketDetailResponse>(`/tickets/${id}`);
   }
 
+  getMy(
+    filter: TicketFilterRequest = {},
+    page = 0,
+    size = 10,
+  ): Observable<PageResponse<TicketListResponse>> {
+    return this.api.get<PageResponse<TicketListResponse>>('/tickets/my', {
+      ...filter,
+      page,
+      size,
+    });
+  }
+
   create(payload: CreateTicketRequest): Observable<TicketDetailResponse> {
     return this.api.post<TicketDetailResponse>('/tickets', payload);
   }

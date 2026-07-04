@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
@@ -8,6 +8,7 @@ import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { Menu } from 'primeng/menu';
 import { Tabs, TabList, Tab } from 'primeng/tabs';
+import { MessageService } from 'primeng/api';
 import { StatusChipComponent } from '../../../../shared/components/status-chip';
 import {
   DataTableCellDirective,
@@ -18,19 +19,14 @@ import { Project, ProjectCardComponent } from '../../../../shared/components/pro
 import { SortEvent } from 'primeng/api';
 import type { NotificationItem } from '../../../notifications/interfaces/notification.interface';
 import { NotificationItemComponent } from '../../../notifications/components/notification-item/notification-item.component';
-
-type TicketStatus = 'Open' | 'In Progress' | 'In Review' | 'Return' | 'Done' | 'Close';
-type TicketPriority = 'high' | 'medium' | 'low';
-
-interface Ticket {
-  title: string;
-  project: string;
-  assignee: string;
-  timeRemaining: string;
-  team: string;
-  status: TicketStatus;
-  priority: TicketPriority;
-}
+import { TicketService } from '../../../ticket-management/services/ticket.service';
+import { ProjectService } from '../../../project-management/services/project.service';
+import {
+  TicketListResponse,
+  PriorityResponse,
+  PriorityIconColor,
+} from '../../../ticket-management/interfaces/ticket.interface';
+import { ProjectResponse } from '../../../project-management/interfaces/project.interface';
 
 interface FeedbackItem {
   id: string;
@@ -66,7 +62,11 @@ interface FeedbackItem {
   templateUrl: './my-tickets.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MyTicketsComponent {
+export class MyTicketsComponent implements OnInit {
+  private readonly ticketService = inject(TicketService);
+  private readonly projectService = inject(ProjectService);
+  private readonly messageService = inject(MessageService);
+
   protected readonly activeTab = signal(0);
   protected readonly priorityFilter = signal<string | null>(null);
   protected readonly timeFilter = signal<string | null>(null);
@@ -80,46 +80,35 @@ export class MyTicketsComponent {
   protected readonly dateFilter = signal<string | null>(null);
   protected readonly feedbackSearchQuery = signal('');
 
-  protected readonly workColumns: TableColumn[] = [
+  protected readonly tickets = signal<TicketListResponse[]>([]);
+  protected readonly totalRecords = signal(0);
+  protected readonly priorities = signal<PriorityResponse[]>([]);
+  protected readonly recentProjects = signal<Project[]>([]);
+
+  protected readonly columns: TableColumn[] = [
     { field: 'title', header: 'หัวข้องาน', sortable: true },
-    { field: 'project', header: 'โครงการ', sortable: true },
-    { field: 'assignee', header: 'ผู้รับผิดชอบ', sortable: true },
-    { field: 'timeRemaining', header: 'ระยะเวลาที่เหลือ', sortable: true },
-    { field: 'team', header: 'ทีมรับเรื่อง', sortable: true },
-    { field: 'status', header: '', sortable: false },
+    { field: 'projectName', header: 'โครงการ', sortable: true },
+    { field: 'assigneesDisplay', header: 'ผู้รับผิดชอบ' },
+    { field: 'dueDateDisplay', header: 'ครบกำหนด' },
+    { field: 'currentStatusName', header: '' },
   ];
 
-  protected readonly myTicketColumns: TableColumn[] = [
-    { field: 'title', header: 'หัวข้องาน', sortable: true },
-    { field: 'project', header: 'โครงการ', sortable: true },
-    { field: 'assignee', header: 'ผู้รับผิดชอบ', sortable: true },
-    { field: 'timeRemaining', header: 'ระยะเวลาที่เหลือ', sortable: true },
-    { field: 'team', header: 'ทีมรับเรื่อง', sortable: true },
-    { field: 'status', header: '', sortable: false },
-  ];
-
-  protected readonly priorityOptions = [
+  protected readonly priorityOptions = computed(() => [
     { label: 'ทุกระดับความสำคัญ', value: null },
-    { label: 'สูง', value: 'high' },
-    { label: 'กลาง', value: 'medium' },
-    { label: 'ต่ำ', value: 'low' },
-  ];
+    ...this.priorities().map((p) => ({ label: p.name, value: p.id })),
+  ]);
 
   protected readonly timeOptions = [
     { label: 'ระยะเวลาที่เหลือ', value: null },
-    { label: 'น้อยกว่า 3 วัน', value: 'lt3' },
-    { label: '3–7 วัน', value: '3to7' },
-    { label: 'มากกว่า 7 วัน', value: 'gt7' },
+    { label: 'เกินกำหนด', value: 'overdue' },
   ];
 
   protected readonly statusOptions = [
     { label: 'ทุกสถานะ', value: null },
-    { label: 'Open', value: 'Open' },
-    { label: 'In Progress', value: 'In Progress' },
-    { label: 'In Review', value: 'In Review' },
-    { label: 'Return', value: 'Return' },
-    { label: 'Done', value: 'Done' },
-    { label: 'Close', value: 'Close' },
+    { label: 'เริ่มต้น', value: 'START' },
+    { label: 'กำลังดำเนินการ', value: 'PROCESS' },
+    { label: 'สำเร็จ', value: 'SUCCESS' },
+    { label: 'ล้มเหลว', value: 'FAILED' },
   ];
 
   protected readonly sortByOptions = [
@@ -132,271 +121,6 @@ export class MyTicketsComponent {
     { label: 'วันนี้', value: 'today' },
     { label: 'สัปดาห์นี้', value: 'week' },
     { label: 'เดือนนี้', value: 'month' },
-  ];
-
-  protected readonly recentProjects: Project[] = [
-    {
-      id: '',
-      name: 'IT Supporting and Helpdesk',
-      status: 'Open',
-      date: '10/07/66',
-      owner: 'บริษัท ร่ำรวย จำกัด',
-      totalTickets: 12,
-      completedTickets: 10,
-      members: [
-        { initials: 'อ', color: '#f59e0b' },
-        { initials: 'ส', color: '#3b82f6' },
-        { initials: 'ม', color: '#10b981' },
-        { initials: 'ป', color: '#8b5cf6' },
-      ],
-      highCount: 8,
-      normalCount: 2,
-      accentColor: '#3b82f6',
-      attachmentCount: 2,
-    },
-    {
-      id: '',
-      name: 'Book Bank System',
-      status: 'Open',
-      date: '10/07/66',
-      owner: 'บริษัท ร่ำรวย จำกัด',
-      totalTickets: 12,
-      completedTickets: 10,
-      members: [
-        { initials: 'ก', color: '#ef4444' },
-        { initials: 'ข', color: '#f59e0b' },
-        { initials: 'ค', color: '#3b82f6' },
-        { initials: 'ง', color: '#10b981' },
-      ],
-      highCount: 6,
-      normalCount: 2,
-      accentColor: '#ef4444',
-      attachmentCount: 2,
-    },
-    {
-      id: '',
-      name: 'Life Insurance System',
-      status: 'Open',
-      date: '10/07/66',
-      owner: 'บริษัท ร่ำรวย จำกัด',
-      totalTickets: 12,
-      completedTickets: 10,
-      members: [
-        { initials: 'จ', color: '#8b5cf6' },
-        { initials: 'ฉ', color: '#ef4444' },
-        { initials: 'ช', color: '#f59e0b' },
-        { initials: 'ซ', color: '#3b82f6' },
-      ],
-      highCount: 8,
-      normalCount: 3,
-      accentColor: '#22c55e',
-      attachmentCount: 2,
-    },
-    {
-      id: '',
-      name: 'Rent a car System',
-      status: 'Open',
-      date: '10/07/66',
-      owner: 'บริษัท ร่ำรวย จำกัด',
-      totalTickets: 12,
-      completedTickets: 10,
-      members: [
-        { initials: 'ด', color: '#10b981' },
-        { initials: 'ต', color: '#8b5cf6' },
-        { initials: 'ถ', color: '#ef4444' },
-        { initials: 'ท', color: '#f59e0b' },
-      ],
-      highCount: 8,
-      normalCount: 3,
-      accentColor: '#f59e0b',
-      attachmentCount: 2,
-    },
-  ];
-
-  private readonly workTickets: Ticket[] = [
-    {
-      title: 'แก้ไขบัคโครงการในแดช...',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '7 วัน',
-      team: 'EVT-DEV',
-      status: 'In Progress',
-      priority: 'high',
-    },
-    {
-      title: 'การอัพเกรดระบบ',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '7 วัน',
-      team: 'EVT-DEV',
-      status: 'In Progress',
-      priority: 'high',
-    },
-    {
-      title: 'แอปพลิเคชันมัดข้อง',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '7 วัน',
-      team: 'EVT-DEV',
-      status: 'In Progress',
-      priority: 'high',
-    },
-    {
-      title: 'การเชื่อมต่อเครือข่าย',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '6 วัน',
-      team: 'EVT-DEV',
-      status: 'In Progress',
-      priority: 'high',
-    },
-    {
-      title: 'การตรวจสอบเครือข่าย',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '6 วัน',
-      team: 'EVT-DEV',
-      status: 'In Progress',
-      priority: 'high',
-    },
-    {
-      title: 'อัพเกรดอุปกรณ์จัดเก็บ...',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '6 วัน',
-      team: 'EVT-DEV',
-      status: 'In Progress',
-      priority: 'medium',
-    },
-    {
-      title: 'Wireless Network',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '5 วัน',
-      team: 'EVT-DEV',
-      status: 'In Progress',
-      priority: 'high',
-    },
-    {
-      title: 'การกำหนดค่าเซิร์ฟเวอร์',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '5 วัน',
-      team: 'EVT-DEV',
-      status: 'In Progress',
-      priority: 'medium',
-    },
-    {
-      title: 'การตั้งค่าบัญชี',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '4 วัน',
-      team: 'EVT-DEV',
-      status: 'In Progress',
-      priority: 'high',
-    },
-    {
-      title: 'Installation Error',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '3 วัน',
-      team: 'EVT-DEV',
-      status: 'In Progress',
-      priority: 'high',
-    },
-  ];
-
-  private readonly myTickets: Ticket[] = [
-    {
-      title: 'Data Loss',
-      project: 'Helpdesk',
-      assignee: '-',
-      timeRemaining: '-',
-      team: 'EVT-DEV',
-      status: 'Open',
-      priority: 'medium',
-    },
-    {
-      title: 'Email Not Sending',
-      project: 'Helpdesk',
-      assignee: '-',
-      timeRemaining: '-',
-      team: 'EVT-DEV',
-      status: 'Open',
-      priority: 'medium',
-    },
-    {
-      title: 'การตรวจสอบเครือข่าย',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '7 วัน',
-      team: 'EVT-DEV',
-      status: 'In Progress',
-      priority: 'high',
-    },
-    {
-      title: 'การละเมิดข้อมูล',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '0 วัน',
-      team: 'EVT-DEV',
-      status: 'Return',
-      priority: 'high',
-    },
-    {
-      title: 'แก้ไขบัคโครงการในแดช...',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '7 วัน',
-      team: 'EVT-DEV',
-      status: 'In Progress',
-      priority: 'high',
-    },
-    {
-      title: 'การแก้ไขปัญหาเครือข่าย',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '2 วัน',
-      team: 'EVT-DEV',
-      status: 'In Review',
-      priority: 'high',
-    },
-    {
-      title: 'การอัพเกรดระบบ',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '0 วัน',
-      team: 'EVT-DEV',
-      status: 'Done',
-      priority: 'high',
-    },
-    {
-      title: 'การอัพเกรดระบบ',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '0 วัน',
-      team: 'EVT-DEV',
-      status: 'Done',
-      priority: 'high',
-    },
-    {
-      title: 'อัพเกรดอุปกรณ์จัดเก็บ...',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '0 วัน',
-      team: 'EVT-DEV',
-      status: 'Close',
-      priority: 'medium',
-    },
-    {
-      title: 'Installation Error',
-      project: 'Helpdesk',
-      assignee: 'ใจงาม สุดใจจริง',
-      timeRemaining: '0 วัน',
-      team: 'EVT-DEV',
-      status: 'Close',
-      priority: 'high',
-    },
   ];
 
   protected readonly feedbackItems: FeedbackItem[] = [
@@ -502,38 +226,30 @@ export class MyTicketsComponent {
     },
   ];
 
-  protected readonly activeColumns = computed(() =>
-    this.activeTab() === 0 ? this.workColumns : this.myTicketColumns,
-  );
+  private readonly memberColors = [
+    '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6',
+    '#ef4444', '#ec4899', '#f97316', '#06b6d4',
+  ];
 
-  private readonly activeTickets = computed(() =>
-    this.activeTab() === 0 ? this.workTickets : this.myTickets,
-  );
-
-  protected readonly filteredTickets = computed(() => {
-    const query = this.searchQuery().toLowerCase();
-    const priority = this.priorityFilter();
-    const status = this.statusFilter();
-    return this.activeTickets().filter((t) => {
-      const matchSearch =
-        !query ||
-        t.title.toLowerCase().includes(query) ||
-        t.project.toLowerCase().includes(query) ||
-        t.assignee.toLowerCase().includes(query);
-      const matchPriority = !priority || t.priority === priority;
-      const matchStatus = !status || t.status === status;
-      return matchSearch && matchPriority && matchStatus;
-    });
+  protected readonly filteredTicketsRaw = computed(() => {
+    if (this.activeTab() !== 0) return this.tickets();
+    return this.tickets().filter(
+      (t) => t.currentStatusGroup === 'PROCESS' || t.currentStatusGroup === 'START',
+    );
   });
 
-  protected readonly totalRecords = computed(() => this.filteredTickets().length);
+  protected readonly tableData = computed<Record<string, unknown>[]>(() =>
+    this.filteredTicketsRaw().map((t) => ({
+      ...t,
+      assigneesDisplay:
+        t.assignees.length > 0 ? t.assignees.map((a) => a.fullName).join(', ') : '-',
+      dueDateDisplay: t.dueDate ? this.formatDueDate(t.dueDate) : '-',
+    })),
+  );
 
-  protected readonly pagedTickets = computed<Record<string, unknown>[]>(() => {
-    const start = (this.currentPage() - 1) * this.pageSize();
-    return this.filteredTickets()
-      .slice(start, start + this.pageSize())
-      .map((t) => ({ ...t }));
-  });
+  protected readonly displayTotalRecords = computed(() =>
+    this.activeTab() === 0 ? this.filteredTicketsRaw().length : this.totalRecords(),
+  );
 
   protected readonly filteredFeedback = computed(() => {
     const query = this.feedbackSearchQuery().toLowerCase();
@@ -582,13 +298,137 @@ export class MyTicketsComponent {
     { label: 'สำคัญมาก', icon: 'pi pi-circle-fill', styleClass: 'text-error-500' },
   ];
 
-  protected getPriorityDotClass(priority: string): string {
-    const map: Record<string, string> = {
-      high: 'bg-error-500',
-      medium: 'bg-warning-500',
-      low: 'bg-primary-400',
+  ngOnInit(): void {
+    this.loadPriorities();
+    this.loadTickets();
+    this.loadRecentProjects();
+  }
+
+  private loadPriorities(): void {
+    this.ticketService.getPriorities().subscribe({
+      next: (res) => this.priorities.set(res.content),
+      error: () => {},
+    });
+  }
+
+  private loadTickets(): void {
+    this.loading.set(true);
+    const filter: Record<string, unknown> = {};
+    if (this.searchQuery().trim()) filter['keyword'] = this.searchQuery().trim();
+    if (this.priorityFilter()) filter['priorityId'] = this.priorityFilter();
+    if (this.statusFilter()) filter['statusId'] = this.statusFilter();
+    if (this.timeFilter() === 'overdue') filter['overdue'] = true;
+
+    this.ticketService.getMy(filter, this.currentPage() - 1, this.pageSize()).subscribe({
+      next: (res) => {
+        this.tickets.set(res.content);
+        this.totalRecords.set(res.totalElements);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถโหลดรายการ Ticket ได้',
+          life: 3000,
+        });
+      },
+    });
+  }
+
+  private loadRecentProjects(): void {
+    this.projectService.getMy(0, 4).subscribe({
+      next: (res) => this.recentProjects.set(res.content.map((r) => this.mapToProject(r))),
+      error: () => this.recentProjects.set([]),
+    });
+  }
+
+  private mapToProject(r: ProjectResponse): Project {
+    const now = new Date();
+    const end = new Date(r.endDate);
+    const status: 'Open' | 'Closed' = now > end ? 'Closed' : 'Open';
+    return {
+      id: r.id,
+      name: r.name,
+      status,
+      date: this.formatDate(r.endDate),
+      owner: r.companyName ?? '',
+      totalTickets: 0,
+      completedTickets: 0,
+      members: (r.members ?? []).map((m, i) => ({
+        initials: m.fullName.charAt(0),
+        color: this.memberColors[i % this.memberColors.length],
+        avatarUrl: m.profileImageUrl || undefined,
+        fullName: m.fullName,
+      })),
+      highCount: 0,
+      normalCount: 0,
+      accentColor: r.color ?? '#3b82f6',
+      attachmentCount: r.documentCount ?? 0,
     };
-    return map[priority] ?? 'bg-slate-400';
+  }
+
+  private formatDate(isoDate: string): string {
+    const d = new Date(isoDate);
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const year = ((d.getFullYear() + 543) % 100).toString().padStart(2, '0');
+    return `${day}/${month}/${year}`;
+  }
+
+  private formatDueDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = date.getTime() - now.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    if (days < 0) return `เกินกำหนด ${Math.abs(days)} วัน`;
+    if (days === 0) return '0 วัน';
+    return `${days} วัน`;
+  }
+
+  protected getPriorityIconClass(row: Record<string, unknown>): string {
+    const shape = row['priorityIconShape'] as string;
+    const color = row['priorityIconColor'] as PriorityIconColor;
+    if (!shape || !color) return '';
+    return `${this.priorityShapeIcon(shape)} ${this.priorityColorClass(color)}`;
+  }
+
+  private priorityShapeIcon(shape: string): string {
+    switch (shape) {
+      case 'ARROWUP':
+      case 'CHEVRONUP':
+      case 'TRIUP':
+        return 'pi pi-caret-up';
+      case 'ARROWDOWN':
+      case 'CHEVRONDOWN':
+      case 'TRIDOWN':
+        return 'pi pi-caret-down';
+      case 'CIRCLE':
+        return 'pi pi-circle-fill';
+      default:
+        return 'pi pi-minus';
+    }
+  }
+
+  private priorityColorClass(color: PriorityIconColor): string {
+    switch (color) {
+      case 'RED':
+        return 'text-error-600';
+      case 'ORANGE':
+        return 'text-orange-500';
+      case 'YELLOW':
+        return 'text-warning-500';
+      case 'LIME':
+      case 'GREEN':
+        return 'text-primary-500';
+      case 'BLUE':
+        return 'text-blue-500';
+      case 'PINK':
+        return 'text-pink-500';
+      default:
+        return 'text-slate-400';
+    }
   }
 
   protected onTabChange(tab: number): void {
@@ -598,11 +438,13 @@ export class MyTicketsComponent {
     this.priorityFilter.set(null);
     this.timeFilter.set(null);
     this.statusFilter.set(null);
+    this.loadTickets();
   }
 
   protected onSearch(value: string): void {
     this.searchQuery.set(value);
     this.currentPage.set(1);
+    this.loadTickets();
   }
 
   protected onFeedbackSearch(value: string): void {
@@ -611,19 +453,23 @@ export class MyTicketsComponent {
 
   protected onFilterChange(): void {
     this.currentPage.set(1);
+    this.loadTickets();
   }
 
   protected onSort(_event: SortEvent): void {
     this.currentPage.set(1);
+    this.loadTickets();
   }
 
   protected onPageChange(page: number): void {
     this.currentPage.set(page);
+    this.loadTickets();
   }
 
   protected onPageSizeChange(size: number): void {
     this.pageSize.set(size);
     this.currentPage.set(1);
+    this.loadTickets();
   }
 
   protected onAddTicket(): void {

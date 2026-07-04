@@ -17,9 +17,15 @@
 
 <!-- Sections -->
 <div class="p-6 flex flex-col">
-  <app-project-info [project]="project()" [readOnly]="true" />
+  @if (loading()) {
+    <div class="flex items-center justify-center py-12">
+      <i class="pi pi-spin pi-spinner text-3xl text-slate-400" aria-hidden="true"></i>
+    </div>
+  } @else {
+    <app-project-info [project]="project()" [readOnly]="true" />
 
-  <app-project-members [readOnly]="true" />
+    <app-project-members [readOnly]="true" />
 
-  <app-project-tickets [readOnly]="true" />
+    <app-project-tickets [readOnly]="true" />
+  }
 </div>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
@@ -6,6 +6,8 @@ import { InputText } from 'primeng/inputtext';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { ProjectCardComponent, Project } from '../../../../shared/components/project-card';
+import { ProjectService } from '../../../project-management/services/project.service';
+import { ProjectResponse } from '../../../project-management/interfaces/project.interface';
 
 @Component({
   selector: 'app-my-project-list',
@@ -13,8 +15,9 @@ import { ProjectCardComponent, Project } from '../../../../shared/components/pro
   templateUrl: './my-project-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MyProjectListComponent {
+export class MyProjectListComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly projectService = inject(ProjectService);
 
   protected readonly selectedStatus = signal<string | null>(null);
   protected readonly selectedDate = signal<string | null>(null);
@@ -36,110 +39,69 @@ export class MyProjectListComponent {
     { label: 'เดือนนี้', value: 'month' },
   ];
 
-  private readonly allProjects: Project[] = [
-    {
-      id: '',
-      name: 'IT Supporting and Helpdesk',
-      status: 'Open',
-      date: '31/07/66',
-      owner: 'ผู้รับ ข้าว จำกัด',
-      totalTickets: 12,
-      completedTickets: 10,
-      members: [
-        { initials: 'อ', color: '#f59e0b' },
-        { initials: 'ส', color: '#3b82f6' },
-        { initials: 'ม', color: '#10b981' },
-        { initials: 'ป', color: '#8b5cf6' },
-      ],
-      highCount: 8,
-      normalCount: 2,
-      accentColor: '#3b82f6',
-      attachmentCount: 2,
-    },
-    {
-      id: '',
-      name: 'Book Bank System',
-      status: 'Open',
-      date: '31/07/66',
-      owner: 'ผู้รับ ข้าว จำกัด',
-      totalTickets: 12,
-      completedTickets: 10,
-      members: [
-        { initials: 'ก', color: '#ef4444' },
-        { initials: 'ข', color: '#f59e0b' },
-        { initials: 'ค', color: '#3b82f6' },
-        { initials: 'ง', color: '#10b981' },
-      ],
-      highCount: 6,
-      normalCount: 2,
-      accentColor: '#ef4444',
-      attachmentCount: 2,
-    },
-    {
-      id: '',
-      name: 'Life Insurance System',
-      status: 'Open',
-      date: '31/07/66',
-      owner: 'ผู้รับ ข้าว จำกัด',
-      totalTickets: 12,
-      completedTickets: 10,
-      members: [
-        { initials: 'จ', color: '#8b5cf6' },
-        { initials: 'ฉ', color: '#ef4444' },
-        { initials: 'ช', color: '#f59e0b' },
-        { initials: 'ซ', color: '#3b82f6' },
-      ],
-      highCount: 8,
-      normalCount: 3,
-      accentColor: '#22c55e',
-      attachmentCount: 3,
-    },
-    {
-      id: '',
-      name: 'HR Management Platform',
-      status: 'Open',
-      date: '02/08/66',
-      owner: 'บริษัท เทคโนโลยี ทั่วไทย จำกัด',
-      totalTickets: 25,
-      completedTickets: 15,
-      members: [
-        { initials: 'น', color: '#ec4899' },
-        { initials: 'พ', color: '#f59e0b' },
-        { initials: 'อ', color: '#3b82f6' },
-        { initials: 'ส', color: '#10b981' },
-        { initials: 'ม', color: '#8b5cf6' },
-        { initials: 'ก', color: '#ef4444' },
-      ],
-      highCount: 14,
-      normalCount: 11,
-      accentColor: '#ec4899',
-      attachmentCount: 5,
-    },
-    {
-      id: '',
-      name: 'Smart Billing System',
-      status: 'Open',
-      date: '12/09/66',
-      owner: 'การไฟฟ้านครหลวง',
-      totalTickets: 30,
-      completedTickets: 20,
-      members: [
-        { initials: 'ณ', color: '#f97316' },
-        { initials: 'ด', color: '#3b82f6' },
-        { initials: 'ภ', color: '#10b981' },
-      ],
-      highCount: 12,
-      normalCount: 18,
-      accentColor: '#f97316',
-      attachmentCount: 6,
-    },
+  private readonly allProjects = signal<Project[]>([]);
+
+  private readonly memberColors = [
+    '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6',
+    '#ef4444', '#ec4899', '#f97316', '#06b6d4',
   ];
+
+  ngOnInit(): void {
+    this.loadProjects();
+  }
+
+  private loadProjects(): void {
+    this.loading.set(true);
+    this.projectService.getMy(0, 200).subscribe({
+      next: (page) => {
+        this.allProjects.set(page.content.map((r) => this.mapToProject(r)));
+        this.loading.set(false);
+      },
+      error: () => {
+        this.allProjects.set([]);
+        this.loading.set(false);
+      },
+    });
+  }
+
+  private mapToProject(r: ProjectResponse): Project {
+    const now = new Date();
+    const end = new Date(r.endDate);
+    const status: 'Open' | 'Closed' = now > end ? 'Closed' : 'Open';
+    return {
+      id: r.id,
+      name: r.name,
+      status,
+      date: this.formatDate(r.endDate),
+      owner: r.companyName ?? '',
+      totalTickets: 0,
+      completedTickets: 0,
+      members: (r.members ?? []).map((m, i) => ({
+        initials: m.fullName.charAt(0),
+        color: this.memberColors[i % this.memberColors.length],
+        avatarUrl: m.profileImageUrl || undefined,
+        fullName: m.fullName,
+      })),
+      highCount: 0,
+      normalCount: 0,
+      accentColor: r.color ?? '#3b82f6',
+      attachmentCount: r.documentCount ?? 0,
+    };
+  }
+
+  private formatDate(isoDate: string): string {
+    const d = new Date(isoDate);
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const year = ((d.getFullYear() + 543) % 100).toString().padStart(2, '0');
+    return `${day}/${month}/${year}`;
+  }
 
   protected readonly filteredProjects = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
     const status = this.selectedStatus();
 
-    return this.allProjects.filter((p) => {
+    return this.allProjects().filter((p) => {
       const matchesSearch =
         !query || p.name.toLowerCase().includes(query) || p.owner.toLowerCase().includes(query);
       const matchesStatus = !status || p.status === status;
@@ -165,7 +127,7 @@ export class MyProjectListComponent {
 
   protected onProjectClick(project: Project): void {
     this.router.navigate(['/my-project/detail'], {
-      queryParams: { name: project.name },
+      queryParams: { id: project.id },
     });
   }
 }
