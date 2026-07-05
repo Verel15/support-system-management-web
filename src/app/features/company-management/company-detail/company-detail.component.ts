@@ -119,7 +119,7 @@ export class CompanyDetailComponent {
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
-      completedTickets: 10,
+      successTicketCount: 10,
       members: [
         { initials: 'อ', color: '#f59e0b', avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150' },
         { initials: 'ส', color: '#3b82f6', avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150' },
@@ -141,7 +141,7 @@ export class CompanyDetailComponent {
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
-      completedTickets: 10,
+      successTicketCount: 10,
       members: [
         { initials: 'ก', color: '#ef4444' },
         { initials: 'ข', color: '#f59e0b' },
@@ -162,7 +162,7 @@ export class CompanyDetailComponent {
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
-      completedTickets: 10,
+      successTicketCount: 10,
       members: [
         { initials: 'จ', color: '#8b5cf6' },
         { initials: 'ฉ', color: '#ef4444' },
@@ -183,7 +183,7 @@ export class CompanyDetailComponent {
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
-      completedTickets: 10,
+      successTicketCount: 10,
       members: [
         { initials: 'ด', color: '#10b981' },
         { initials: 'ต', color: '#8b5cf6' },
@@ -204,7 +204,7 @@ export class CompanyDetailComponent {
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
-      completedTickets: 10,
+      successTicketCount: 10,
       members: [
         { initials: 'ป', color: '#8b5cf6' },
         { initials: 'ผ', color: '#ef4444' },
@@ -225,7 +225,7 @@ export class CompanyDetailComponent {
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
-      completedTickets: 10,
+      successTicketCount: 10,
       members: [
         { initials: 'ม', color: '#ef4444' },
         { initials: 'ย', color: '#f59e0b' },
@@ -246,7 +246,7 @@ export class CompanyDetailComponent {
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
-      completedTickets: 10,
+      successTicketCount: 10,
       members: [
         { initials: 'ษ', color: '#22c55e' },
         { initials: 'ส', color: '#ef4444' },
@@ -267,7 +267,7 @@ export class CompanyDetailComponent {
       date: '10/07/66',
       owner: 'บริษัท ร่ำรวย จำกัด',
       totalTickets: 12,
-      completedTickets: 10,
+      successTicketCount: 10,
       members: [
         { initials: 'ข', color: '#f59e0b' },
         { initials: 'ค', color: '#3b82f6' },

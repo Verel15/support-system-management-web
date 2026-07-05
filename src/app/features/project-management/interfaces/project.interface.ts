@@ -31,6 +31,8 @@ export interface ProjectResponse {
   createdAt: string;
   updatedAt: string;
   status: ProjectStatus;
+  totalTickets: number;
+  successTicketCount: number;
 }
 
 export interface ProjectMemberRequest {

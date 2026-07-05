@@ -4,30 +4,48 @@
     ผู้ใช้ในระบบ
   </h2>
 
-  <!-- Controls: date picker + search -->
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <p-datepicker
-      [formControl]="dateCtrl"
-      dateFormat="dd/mm/yy"
-      [showIcon]="true"
-      icon="pi pi-calendar"
-      styleClass="w-44"
-      inputStyleClass="text-sm"
-      aria-label="เลือกวันที่"
-    />
-
-    <p-iconfield>
-      <p-inputicon class="pi pi-search" />
-      <input
-        pInputText
-        type="search"
-        placeholder="ค้นหา"
-        class="text-sm"
-        [value]="searchQuery()"
-        (input)="searchQuery.set($any($event.target).value)"
-        aria-label="ค้นหาผู้ใช้"
+  <!-- Filters -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+    <!-- Left: dropdown filters -->
+    <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 shrink-0">
+      <p-select
+        [options]="accountTypeOptions"
+        [ngModel]="selectedAccountType()"
+        (ngModelChange)="selectedAccountType.set($event); onFilterChange()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="รูปแบบผู้ใช้"
+        class="w-full sm:w-auto sm:min-w-36"
+        aria-label="กรองตามประเภทผู้ใช้"
       />
-    </p-iconfield>
+
+      <p-select
+        [options]="dateOptions"
+        [ngModel]="selectedDate()"
+        (ngModelChange)="selectedDate.set($event); onFilterChange()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="วันที่สร้าง"
+        class="w-full sm:w-auto sm:min-w-44"
+        aria-label="กรองตามวันที่สร้าง"
+      />
+    </div>
+
+    <!-- Right: search -->
+    <div class="flex items-center gap-3 w-full sm:w-80 sm:ml-auto">
+      <p-iconfield class="w-full">
+        <p-inputicon class="pi pi-search" />
+        <input
+          pInputText
+          type="search"
+          placeholder="ค้นหา"
+          class="w-full text-sm"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)"
+          aria-label="ค้นหาผู้ใช้"
+        />
+      </p-iconfield>
+    </div>
   </div>
 
   <!-- Table -->
@@ -35,10 +53,15 @@
     [columns]="columns"
     [data]="rows()"
     [totalRecords]="totalRecords()"
+    [currentPage]="currentPage()"
+    [pageSize]="pageSize()"
+    [loading]="loading()"
     [showActions]="false"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
   >
     <ng-template dataTableCell="ticketCount" let-value="value">
-      {{ value }} Tickets
+      {{ value }}
     </ng-template>
   </app-data-table>
 </article>

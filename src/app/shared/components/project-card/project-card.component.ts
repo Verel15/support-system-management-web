@@ -9,12 +9,12 @@ export interface Project {
   date: string;
   owner: string;
   totalTickets: number;
-  completedTickets: number;
   members: { initials: string; color: string; avatarUrl?: string; fullName?: string }[];
   highCount: number;
   normalCount: number;
   accentColor?: string;
   attachmentCount?: number;
+  successTicketCount: number;
 }
 
 @Component({

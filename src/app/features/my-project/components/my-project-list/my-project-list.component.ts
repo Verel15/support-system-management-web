@@ -95,8 +95,8 @@ export class MyProjectListComponent {
       status: r.status,
       date: this.formatDate(r.endDate),
       owner: r.companyName ?? '',
-      totalTickets: 0,
-      completedTickets: 0,
+      totalTickets: r.totalTickets,
+      successTicketCount: r.successTicketCount,
       members: (r.members ?? []).map((m, i) => ({
         initials: m.fullName.charAt(0),
         color: this.memberColors[i % this.memberColors.length],
