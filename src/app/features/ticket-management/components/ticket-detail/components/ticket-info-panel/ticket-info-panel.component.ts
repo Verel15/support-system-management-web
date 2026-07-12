@@ -9,7 +9,6 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Avatar } from 'primeng/avatar';
 import { AvatarGroup } from 'primeng/avatargroup';
@@ -35,7 +34,6 @@ import {
 @Component({
   selector: 'app-ticket-info-panel',
   imports: [
-    DatePipe,
     FormsModule,
     Avatar,
     AvatarGroup,
