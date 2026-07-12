@@ -13,14 +13,6 @@ export interface ProjectDetail {
   endDate: string;
   totalDays: number;
   totalUsers: number;
-  tickets: {
-    open: number;
-    inProcess: number;
-    done: number;
-    close: number;
-    return: number;
-    reject: number;
-  };
 }
 
 export interface ProjectMember {
@@ -29,15 +21,4 @@ export interface ProjectMember {
   userType: string;
   position: string;
   email: string;
-}
-
-export interface ProjectTicket {
-  id: string;
-  title: string;
-  project: string;
-  assignee: string;
-  timeRemaining: string;
-  team: string;
-  status: string;
-  priority: 'high' | 'medium' | 'low' | 'none';
 }

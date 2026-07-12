@@ -12,7 +12,7 @@ import { forkJoin } from 'rxjs';
 import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { MessageService } from 'primeng/api';
-import { FeedItem, CommentItem, AssigneeUser, FeedUser } from './ticket-detail.types';
+import { FeedItem, CommentItem, AssigneeUser, FeedUser } from './interfaces/ticket-detail.types';
 import { TicketCommentFeedComponent } from './components/ticket-comment-feed/ticket-comment-feed.component';
 import { TicketInfoPanelComponent } from './components/ticket-info-panel/ticket-info-panel.component';
 import { TicketService } from '../../services/ticket.service';
@@ -22,6 +22,7 @@ import {
   StatusItemResponse,
 } from '../../interfaces/ticket.interface';
 import { SelectedTicketType } from '../ticket-type-dialog/ticket-type-dialog.component';
+import { Location } from '@angular/common';
 
 const AVATAR_COLORS = [
   '#3b82f6',
@@ -71,7 +72,7 @@ export class TicketDetailComponent implements OnInit {
   private readonly ticketService = inject(TicketService);
 
   private ticketId = '';
-
+  private readonly location = inject(Location);
   protected readonly loading = signal(true);
   protected readonly ticket = signal<TicketDetailResponse | null>(null);
   protected readonly isEditingTitle = signal(false);
@@ -145,6 +146,20 @@ export class TicketDetailComponent implements OnInit {
         selected: true,
       })),
     );
+
+    const closedGroups = ['SUCCESS', 'FAILED'];
+    const isOverdue =
+      !!detail.dueDate &&
+      !closedGroups.includes(detail.currentStatusGroup) &&
+      new Date(detail.dueDate).getTime() < Date.now();
+    if (isOverdue) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'เกินกำหนดเวลา',
+        detail: 'Ticket นี้เกินระยะเวลาที่กำหนดในการแก้ไขปัญหาแล้ว',
+        life: 5000,
+      });
+    }
   }
 
   private applyTimeline(items: TicketTimelineItem[]): void {
@@ -170,8 +185,7 @@ export class TicketDetailComponent implements OnInit {
             type: 'activity',
             id: item.id,
             actor: item.authorFullName,
-            action:
-              item.type === 'ASSIGNEE_ADDED' ? 'มอบหมายงานให้' : 'ยกเลิกการมอบหมายงานจาก',
+            action: item.type === 'ASSIGNEE_ADDED' ? 'มอบหมายงานให้' : 'ยกเลิกการมอบหมายงานจาก',
             statusLabel: item.assigneeFullName ?? '',
             statusGroup: null,
             timestamp: formatDateTime(item.createdAt),
@@ -191,7 +205,7 @@ export class TicketDetailComponent implements OnInit {
   }
 
   protected goBack(): void {
-    this.router.navigate(['/ticket-management/list']);
+      this.location.back();
   }
 
   protected onStartEditTitle(): void {

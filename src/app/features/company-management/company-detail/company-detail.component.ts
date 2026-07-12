@@ -78,9 +78,9 @@ export class CompanyDetailComponent {
   ];
 
   protected readonly memberColumns: TableColumn[] = [
-    { field: 'name', header: 'รายชื่อ', sortable: true },
-    { field: 'email', header: 'อีเมล', sortable: true },
-    { field: 'phone', header: 'เบอร์โทรศัพท์', sortable: true },
+    { field: 'name', header: 'รายชื่อ' },
+    { field: 'email', header: 'อีเมล' },
+    { field: 'phone', header: 'เบอร์โทรศัพท์' },
   ];
 
   protected readonly memberSearchQuery = signal('');
@@ -156,9 +156,9 @@ export class CompanyDetailComponent {
 
   private loadProjects(): void {
     this.projectsLoading.set(true);
-    this.companyService.getProjects(this.companyId, {}, 0, 50).subscribe({
+    this.companyService.getProjects(this.companyId).subscribe({
       next: (res) => {
-        this.projects.set(res.content.map((p) => this.mapToProject(p)));
+        this.projects.set(res.map((p) => this.mapToProject(p)));
         this.projectsLoading.set(false);
       },
       error: () => {

@@ -1,5 +1,15 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, effect, input, output, signal, viewChild } from '@angular/core';
-import { FeedItem, CommentItem, ActivityItem } from '../../ticket-detail.types';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  effect,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { FeedItem, CommentItem, ActivityItem } from '../../interfaces/ticket-detail.types';
 import { TicketCommentCardComponent } from '../ticket-comment-card/ticket-comment-card.component';
 import { TicketActivityItemComponent } from '../ticket-activity-item/ticket-activity-item.component';
 import { TextEditorComponent } from '../../../../../../shared/components/text-editor';

@@ -8,6 +8,8 @@ export interface PageResponse<T> {
   last: boolean;
 }
 
+export type TicketStatusGroup = 'START' | 'PROCESS' | 'SUCCESS' | 'FAILED';
+
 export interface TicketAssigneeSummary {
   id: string;
   fullName: string;
@@ -22,7 +24,7 @@ export interface TicketListResponse {
   projectName: string;
   currentStatusId: string;
   currentStatusName: string;
-  currentStatusGroup: 'START' | 'PROCESS' | 'SUCCESS' | 'FAILED';
+  currentStatusGroup: TicketStatusGroup;
   statusFlowId: string;
   statusFlowName: string;
   priorityId: string;
@@ -58,7 +60,7 @@ export interface TicketDetailResponse {
   subCategoryName: string;
   currentStatusId: string;
   currentStatusName: string;
-  currentStatusGroup: 'START' | 'PROCESS' | 'SUCCESS' | 'FAILED';
+  currentStatusGroup: TicketStatusGroup;
   statusFlowId: string;
   statusFlowName: string;
   priorityId: string;
@@ -99,10 +101,41 @@ export type TicketRemainingTime =
   | 'LESS_THAN_7_DAYS'
   | 'OVERDUE';
 
+export interface FilterOption<T> {
+  label: string;
+  value: T | null;
+}
+
+export const TICKET_STATUS_OPTIONS: FilterOption<TicketStatusGroup>[] = [
+  { label: 'สถานะ', value: null },
+  { label: 'เริ่มต้น', value: 'START' },
+  { label: 'กำลังดำเนินการ', value: 'PROCESS' },
+  { label: 'สำเร็จ', value: 'SUCCESS' },
+  { label: 'ล้มเหลว', value: 'FAILED' },
+];
+
+export const TICKET_TIME_OPTIONS: FilterOption<TicketRemainingTime>[] = [
+  { label: 'ระยะเวลาที่เหลือ', value: null },
+  { label: 'น้อยกว่า 30 นาที', value: 'LESS_THAN_30_MIN' },
+  { label: 'น้อยกว่า 1 วัน', value: 'LESS_THAN_1_DAY' },
+  { label: 'น้อยกว่า 3 วัน', value: 'LESS_THAN_3_DAYS' },
+  { label: 'น้อยกว่า 7 วัน', value: 'LESS_THAN_7_DAYS' },
+  { label: 'เกินกำหนด', value: 'OVERDUE' },
+];
+
+export function buildPriorityOptions(
+  priorities: PriorityResponse[],
+): FilterOption<string>[] {
+  return [
+    { label: 'ลำดับความสำคัญ', value: null },
+    ...priorities.map((p) => ({ label: p.name, value: p.id })),
+  ];
+}
+
 export interface TicketFilterRequest {
   projectId?: string;
   statusId?: string;
-  statusGroup?: 'START' | 'PROCESS' | 'SUCCESS' | 'FAILED';
+  statusGroup?: TicketStatusGroup;
   priorityId?: string;
   statusFlowId?: string;
   keyword?: string;
@@ -183,7 +216,7 @@ export interface PriorityResponse {
 export interface StatusItemResponse {
   id: string;
   name: string;
-  group: 'START' | 'PROCESS' | 'SUCCESS' | 'FAILED';
+  group: TicketStatusGroup;
 }
 
 export interface StatusFlowResponse {

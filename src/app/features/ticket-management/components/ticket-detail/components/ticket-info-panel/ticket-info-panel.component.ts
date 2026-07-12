@@ -15,8 +15,12 @@ import { Avatar } from 'primeng/avatar';
 import { AvatarGroup } from 'primeng/avatargroup';
 import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
-import { AssigneeUser, FeedUser } from '../../ticket-detail.types';
-import { TicketDetailResponse, StatusItemResponse } from '../../../../interfaces/ticket.interface';
+import { AssigneeUser, FeedUser } from '../../interfaces/ticket-detail.types';
+import {
+  TicketDetailResponse,
+  StatusItemResponse,
+  TicketStatusGroup,
+} from '../../../../interfaces/ticket.interface';
 import { AssigneeSuggestionCardComponent } from '../assignee-suggestion-card/assignee-suggestion-card.component';
 import {
   TicketTypeDialogComponent,
@@ -40,8 +44,7 @@ import {
     TicketTypeDialogComponent,
   ],
   host: {
-    class:
-      'flex flex-col bg-white lg:overflow-y-auto lg:col-span-4 lg:ml-6',
+    class: 'flex flex-col bg-white lg:overflow-y-auto lg:col-span-4',
   },
   templateUrl: './ticket-info-panel.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -135,6 +138,19 @@ export class TicketInfoPanelComponent {
     return this.formatThai(t.updatedAt);
   });
 
+  protected readonly dueDateDisplay = computed(()=>{
+   const t = this.ticket();
+   if (!t?.dueDate) return '-';
+   return this.formatThai(t.dueDate);
+  });
+
+  protected readonly isOverdue = computed(() => {
+    const t = this.ticket();
+    if (!t?.dueDate) return false;
+    const closedGroups: TicketStatusGroup[] = ['SUCCESS', 'FAILED'];
+    if (closedGroups.includes(t.currentStatusGroup)) return false;
+    return new Date(t.dueDate).getTime() < Date.now();
+  });
   protected readonly resolutionTimeDisplay = computed(() => {
     const t = this.ticket();
     if (!t?.priorityIntervalValue || !t?.priorityIntervalUnit) return '—';

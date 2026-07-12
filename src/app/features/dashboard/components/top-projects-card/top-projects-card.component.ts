@@ -24,6 +24,7 @@ import {
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { DashboardService } from '../../services/dashboard.service';
 import { TopProjectResponse } from '../../interfaces/dashboard.interface';
+import { pillTooltip } from '../../utils/chart-tooltip.util';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, ChartDataLabels);
 
@@ -103,8 +104,10 @@ export class TopProjectsCardComponent {
         plugins: {
           legend: { display: false },
           tooltip: {
+            enabled: false,
+            external: ctx => pillTooltip(ctx),
             callbacks: {
-              label: ctx => ` ${ctx.raw as number} tickets`,
+              label: ctx => `${ctx.raw as number} tickets`,
             },
           },
           datalabels: {

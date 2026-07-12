@@ -26,7 +26,7 @@
 
       <!-- Column 1: Donut chart (Chart.js) -->
       <div class="flex justify-center">
-        <div class="flex flex-col gap-4 w-55">
+        <div class="flex flex-col gap-4 w-64">
           <canvas
             #chartCanvas
             role="img"
@@ -34,7 +34,7 @@
           ></canvas>
 
           <!-- Legend -->
-          <dl class="grid grid-cols-3 gap-x-5 gap-y-3 text-xs">
+          <dl class="grid grid-cols-2 gap-x-5 gap-y-3 text-xs">
             @for (seg of chartData(); track seg.label) {
               <div class="flex items-center gap-1.5">
                 <span
@@ -42,7 +42,7 @@
                   [style.background]="seg.color"
                   aria-hidden="true"
                 ></span>
-                <dt class="text-slate-600">{{ seg.label }}</dt>
+                <dt class="text-slate-600 whitespace-nowrap">{{ seg.label }}</dt>
               </div>
             }
           </dl>

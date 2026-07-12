@@ -20,8 +20,17 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { ProjectDetail } from '../project-detail.types';
 import { DocumentsDialogComponent, ProjectDocument } from '../../../../../shared/components/dialogs';
 import { ProjectService } from '../../../services/project.service';
-
+import { TicketStatusGroup } from '../../../interfaces/project.interface';
+import { pillTooltip } from '../../../../dashboard/utils/chart-tooltip.util';
 Chart.register(ArcElement, DoughnutController, Legend, Tooltip, ChartDataLabels);
+
+const STATUS_GROUP_META: Record<TicketStatusGroup, { label: string; color: string }> = {
+  START: { label: 'เริ่มต้น', color: '#3b82f6' },
+  PROCESS: { label: 'กำลังดำเนินการ', color: '#f97316' },
+  SUCCESS: { label: 'สำเร็จ', color: '#22c55e' },
+  FAILED: { label: 'ไม่สำเร็จ', color: '#ef4444' },
+};
+const STATUS_GROUP_ORDER: TicketStatusGroup[] = ['START', 'PROCESS', 'SUCCESS', 'FAILED'];
 
 @Component({
   selector: 'app-project-info',
@@ -42,10 +51,12 @@ export class ProjectInfoComponent {
 
   protected readonly documentsVisible = signal(false);
   protected readonly projectDocuments = signal<ProjectDocument[]>([]);
+  protected readonly statusGroupCounts = signal<Partial<Record<TicketStatusGroup, number>>>({});
 
-  private chartInstance: Chart | null = null;
+  private chartInstance: Chart<'doughnut'> | null = null;
   private totalForCenter = 0;
   private lastFetchedDocId = '';
+  private lastFetchedStatsId = '';
 
   protected readonly cardMenuItems = computed<MenuItem[]>(() => [
     { label: 'แก้ไขโครงการ', command: () => this.editClick.emit() },
@@ -53,22 +64,18 @@ export class ProjectInfoComponent {
     { label: 'ลบ', data: { danger: true }, command: () => this.deleteClick.emit() },
   ]);
 
-  protected readonly totalTickets = computed(() => {
-    const t = this.project().tickets;
-    return t.open + t.inProcess + t.done + t.close + t.return + t.reject;
+  protected readonly chartData = computed(() => {
+    const counts = this.statusGroupCounts();
+    return STATUS_GROUP_ORDER.map((group) => ({
+      label: STATUS_GROUP_META[group].label,
+      color: STATUS_GROUP_META[group].color,
+      count: counts[group] ?? 0,
+    }));
   });
 
-  protected readonly chartData = computed(() => {
-    const t = this.project().tickets;
-    return [
-      { label: 'Open', count: t.open, color: '#3b82f6' },
-      { label: 'In process', count: t.inProcess, color: '#f97316' },
-      { label: 'Done', count: t.done, color: '#22c55e' },
-      { label: 'Close', count: t.close, color: '#94a3b8' },
-      { label: 'Return', count: t.return, color: '#eab308' },
-      { label: 'Reject', count: t.reject, color: '#ef4444' },
-    ];
-  });
+  protected readonly totalTickets = computed(() =>
+    this.chartData().reduce((sum, seg) => sum + seg.count, 0),
+  );
 
   constructor() {
     effect(() => {
@@ -80,6 +87,22 @@ export class ProjectInfoComponent {
           this.projectDocuments.set(
             docs.map((d) => ({ id: d.id, name: d.fileName, url: d.fileUrl })),
           );
+        },
+        error: () => {},
+      });
+    });
+
+    effect(() => {
+      const id = this.project().id;
+      if (!id || id === this.lastFetchedStatsId) return;
+      this.lastFetchedStatsId = id;
+      this.projectService.getTicketStats(id).subscribe({
+        next: (stats) => {
+          const counts: Partial<Record<TicketStatusGroup, number>> = {};
+          for (const g of stats.statusGroups) {
+            counts[g.statusGroup] = g.count;
+          }
+          this.statusGroupCounts.set(counts);
         },
         error: () => {},
       });
@@ -152,6 +175,8 @@ export class ProjectInfoComponent {
         plugins: {
           legend: { display: false },
           tooltip: {
+            enabled: false,
+            external: ctx => pillTooltip(ctx),
             callbacks: {
               label: ctx => {
                 const val = ctx.raw as number;

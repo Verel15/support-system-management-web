@@ -39,7 +39,6 @@ export class MyProjectDetailComponent implements OnInit {
     endDate: '',
     totalDays: 0,
     totalUsers: 0,
-    tickets: { open: 0, inProcess: 0, done: 0, close: 0, return: 0, reject: 0 },
   });
 
   ngOnInit(): void {
@@ -80,8 +79,7 @@ export class MyProjectDetailComponent implements OnInit {
       startDate: this.formatDate(r.startDate),
       endDate: this.formatDate(r.endDate),
       totalDays,
-      totalUsers: r.totalMembers ?? 0,
-      tickets: { open: 0, inProcess: 0, done: 0, close: 0, return: 0, reject: 0 },
+      totalUsers: r.totalMembers ?? 0
     };
   }
 

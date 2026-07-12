@@ -24,6 +24,7 @@ import {
 } from 'chart.js';
 import { DashboardService } from '../../services/dashboard.service';
 import { TicketTrendResponse } from '../../interfaces/dashboard.interface';
+import { pillTooltipMulti } from '../../utils/chart-tooltip.util';
 
 Chart.register(CategoryScale, LinearScale, LineController, LineElement, PointElement, Tooltip);
 
@@ -132,16 +133,10 @@ export class TicketOpenChartCardComponent {
           legend: { display: false },
           datalabels: { display: false },
           tooltip: {
-            backgroundColor: '#ffffff',
-            titleColor: '#1e293b',
-            bodyColor: '#475569',
-            borderColor: '#e2e8f0',
-            borderWidth: 1,
-            padding: 12,
-            usePointStyle: true,
+            enabled: false,
+            external: ctx => pillTooltipMulti(ctx),
             callbacks: {
-              title: (items) => items[0]?.label ?? '',
-              label: (ctx) => `  ${ctx.dataset.label}: ${ctx.raw}`,
+              label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}`,
             },
           },
         },

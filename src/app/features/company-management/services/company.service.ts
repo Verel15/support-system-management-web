@@ -8,7 +8,10 @@ import {
   CompanyUserFilterRequest,
   CompanyUserResponse,
 } from '../interfaces/company.interface';
-import { PageResponse, ProjectResponse } from '../../project-management/interfaces/project.interface';
+import {
+  PageResponse,
+  ProjectResponse,
+} from '../../project-management/interfaces/project.interface';
 
 @Injectable({ providedIn: 'root' })
 export class CompanyService {
@@ -49,18 +52,7 @@ export class CompanyService {
     });
   }
 
-  getProjects(
-    id: string,
-    filter: CompanyProjectFilterRequest = {},
-    page = 0,
-    size = 20,
-  ): Observable<PageResponse<ProjectResponse>> {
-    return this.api.get<PageResponse<ProjectResponse>>(`/companies/${id}/projects`, {
-      keyword: filter.keyword || undefined,
-      dateRange: filter.dateRange,
-      status: filter.status,
-      page,
-      size,
-    });
+  getProjects(id: string): Observable<ProjectResponse[]> {
+    return this.api.get<ProjectResponse[]>(`/companies/${id}/projects`);
   }
 }

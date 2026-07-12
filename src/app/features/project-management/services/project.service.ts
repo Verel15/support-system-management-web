@@ -13,6 +13,7 @@ import {
   ProjectRequest,
   ProjectResponse,
   ProjectStatus,
+  TicketStatsResponse,
 } from '../interfaces/project.interface';
 
 @Injectable({ providedIn: 'root' })
@@ -83,6 +84,10 @@ export class ProjectService {
 
   removeMember(projectId: string, memberId: string): Observable<void> {
     return this.api.delete<void>(`/projects/${projectId}/members/${memberId}`);
+  }
+
+  getTicketStats(projectId: string): Observable<TicketStatsResponse> {
+    return this.api.get<TicketStatsResponse>(`/projects/${projectId}/ticket-stats`);
   }
 
   getDocuments(projectId: string): Observable<ProjectDocumentResponse[]> {

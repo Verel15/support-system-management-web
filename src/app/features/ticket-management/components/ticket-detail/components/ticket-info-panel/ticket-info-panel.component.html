@@ -14,7 +14,7 @@
 </div>
 
 <!-- Metadata fields -->
-<div class="mx-4 border border-slate-200 rounded-lg p-6">
+<div class="mx-4 border border-slate-200 rounded-lg p-6 mb-6">
   <div class="grid grid-cols-[auto_1fr] gap-x-4 items-center">
     <span class="pb-3 text-sm text-slate-500 flex items-center">Ticket ID:</span>
     <span class="py-3 text-sm font-semibold text-slate-800 flex items-center justify-start">{{ ticket().ticketId
@@ -73,27 +73,34 @@
     </div>
 
     <span class="text-sm text-slate-500 flex items-center">ครบกำหนด:</span>
-    <span class="py-3 text-sm text-slate-800 flex items-center">
+    <span class="py-3 text-sm flex items-center gap-1.5" [class]="isOverdue() ? 'text-error-600 font-semibold' : 'text-slate-800'">
       @if (ticket().dueDate) {
-      {{ ticket().dueDate | date:'dd/MM/yyyy HH:mm' }}
+      {{dueDateDisplay()}}
       } @else {
       —
       }
     </span>
 
   </div>
-</div>
 
-<hr class="border-slate-100 mx-4" />
+  @if (isOverdue()) {
+  <div class="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-error-50 text-error-600 text-sm font-medium" role="alert">
+    <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+    <span>เกินกำหนดแก้ไขปัญหา</span>
+  </div>
+  }
+
+  <!-- <hr class="border-slate-100 mx-4" /> -->
 
   @if (showSuggestionCard()) {
+  <hr class="border-slate-100" />
   <app-assignee-suggestion-card [loading]="suggestionLoading()" [suggested]="suggestedCandidate()"
     [reason]="suggestionReason()" (assignSuggested)="onAssignSuggested($event)" (pickManually)="onPickManually()" />
-  <hr class="border-slate-100 mx-4" />
+  <hr class="border-slate-100" />
   }
 
   <!-- ผู้รับผิดชอบ -->
-  <div class="px-4 py-4">
+  <div class="py-4">
     <p class="text-sm text-slate-500 mb-3">ผู้รับผิดชอบ</p>
 
     <div class="relative">
@@ -169,10 +176,10 @@
     </div>
   </div>
 
-  <hr class="border-slate-100 mx-4" />
+  <hr class="border-slate-100" />
 
   <!-- ผู้ร้องขอ -->
-  <div class="px-4 py-4">
+  <div class="py-4">
     <p class="text-sm text-slate-500 mb-3">ผู้ร้องขอ</p>
     <div class="flex items-center gap-3 py-1.5">
       <div
@@ -183,7 +190,7 @@
       </div>
     </div>
   </div>
-
+</div>
 <!-- Popup menus -->
 <p-menu #statusMenu [model]="statusMenuItems()" [popup]="true" />
 <p-menu #moreMenu [model]="moreMenuItems" [popup]="true" />

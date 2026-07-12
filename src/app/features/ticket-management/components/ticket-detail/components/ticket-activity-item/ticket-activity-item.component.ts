@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { ActivityItem } from '../../ticket-detail.types';
+import { ActivityItem } from '../../interfaces/ticket-detail.types';
 
 @Component({
   selector: 'app-ticket-activity-item',

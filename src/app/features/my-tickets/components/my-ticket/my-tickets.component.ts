@@ -27,6 +27,9 @@ import {
   PriorityIconColor,
   TicketFilterRequest,
   TicketRemainingTime,
+  TICKET_STATUS_OPTIONS,
+  TICKET_TIME_OPTIONS,
+  buildPriorityOptions,
 } from '../../../ticket-management/interfaces/ticket.interface';
 import { ProjectResponse } from '../../../project-management/interfaces/project.interface';
 
@@ -96,27 +99,11 @@ export class MyTicketsComponent implements OnInit {
     { field: 'currentStatusName', header: 'สถานะ' },
   ];
 
-  protected readonly priorityOptions = computed(() => [
-    { label: 'ทุกระดับความสำคัญ', value: null },
-    ...this.priorities().map((p) => ({ label: p.name, value: p.id })),
-  ]);
+  protected readonly priorityOptions = computed(() => buildPriorityOptions(this.priorities()));
 
-  protected readonly timeOptions = [
-    { label: 'ระยะเวลาที่เหลือ', value: null },
-    { label: 'น้อยกว่า 30 นาที', value: 'LESS_THAN_30_MIN' },
-    { label: 'น้อยกว่า 1 วัน', value: 'LESS_THAN_1_DAY' },
-    { label: 'น้อยกว่า 3 วัน', value: 'LESS_THAN_3_DAYS' },
-    { label: 'น้อยกว่า 7 วัน', value: 'LESS_THAN_7_DAYS' },
-    { label: 'เกินกำหนด', value: 'OVERDUE' },
-  ];
+  protected readonly timeOptions = TICKET_TIME_OPTIONS;
 
-  protected readonly statusOptions = [
-    { label: 'ทุกสถานะ', value: null },
-    { label: 'เริ่มต้น', value: 'START' },
-    { label: 'กำลังดำเนินการ', value: 'PROCESS' },
-    { label: 'สำเร็จ', value: 'SUCCESS' },
-    { label: 'ล้มเหลว', value: 'FAILED' },
-  ];
+  protected readonly statusOptions = TICKET_STATUS_OPTIONS;
 
   protected readonly sortByOptions = [
     { label: 'ล่าสุด', value: null },

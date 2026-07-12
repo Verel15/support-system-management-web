@@ -34,7 +34,7 @@
           aria-label="กรองตามสถานะ"
         />
         <p-select
-          [options]="priorityOptions"
+          [options]="priorityOptions()"
           [ngModel]="priorityFilter()"
           (ngModelChange)="priorityFilter.set($event); onFilterChange()"
           optionLabel="label"
@@ -74,22 +74,36 @@
         [totalRecords]="totalRecords()"
         [currentPage]="currentPage()"
         [pageSize]="pageSize()"
+        [loading]="loading()"
         [showActions]="!readOnly()"
-        (pageChange)="currentPage.set($event)"
-        (pageSizeChange)="pageSize.set($event); currentPage.set(1)"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+        (sortChange)="onSort($event)"
       >
         <!-- Title column with priority icon -->
         <ng-template dataTableCell="title" let-row let-value="value">
-          <div class="flex items-center gap-2">
-            @if (getPriorityIconClass(row['priority']); as iconClass) {
+          <div class="flex items-center gap-2 min-w-0">
+            @if (getPriorityIconClass(row); as iconClass) {
               <i [class]="iconClass + ' text-xs shrink-0'" aria-hidden="true"></i>
             }
-            <span class="truncate">{{ value }}</span>
+            <span class="truncate" [title]="value">{{ value }}</span>
           </div>
         </ng-template>
 
+        <!-- Assignees column -->
+        <ng-template dataTableCell="assigneesDisplay" let-value="value">
+          @if (value === '-') {
+            <span class="inline-flex items-center gap-1 text-xs font-medium text-warning-700 bg-warning-50 px-2 py-1 rounded-full">
+              <i class="pi pi-exclamation-circle text-xs" aria-hidden="true"></i>
+              ยังไม่มอบหมาย
+            </span>
+          } @else {
+            <span class="truncate" [title]="value">{{ value }}</span>
+          }
+        </ng-template>
+
         <!-- Status column -->
-        <ng-template dataTableCell="status" let-value="value">
+        <ng-template dataTableCell="currentStatusName" let-value="value">
           <app-status-chip [status]="$any(value)" />
         </ng-template>
 
@@ -100,7 +114,7 @@
             class="inline-flex items-center justify-center w-8 h-8 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
             aria-label="การดำเนินการ"
             aria-haspopup="true"
-            (click)="onActionClick($event)"
+            (click)="onActionClick($event, row)"
           >
             <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
           </button>

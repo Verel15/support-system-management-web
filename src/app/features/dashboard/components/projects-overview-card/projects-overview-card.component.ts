@@ -17,6 +17,7 @@ import { ArcElement, Chart, DoughnutController, Tooltip } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { DashboardService } from '../../services/dashboard.service';
 import { ProjectStatusDistributionResponse } from '../../interfaces/dashboard.interface';
+import { pillTooltip } from '../../utils/chart-tooltip.util';
 
 Chart.register(ArcElement, DoughnutController, Tooltip, ChartDataLabels);
 
@@ -96,7 +97,7 @@ export class ProjectsOverviewCardComponent {
 
     const centerTextPlugin = {
       id: 'centerText',
-      afterDraw(chart: Chart): void {
+      afterDraw(chart: Chart<'doughnut'>): void {
         const { ctx, chartArea } = chart;
         if (!chartArea) return;
         const cx = (chartArea.left + chartArea.right) / 2;
@@ -134,11 +135,13 @@ export class ProjectsOverviewCardComponent {
         plugins: {
           legend: { display: false },
           tooltip: {
+            enabled: false,
+            external: ctx => pillTooltip(ctx),
             callbacks: {
               label: ctx => {
                 const val = ctx.raw as number;
                 const pct = total ? Math.round((val / total) * 100) : 0;
-                return ` ${val} (${pct}%)`;
+                return `${pct}%`;
               },
             },
           },

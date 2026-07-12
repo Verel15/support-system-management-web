@@ -9,7 +9,13 @@ import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { ProjectCardComponent, Project } from '../../../../shared/components/project-card';
 import { ProjectService } from '../../services/project.service';
-import { ProjectDateRange, ProjectResponse, ProjectStatus } from '../../interfaces/project.interface';
+import {
+  PROJECT_DATE_OPTIONS,
+  PROJECT_STATUS_OPTIONS,
+  ProjectDateRange,
+  ProjectResponse,
+  ProjectStatus,
+} from '../../interfaces/project.interface';
 
 @Component({
   selector: 'app-project-list',
@@ -37,19 +43,9 @@ export class ProjectListComponent {
 
   private readonly search$ = new Subject<string>();
 
-  protected readonly statusOptions = [
-    { label: 'สถานะ', value: null },
-    { label: 'เปิด', value: 'OPEN' },
-    { label: 'รอดำเนินการ', value: 'WAITING' },
-    { label: 'ปิด', value: 'CLOSED' },
-  ];
+  protected readonly statusOptions = PROJECT_STATUS_OPTIONS;
 
-  protected readonly dateOptions = [
-    { label: 'วันที่สร้าง', value: null },
-    { label: 'วันนี้', value: 'TODAY' },
-    { label: 'สัปดาห์นี้', value: 'THIS_WEEK' },
-    { label: 'เดือนนี้', value: 'THIS_MONTH' },
-  ];
+  protected readonly dateOptions = PROJECT_DATE_OPTIONS;
 
   constructor() {
     this.isMyProjects.set(this.router.url.includes('my-projects'));
