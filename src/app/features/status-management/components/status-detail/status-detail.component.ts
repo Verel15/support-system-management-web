@@ -17,6 +17,7 @@ import {
 } from '../../../../shared/components/dialogs';
 import { StatusFlowService } from '../../services/status-flow.service';
 import { StatusFlowResponse, StatusItemResponse } from '../../interfaces/status-flow.interface';
+import { formatDateFull } from '../../../../shared/utils/date-format.util';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -53,6 +54,10 @@ export class StatusDetailComponent {
   protected readonly failedStatuses = computed(() =>
     this.status()?.statuses.filter((s) => s.group === 'FAILED') ?? [],
   );
+  protected readonly updatedAtFormatted = computed(() => {
+    const updatedAt = this.status()?.updatedAt;
+    return updatedAt ? formatDateFull(updatedAt) : '';
+  });
 
   protected readonly menuItems: ActionMenuItem[] = [
     { label: 'แก้ไข', command: () => this.onEdit() },

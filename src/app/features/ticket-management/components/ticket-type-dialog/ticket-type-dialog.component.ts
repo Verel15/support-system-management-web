@@ -5,6 +5,7 @@ import {
   computed,
   effect,
   inject,
+  input,
   model,
   output,
   signal,
@@ -37,6 +38,7 @@ export class TicketTypeDialogComponent implements OnInit {
   private readonly ticketService = inject(TicketService);
 
   readonly visible = model(false);
+  readonly initialSubCategoryId = input<string | null>(null);
   readonly confirmed = output<SelectedTicketType>();
   readonly cancelled = output<void>();
 
@@ -62,6 +64,8 @@ export class TicketTypeDialogComponent implements OnInit {
         this.priorityDetail.set(null);
         if (this.ticketTypes().length === 0) {
           this.loadTypes();
+        } else {
+          this.applyInitialSelection();
         }
       }
     });
@@ -77,9 +81,29 @@ export class TicketTypeDialogComponent implements OnInit {
       next: (data) => {
         this.ticketTypes.set(data);
         this.loadingTypes.set(false);
+        if (this.visible()) {
+          this.applyInitialSelection();
+        }
       },
       error: () => this.loadingTypes.set(false),
     });
+  }
+
+  private applyInitialSelection(): void {
+    const subCategoryId = this.initialSubCategoryId();
+    if (!subCategoryId) return;
+
+    for (const type of this.ticketTypes()) {
+      for (const category of type.categories) {
+        const sub = category.subCategories.find((s) => s.id === subCategoryId);
+        if (sub) {
+          this.selectedTypeId.set(type.id);
+          this.selectedCategoryId.set(category.id);
+          this.selectSubCategory(sub.id);
+          return;
+        }
+      }
+    }
   }
 
   protected readonly filteredTypes = computed(() => {

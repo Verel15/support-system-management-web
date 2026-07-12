@@ -1,197 +1,192 @@
 <!-- Status bar -->
 <div class="flex items-center justify-between px-4 pt-4 pb-3">
-  <button
-    type="button"
-    [class]="statusButtonClass()"
-    [attr.aria-label]="'สถานะ: ' + ticket().currentStatusName"
-    (click)="onStatusMenuOpen($event)"
-  >
+  <button type="button" [class]="statusButtonClass()" [attr.aria-label]="'สถานะ: ' + ticket().currentStatusName"
+    (click)="onStatusMenuOpen($event)">
     {{ ticket().currentStatusName }}
     <i class="pi pi-chevron-down text-xs" aria-hidden="true"></i>
   </button>
 
-  <button
-    type="button"
+  <button type="button"
     class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-    aria-label="ตัวเลือกเพิ่มเติม"
-    (click)="onMoreMenuOpen($event)"
-  >
+    aria-label="ตัวเลือกเพิ่มเติม" (click)="onMoreMenuOpen($event)">
     <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
   </button>
 </div>
 
 <!-- Metadata fields -->
-<div class="px-4 py-4 grid grid-cols-[auto_1fr] gap-x-4">
+<div class="mx-4 border border-slate-200 rounded-lg p-6">
+  <div class="grid grid-cols-[auto_1fr] gap-x-4 items-center">
+    <span class="pb-3 text-sm text-slate-500 flex items-center">Ticket ID:</span>
+    <span class="py-3 text-sm font-semibold text-slate-800 flex items-center justify-start">{{ ticket().ticketId
+      }}</span>
 
-  <span class="py-3 text-sm text-slate-500 flex items-center">Ticket ID:</span>
-  <span class="py-3 text-sm font-semibold text-slate-800 flex items-center justify-start">{{ ticket().ticketId }}</span>
-  <div class="col-span-2 h-0 border-t border-slate-100"></div>
+    <span class="py-3 text-sm text-slate-500">วันที่สร้าง:</span>
+    <span class="py-3 text-sm text-slate-800 text-left">{{ createdAtDisplay() }}</span>
 
-  <span class="py-3 text-sm text-slate-500">วันที่สร้าง:</span>
-  <span class="py-3 text-sm text-slate-800 text-left">{{ createdAtDisplay() }}</span>
-  <div class="col-span-2 h-0 border-t border-slate-100"></div>
+    <span class="py-3 text-sm text-slate-500">การอัพเดตล่าสุด:</span>
+    <span class="py-3 text-sm text-slate-800 text-left">{{ updatedAtDisplay() }}</span>
 
-  <span class="py-3 text-sm text-slate-500">การอัพเดตล่าสุด:</span>
-  <span class="py-3 text-sm text-slate-800 text-left">{{ updatedAtDisplay() }}</span>
-  <div class="col-span-2 h-0 border-t border-slate-100"></div>
+    <span class="text-sm text-slate-500 flex items-center">โครงการ:</span>
+    <div class="py-2">
+      <div
+        class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-800">
+        <span class="truncate">{{ ticket().projectName }}</span>
+        <i class="pi pi-chevron-down text-xs text-slate-400 shrink-0" aria-hidden="true"></i>
+      </div>
+    </div>
 
-  <span class="py-3 text-sm text-slate-500 flex items-center">โครงการ:</span>
-  <span class="py-3 text-sm text-slate-800 flex items-center">{{ ticket().projectName }}</span>
-  <div class="col-span-2 h-0 border-t border-slate-100"></div>
+    <span class="text-sm text-slate-500 flex items-center">ประเภท Ticket:</span>
+    <div class="py-2">
+      <button type="button"
+        class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-800 hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+        aria-haspopup="dialog" (click)="onOpenTicketTypeDialog()">
+        <span class="truncate">{{ ticket().subCategoryName }}</span>
+        <i class="pi pi-chevron-down text-xs text-slate-400 shrink-0" aria-hidden="true"></i>
+      </button>
+    </div>
 
-  <span class="py-3 text-sm text-slate-500 flex items-center">ประเภท Ticket:</span>
-  <span class="py-3 text-sm text-slate-800 flex items-center">{{ ticket().ticketTypeName }}</span>
-  <div class="col-span-2 h-0 border-t border-slate-100"></div>
+    <span class="text-sm text-slate-500 flex items-center">สถานะ:</span>
+    <div class="py-2">
+      <div
+        class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-800">
+        <span class="truncate">{{ ticket().statusFlowName }}</span>
+        <i class="pi pi-chevron-down text-xs text-slate-400 shrink-0" aria-hidden="true"></i>
+      </div>
+    </div>
 
-  <span class="py-3 text-sm text-slate-500 flex items-center">StatusFlow:</span>
-  <span class="py-3 text-sm text-slate-800 flex items-center">{{ ticket().statusFlowName }}</span>
-  <div class="col-span-2 h-0 border-t border-slate-100"></div>
+    <span class="text-sm text-slate-500 flex items-center">ลำดับความสำคัญ:</span>
+    <div class="py-2">
+      <div
+        class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-800">
+        <span class="truncate">{{ ticket().priorityName }}</span>
+        <i class="pi pi-chevron-down text-xs text-slate-400 shrink-0" aria-hidden="true"></i>
+      </div>
+    </div>
 
-  <span class="py-3 text-sm text-slate-500 flex items-center">ลำดับความสำคัญ:</span>
-  <span class="py-3 text-sm text-slate-800 flex items-center">{{ ticket().priorityName }}</span>
-  <div class="col-span-2 h-0 border-t border-slate-100"></div>
+    <span class="text-sm text-slate-500 flex items-center">ระยะเวลาแก้ไข:</span>
+    <div class="py-2">
+      <div
+        class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-800">
+        <span class="truncate">{{ resolutionTimeDisplay() }}</span>
+        <i class="pi pi-chevron-down text-xs text-slate-400 shrink-0" aria-hidden="true"></i>
+      </div>
+    </div>
 
-  <span class="py-3 text-sm text-slate-500 flex items-center">ระยะเวลาแก้ไข:</span>
-  <span class="py-3 text-sm text-slate-800 flex items-center">{{ resolutionTimeDisplay() }}</span>
-  <div class="col-span-2 h-0 border-t border-slate-100"></div>
-
-  <span class="py-3 text-sm text-slate-500 flex items-center">ครบกำหนด:</span>
-  <span class="py-3 text-sm text-slate-800 flex items-center">
-    @if (ticket().dueDate) {
+    <span class="text-sm text-slate-500 flex items-center">ครบกำหนด:</span>
+    <span class="py-3 text-sm text-slate-800 flex items-center">
+      @if (ticket().dueDate) {
       {{ ticket().dueDate | date:'dd/MM/yyyy HH:mm' }}
-    } @else {
+      } @else {
       —
-    }
-  </span>
+      }
+    </span>
 
+  </div>
 </div>
 
 <hr class="border-slate-100 mx-4" />
 
-<!-- ผู้รับผิดชอบ -->
-<div class="px-4 py-4">
-  <p class="text-sm text-slate-500 mb-3">ผู้รับผิดชอบ</p>
+  @if (showSuggestionCard()) {
+  <app-assignee-suggestion-card [loading]="suggestionLoading()" [suggested]="suggestedCandidate()"
+    [reason]="suggestionReason()" (assignSuggested)="onAssignSuggested($event)" (pickManually)="onPickManually()" />
+  <hr class="border-slate-100 mx-4" />
+  }
 
-  <div class="relative">
-    @if (selectedAssignees().length === 1) {
+  <!-- ผู้รับผิดชอบ -->
+  <div class="px-4 py-4">
+    <p class="text-sm text-slate-500 mb-3">ผู้รับผิดชอบ</p>
+
+    <div class="relative">
+      @if (selectedAssignees().length === 1) {
       <div class="flex items-center gap-3 py-1.5">
         <div
           class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 select-none"
-          [style.background-color]="selectedAssignees()[0].avatarColor"
-          aria-hidden="true"
-        >{{ selectedAssignees()[0].avatarInitial }}</div>
+          [style.background-color]="selectedAssignees()[0].avatarColor" aria-hidden="true">{{
+          selectedAssignees()[0].avatarInitial }}</div>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-semibold text-slate-800 truncate">{{ selectedAssignees()[0].name }}</p>
         </div>
-        <button
-          type="button"
+        <button type="button"
           class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-          [attr.aria-expanded]="showAssigneeDropdown()"
-          aria-label="เปลี่ยนผู้รับผิดชอบ"
-          (click)="toggleAssigneeDropdown()"
-        >
-          <i
-            class="pi text-xs transition-transform duration-200 text-primary-700"
-            [class]="showAssigneeDropdown() ? 'pi-chevron-up' : 'pi-chevron-down'"
-            aria-hidden="true"
-          ></i>
+          [attr.aria-expanded]="showAssigneeDropdown()" aria-label="เปลี่ยนผู้รับผิดชอบ"
+          (click)="toggleAssigneeDropdown()">
+          <i class="pi text-xs transition-transform duration-200 text-primary-700"
+            [class]="showAssigneeDropdown() ? 'pi-chevron-up' : 'pi-chevron-down'" aria-hidden="true"></i>
         </button>
       </div>
-    } @else if (selectedAssignees().length > 1) {
+      } @else if (selectedAssignees().length > 1) {
       <div class="flex items-center gap-3 py-1.5">
         <p-avatar-group>
           @for (assignee of selectedAssignees().slice(0, 3); track assignee.id) {
-            <p-avatar
-              [label]="assignee.avatarInitial"
-              shape="circle"
-              [style]="{ 'background-color': assignee.avatarColor, 'color': '#fff', 'font-weight': '700' }"
-            />
+          <p-avatar [label]="assignee.avatarInitial" shape="circle"
+            [style]="{ 'background-color': assignee.avatarColor, 'color': '#fff', 'font-weight': '700' }" />
           }
           @if (selectedAssignees().length > 3) {
-            <p-avatar
-              [label]="'+' + (selectedAssignees().length - 3)"
-              shape="circle"
-            />
+          <p-avatar [label]="'+' + (selectedAssignees().length - 3)" shape="circle" />
           }
         </p-avatar-group>
         <span class="text-sm text-slate-700 flex-1 min-w-0">{{ selectedAssignees().length }} คน</span>
-        <button
-          type="button"
+        <button type="button"
           class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-          [attr.aria-expanded]="showAssigneeDropdown()"
-          aria-label="เปลี่ยนผู้รับผิดชอบ"
-          (click)="toggleAssigneeDropdown()"
-        >
-          <i
-            class="pi text-xs transition-transform duration-200"
-            [class]="showAssigneeDropdown() ? 'pi-chevron-up' : 'pi-chevron-down'"
-            aria-hidden="true"
-          ></i>
+          [attr.aria-expanded]="showAssigneeDropdown()" aria-label="เปลี่ยนผู้รับผิดชอบ"
+          (click)="toggleAssigneeDropdown()">
+          <i class="pi text-xs transition-transform duration-200"
+            [class]="showAssigneeDropdown() ? 'pi-chevron-up' : 'pi-chevron-down'" aria-hidden="true"></i>
         </button>
       </div>
-    }
+      }
 
-    @if (selectedAssignees().length === 0) {
-      <button
-        type="button"
+      @if (selectedAssignees().length === 0) {
+      <button type="button"
         class="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-600 py-1 transition-colors"
-        (click)="toggleAssigneeDropdown()"
-      >
+        (click)="toggleAssigneeDropdown()">
         <i class="pi pi-plus text-xs" aria-hidden="true"></i>
         เพิ่มผู้รับผิดชอบ
       </button>
-    }
+      }
 
-    @if (showAssigneeDropdown()) {
+      @if (showAssigneeDropdown()) {
       <div
         class="absolute left-0 right-0 z-20 mt-1 bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden"
-        role="listbox"
-        aria-label="เลือกผู้รับผิดชอบ"
-        aria-multiselectable="true"
-      >
+        role="listbox" aria-label="เลือกผู้รับผิดชอบ" aria-multiselectable="true">
         @for (user of assigneeList(); track user.id) {
-          <button
-            type="button"
-            class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:bg-slate-50"
-            role="option"
-            [attr.aria-selected]="user.selected"
-            (click)="onAssigneeToggle(user.userId, user.selected)"
-          >
-            <div
-              class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 select-none"
-              [style.background-color]="user.avatarColor"
-              aria-hidden="true"
-            >{{ user.avatarInitial }}</div>
-            <div class="flex-1 text-left min-w-0">
-              <p class="text-sm font-semibold text-slate-800 truncate">{{ user.name }}</p>
-            </div>
-            @if (user.selected) {
-              <i class="pi pi-check text-primary-500 text-sm shrink-0" aria-hidden="true"></i>
-            }
-          </button>
+        <button type="button"
+          class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:bg-slate-50"
+          role="option" [attr.aria-selected]="user.selected" (click)="onAssigneeToggle(user.userId, user.selected)">
+          <div
+            class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 select-none"
+            [style.background-color]="user.avatarColor" aria-hidden="true">{{ user.avatarInitial }}</div>
+          <div class="flex-1 text-left min-w-0">
+            <p class="text-sm font-semibold text-slate-800 truncate">{{ user.name }}</p>
+          </div>
+          @if (user.selected) {
+          <i class="pi pi-check text-primary-500 text-sm shrink-0" aria-hidden="true"></i>
+          }
+        </button>
         }
       </div>
-    }
-  </div>
-</div>
-
-<hr class="border-slate-100 mx-4" />
-
-<!-- ผู้ร้องขอ -->
-<div class="px-4 py-4">
-  <p class="text-sm text-slate-500 mb-3">ผู้ร้องขอ</p>
-  <div class="flex items-center gap-3 py-1.5">
-    <div
-      class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 select-none"
-      [style.background-color]="requester().avatarColor"
-      aria-hidden="true"
-    >{{ requester().avatarInitial }}</div>
-    <div class="flex-1 min-w-0">
-      <p class="text-sm font-semibold text-slate-800 truncate">{{ requester().name }}</p>
+      }
     </div>
   </div>
-</div>
+
+  <hr class="border-slate-100 mx-4" />
+
+  <!-- ผู้ร้องขอ -->
+  <div class="px-4 py-4">
+    <p class="text-sm text-slate-500 mb-3">ผู้ร้องขอ</p>
+    <div class="flex items-center gap-3 py-1.5">
+      <div
+        class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 select-none"
+        [style.background-color]="requester().avatarColor" aria-hidden="true">{{ requester().avatarInitial }}</div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-slate-800 truncate">{{ requester().name }}</p>
+      </div>
+    </div>
+  </div>
 
 <!-- Popup menus -->
 <p-menu #statusMenu [model]="statusMenuItems()" [popup]="true" />
 <p-menu #moreMenu [model]="moreMenuItems" [popup]="true" />
+
+<app-ticket-type-dialog [(visible)]="showTicketTypeDialog" [initialSubCategoryId]="ticket().subCategoryId"
+  (confirmed)="onTicketTypeConfirmed($event)" />

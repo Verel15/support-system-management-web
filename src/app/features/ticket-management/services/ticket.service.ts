@@ -18,6 +18,7 @@ import {
   PriorityResponse,
   StatusFlowResponse,
 } from '../interfaces/ticket.interface';
+import { SuggestedAssigneeResponse } from '../interfaces/assignee-suggestion.interface';
 
 @Injectable({ providedIn: 'root' })
 export class TicketService {
@@ -87,6 +88,10 @@ export class TicketService {
 
   removeAssignee(ticketId: string, userId: string): Observable<void> {
     return this.api.delete<void>(`/tickets/${ticketId}/assignees/${userId}`);
+  }
+
+  getSuggestedAssignee(ticketId: string): Observable<SuggestedAssigneeResponse> {
+    return this.api.get<SuggestedAssigneeResponse>(`/tickets/${ticketId}/suggested-assignee`);
   }
 
   // Ticket types (for selector dialog)

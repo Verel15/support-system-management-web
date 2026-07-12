@@ -8,7 +8,7 @@ import { Button } from 'primeng/button';
 @Component({
   selector: 'app-ticket-comment-feed',
   imports: [TicketCommentCardComponent, TicketActivityItemComponent, TextEditorComponent, Button],
-  host: { class: 'flex flex-col border-b border-slate-200 lg:border-b-0 lg:border-r lg:overflow-hidden lg:col-span-8' },
+  host: { class: 'flex flex-col lg:overflow-hidden lg:col-span-8' },
   templateUrl: './ticket-comment-feed.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

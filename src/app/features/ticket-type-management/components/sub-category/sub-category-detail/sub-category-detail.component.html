@@ -55,8 +55,6 @@
         </div>
 
         <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 items-baseline p-4">
-          <dt class="text-sm text-slate-500 whitespace-nowrap">วันที่สร้าง:</dt>
-          <dd class="text-sm font-medium text-slate-800">{{ formatDate(sc.createdAt) }}</dd>
 
           <dt class="text-sm text-slate-500 whitespace-nowrap">ลำดับความสำคัญ:</dt>
           <dd class="text-sm font-medium text-slate-800">{{ sc.priorityLevelName }}</dd>
@@ -64,8 +62,11 @@
           <dt class="text-sm text-slate-500 whitespace-nowrap">ตำแหน่งที่เกี่ยวข้อง:</dt>
           <dd class="text-sm font-medium text-slate-800">{{ sc.positionName }}</dd>
 
+          <dt class="text-sm text-slate-500 whitespace-nowrap">วันที่สร้าง:</dt>
+          <dd class="text-sm font-medium text-slate-800">{{ formatDateFull(sc.createdAt) }}</dd>
+
           <dt class="text-sm text-slate-500 whitespace-nowrap">อัปเดตล่าสุด:</dt>
-          <dd class="text-sm font-medium text-slate-800">{{ formatDate(sc.updatedAt) }}</dd>
+          <dd class="text-sm font-medium text-slate-800">{{ formatDateFull(sc.updatedAt) }}</dd>
         </dl>
       </div>
     </div>

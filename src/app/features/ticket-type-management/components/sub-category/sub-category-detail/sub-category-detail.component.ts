@@ -23,6 +23,7 @@ import {
   TicketSubCategoryResponse,
   TicketSummaryResponse,
 } from '../../../interfaces/ticket-type.interface';
+import { formatDateFull } from '../../../../../shared/utils/date-format.util';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -116,17 +117,8 @@ export class SubCategoryDetailComponent {
     this.loadTickets();
   }
 
-  protected formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('th-TH', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  }
-
-  protected formatTime(iso: string): string {
-    return new Date(iso).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+  protected formatDateFull(date: Date | string): string {
+    return formatDateFull(date);
   }
 
   protected onBack(): void {

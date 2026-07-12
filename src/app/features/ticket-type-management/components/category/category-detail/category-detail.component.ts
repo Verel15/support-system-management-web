@@ -15,6 +15,7 @@ import {
 } from '../../../../../shared/components/dialogs';
 import { TicketCategoryService } from '../../../services/ticket-category.service';
 import { TicketCategoryResponse } from '../../../interfaces/ticket-type.interface';
+import { formatDateFull } from '../../../../../shared/utils/date-format.util';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -65,21 +66,12 @@ export class CategoryDetailComponent {
     });
   }
 
-  protected formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('th-TH', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  }
-
-  protected formatTime(iso: string): string {
-    return new Date(iso).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-  }
-
   protected onBack(): void {
     this.router.navigate(['/ticket-type-management/list']);
+  }
+
+  protected formatDateFull(date: Date | string): string {
+    return formatDateFull(date);
   }
 
   protected onMenuOpen(event: MouseEvent): void {

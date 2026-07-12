@@ -16,3 +16,30 @@ export interface CompanyResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+export type CompanyUserDateRange = 'TODAY' | 'THIS_WEEK' | 'THIS_MONTH';
+
+export interface CompanyUserFilterRequest {
+  accountType?: 'CUSTOMER' | 'EXTERNAL';
+  dateRange?: CompanyUserDateRange;
+  keyword?: string;
+}
+
+export interface CompanyUserResponse {
+  id: string;
+  accountType: 'CUSTOMER' | 'EXTERNAL';
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  profileImageUrl?: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompanyProjectFilterRequest {
+  keyword?: string;
+  dateRange?: CompanyUserDateRange;
+  status?: 'WAITING' | 'OPEN' | 'CLOSED';
+}

@@ -101,26 +101,17 @@
   </div>
 </div>
 
-<!-- Step 1: Confirm intent -->
+<!-- Confirm intent -->
 <app-confirm-dialog
   [(visible)]="showConfirmDialog"
   type="warning"
   title="ยืนยันการแก้ไข Sub-Category"
   confirmLabel="ยืนยัน"
   cancelLabel="ยกเลิก"
-  (confirmed)="onConfirmStep1()"
+  [loading]="submitting()"
+  (confirmed)="onSaveConfirmed()"
 >
   คุณแน่ใจที่จะแก้ไข Sub-Category
   <strong class="text-primary-600">{{ currentName() }}</strong>
   ใช่หรือไม่?
 </app-confirm-dialog>
-
-<!-- Step 2: Password confirmation -->
-<app-delete-confirm-dialog
-  [(visible)]="showPasswordDialog"
-  title="ยืนยันการแก้ไขด้วยรหัสผ่าน"
-  descriptionPrefix="คุณกำลังจะแก้ไขข้อมูล Sub-Category"
-  [targetLabel]="currentName()"
-  [loading]="submitting()"
-  (confirmed)="onSaveConfirmed($event)"
-/>

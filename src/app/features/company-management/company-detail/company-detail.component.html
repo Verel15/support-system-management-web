@@ -7,7 +7,7 @@
     aria-label="ย้อนกลับ"
     (onClick)="onBack()"
   />
-  <h1 class="flex-1 text-center text-2xl font-semibold text-slate-800">{{ companyName }}</h1>
+  <h1 class="flex-1 text-center text-2xl font-semibold text-slate-800">{{ companyName() }}</h1>
 
   <!-- Action menu -->
   <p-menu #actionMenu [model]="menuItems" [popup]="true" appendTo="body">
@@ -42,7 +42,7 @@
         class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col items-center gap-2 shadow-sm"
       >
         <i class="pi pi-users text-2xl text-primary-500" aria-hidden="true"></i>
-        <span class="text-2xl font-bold text-slate-800">{{ companyStats.memberCount }} ผู้ใช้</span>
+        <span class="text-2xl font-bold text-slate-800">{{ company()?.customerCount ?? 0 }} ผู้ใช้</span>
         <span class="text-sm text-slate-500">จำนวนสมาชิกทั้งหมด</span>
       </div>
       <!-- Projects count -->
@@ -50,7 +50,7 @@
         class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col items-center gap-2 shadow-sm"
       >
         <i class="pi pi-folder text-2xl text-primary-500" aria-hidden="true"></i>
-        <span class="text-2xl font-bold text-slate-800">{{ companyStats.projectCount }} โครงการ</span>
+        <span class="text-2xl font-bold text-slate-800">{{ company()?.projectCount ?? 0 }} โครงการ</span>
         <span class="text-sm text-slate-500">จำนวนโครงการทั้งหมด</span>
       </div>
       <!-- Created date -->
@@ -58,7 +58,7 @@
         class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col items-center gap-2 shadow-sm"
       >
         <i class="pi pi-calendar text-2xl text-primary-500" aria-hidden="true"></i>
-        <span class="text-2xl font-bold text-slate-800">{{ companyStats.createdAt }}</span>
+        <span class="text-2xl font-bold text-slate-800">{{ createdAtFormatted() }}</span>
         <span class="text-sm text-slate-500">วันที่สร้าง</span>
       </div>
     </div>
@@ -97,6 +97,7 @@
       [totalRecords]="totalMemberRecords()"
       [currentPage]="memberPage()"
       [pageSize]="memberPageSize()"
+      [loading]="memberLoading()"
       [showActions]="false"
       (pageChange)="onMemberPageChange($event)"
       (pageSizeChange)="onMemberPageSizeChange($event)"
@@ -118,7 +119,7 @@
       role="list"
       aria-label="โครงการทั้งหมด"
     >
-      @for (project of projects; track project.name) {
+      @for (project of projects(); track project.id) {
         <div role="listitem">
           <app-project-card [project]="project" />
         </div>
@@ -142,6 +143,7 @@
   [(visible)]="showDeleteDialog"
   title="ยืนยันการลบบริษัท"
   descriptionPrefix="คุณกำลังจะลบบริษัท"
-  [targetLabel]="companyName"
+  [targetLabel]="companyName()"
+  [loading]="deleting()"
   (confirmed)="onDeleteConfirmed($event)"
 />

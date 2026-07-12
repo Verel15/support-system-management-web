@@ -14,7 +14,6 @@ import { Select } from 'primeng/select';
 import { MessageService } from 'primeng/api';
 import {
   ConfirmDialogComponent,
-  DeleteConfirmDialogComponent,
   SelectItemsDialogComponent,
   SelectItemOption,
 } from '../../../../../shared/components/dialogs';
@@ -30,7 +29,6 @@ import { StatusFlowService } from '../../../../../features/status-management/ser
     InputText,
     Select,
     ConfirmDialogComponent,
-    DeleteConfirmDialogComponent,
     SelectItemsDialogComponent,
   ],
   templateUrl: './edit-category.component.html',
@@ -50,7 +48,6 @@ export class EditCategoryComponent {
   protected readonly submitting = signal(false);
   protected readonly showSubCategoryDialog = signal(false);
   protected readonly showConfirmDialog = signal(false);
-  protected readonly showPasswordDialog = signal(false);
   protected readonly selectedSubCategoryValues = signal<string[]>([]);
   protected readonly statusFlowOptions = signal<{ value: string; label: string }[]>([]);
   protected readonly subCategoryOptions = signal<SelectItemOption[]>([]);
@@ -149,12 +146,8 @@ export class EditCategoryComponent {
     this.showConfirmDialog.set(true);
   }
 
-  protected onConfirmStep1(): void {
+  protected onSaveConfirmed(): void {
     this.showConfirmDialog.set(false);
-    this.showPasswordDialog.set(true);
-  }
-
-  protected onSaveConfirmed(_password: string): void {
     this.submitting.set(true);
     this.ticketCategoryService
       .update(this.id, {

@@ -1,7 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
-import { CompanyRequest, CompanyResponse } from '../interfaces/company.interface';
+import {
+  CompanyProjectFilterRequest,
+  CompanyRequest,
+  CompanyResponse,
+  CompanyUserFilterRequest,
+  CompanyUserResponse,
+} from '../interfaces/company.interface';
+import { PageResponse, ProjectResponse } from '../../project-management/interfaces/project.interface';
 
 @Injectable({ providedIn: 'root' })
 export class CompanyService {
@@ -21,5 +28,39 @@ export class CompanyService {
 
   update(id: string, payload: CompanyRequest): Observable<CompanyResponse> {
     return this.api.put<CompanyResponse>(`/companies/${id}`, payload);
+  }
+
+  delete(id: string, password: string): Observable<void> {
+    return this.api.delete<void>(`/companies/${id}`, { password });
+  }
+
+  getUsers(
+    id: string,
+    filter: CompanyUserFilterRequest = {},
+    page = 0,
+    size = 10,
+  ): Observable<PageResponse<CompanyUserResponse>> {
+    return this.api.get<PageResponse<CompanyUserResponse>>(`/companies/${id}/users`, {
+      accountType: filter.accountType,
+      dateRange: filter.dateRange,
+      keyword: filter.keyword || undefined,
+      page,
+      size,
+    });
+  }
+
+  getProjects(
+    id: string,
+    filter: CompanyProjectFilterRequest = {},
+    page = 0,
+    size = 20,
+  ): Observable<PageResponse<ProjectResponse>> {
+    return this.api.get<PageResponse<ProjectResponse>>(`/companies/${id}/projects`, {
+      keyword: filter.keyword || undefined,
+      dateRange: filter.dateRange,
+      status: filter.status,
+      page,
+      size,
+    });
   }
 }

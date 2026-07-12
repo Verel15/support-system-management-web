@@ -33,6 +33,7 @@ import {
 import { InputText } from 'primeng/inputtext';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
+import { formatDateShort } from '../../../../shared/utils/date-format.util';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -129,7 +130,10 @@ export class StatusListComponent {
   }
 
   protected readonly tableRows = computed<Record<string, unknown>[]>(() =>
-    (this.pageData()?.content ?? []).map((r) => ({ ...r })),
+    (this.pageData()?.content ?? []).map((r) => ({
+      ...r,
+      updatedAt: formatDateShort(r.updatedAt),
+    })),
   );
 
   protected readonly totalRecords = computed(() => this.pageData()?.totalElements ?? 0);

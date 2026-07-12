@@ -21,6 +21,7 @@ import {
   TicketTimelineItem,
   StatusItemResponse,
 } from '../../interfaces/ticket.interface';
+import { SelectedTicketType } from '../ticket-type-dialog/ticket-type-dialog.component';
 
 const AVATAR_COLORS = [
   '#3b82f6',
@@ -164,6 +165,18 @@ export class TicketDetailComponent implements OnInit {
             timestamp: formatDateTime(item.createdAt),
           } satisfies CommentItem;
         }
+        if (item.type === 'ASSIGNEE_ADDED' || item.type === 'ASSIGNEE_REMOVED') {
+          return {
+            type: 'activity',
+            id: item.id,
+            actor: item.authorFullName,
+            action:
+              item.type === 'ASSIGNEE_ADDED' ? 'มอบหมายงานให้' : 'ยกเลิกการมอบหมายงานจาก',
+            statusLabel: item.assigneeFullName ?? '',
+            statusGroup: null,
+            timestamp: formatDateTime(item.createdAt),
+          };
+        }
         return {
           type: 'activity',
           id: item.id,
@@ -280,6 +293,7 @@ export class TicketDetailComponent implements OnInit {
             },
           ]);
         }
+        this.loadTimeline();
       },
       error: () => {
         this.messageService.add({
@@ -296,6 +310,7 @@ export class TicketDetailComponent implements OnInit {
     this.ticketService.removeAssignee(this.ticketId, userId).subscribe({
       next: () => {
         this.assigneeList.update((list) => list.filter((a) => a.userId !== userId));
+        this.loadTimeline();
       },
       error: () => {
         this.messageService.add({
@@ -336,6 +351,40 @@ export class TicketDetailComponent implements OnInit {
       next: (items) => this.applyTimeline(items),
       error: () => {},
     });
+  }
+
+  protected onTicketTypeChange(selected: SelectedTicketType): void {
+    const t = this.ticket();
+    if (!t) return;
+
+    this.ticketService
+      .update(this.ticketId, {
+        title: t.title,
+        projectId: t.projectId,
+        ticketTypeId: selected.subCategoryId,
+        priorityId: selected.priorityId,
+        statusFlowId: selected.statusFlowId,
+        description: t.description ?? undefined,
+      })
+      .subscribe({
+        next: (updated) => {
+          this.ticket.set(updated);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'สำเร็จ',
+            detail: 'เปลี่ยนประเภท Ticket แล้ว',
+            life: 3000,
+          });
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'เกิดข้อผิดพลาด',
+            detail: 'ไม่สามารถเปลี่ยนประเภท Ticket ได้',
+            life: 3000,
+          });
+        },
+      });
   }
 
   protected onDeleteTicket(): void {

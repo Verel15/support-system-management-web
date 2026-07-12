@@ -36,6 +36,7 @@ import {
   COLOR_TO_COLOR_KEY,
 } from '../../interfaces/priority.interface';
 import { PriorityService } from '../../services/priority.service';
+import { formatDateTimeShort } from '../../../../shared/utils/date-format.util';
 
 interface Priority {
   id: string;
@@ -139,11 +140,7 @@ export class PriorityListComponent {
             name: p.name,
             icon: SHAPE_TO_ICON_KEY[p.iconShape],
             color: COLOR_TO_COLOR_KEY[p.iconColor],
-            createdAt: new Date(p.createdAt).toLocaleDateString('th-TH', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            }),
+            createdAt: formatDateTimeShort(p.createdAt),
           })),
         );
         this.totalRecords.set(res.totalElements);

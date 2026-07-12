@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  OnInit,
   computed,
   inject,
   signal,
@@ -19,6 +20,7 @@ import {
   ConfirmDialogComponent,
   DeleteConfirmDialogComponent,
 } from '../../../../shared/components/dialogs';
+import { StatusChipComponent } from '../../../../shared/components/status-chip';
 import {
   type PriorityIconKey,
   type PriorityColorKey,
@@ -30,6 +32,9 @@ import {
   DURATION_OPTIONS,
 } from '../../interfaces/priority.interface';
 import { PriorityService } from '../../services/priority.service';
+import { TicketService } from '../../../ticket-management/services/ticket.service';
+import { TicketListResponse } from '../../../ticket-management/interfaces/ticket.interface';
+import { formatDateFull } from '../../../../shared/utils/date-format.util';
 
 interface PriorityData {
   name: string;
@@ -39,21 +44,9 @@ interface PriorityData {
   createdAt: string;
 }
 
-interface TicketRow {
-  title: string;
-  project: string;
-  assignee: string;
-  team: string;
-  status: string;
-}
-
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
 }
-
-const TICKET_STATUSES = [
-  'Open', 'Pending', 'Return', 'In Progress', 'In Review', 'Done', 'Reject', 'Close',
-];
 
 @Component({
   selector: 'app-priority-detail',
@@ -64,15 +57,17 @@ const TICKET_STATUSES = [
     DataTableCellDirective,
     ConfirmDialogComponent,
     DeleteConfirmDialogComponent,
+    StatusChipComponent,
   ],
   templateUrl: './priority-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PriorityDetailComponent {
+export class PriorityDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly messageService = inject(MessageService);
   private readonly priorityService = inject(PriorityService);
+  private readonly ticketService = inject(TicketService);
 
   private readonly id = this.route.snapshot.paramMap.get('id')!;
 
@@ -81,6 +76,7 @@ export class PriorityDetailComponent {
   protected readonly showDeleteDialog = signal(false);
   protected readonly deleting = signal(false);
   protected readonly loading = signal(true);
+  protected readonly ticketsLoading = signal(false);
 
   protected readonly priority = signal<PriorityData>({
     name: '',
@@ -92,29 +88,24 @@ export class PriorityDetailComponent {
 
   protected readonly ticketColumns: TableColumn[] = [
     { field: 'title', header: 'หัวข้อ Ticket', sortable: true },
-    { field: 'project', header: 'โครงการ', sortable: true },
-    { field: 'assignee', header: 'ผู้รับผิดชอบ', sortable: true },
-    { field: 'team', header: 'ทีมรับเรื่อง', sortable: true },
-    { field: 'status', header: '' },
+    { field: 'projectName', header: 'โครงการ', sortable: true },
+    { field: 'assigneesDisplay', header: 'ผู้รับผิดชอบ' },
+    { field: 'statusFlowName', header: 'StatusFlow' },
+    { field: 'currentStatusName', header: '' },
   ];
 
   protected readonly currentPage = signal(1);
   protected readonly pageSize = signal(10);
+  protected readonly totalTickets = signal(0);
+  protected readonly tickets = signal<TicketListResponse[]>([]);
 
-  private readonly allTickets: TicketRow[] = Array.from({ length: 15 }, (_, i) => ({
-    title: 'Text',
-    project: 'Text',
-    assignee: 'Text',
-    team: 'Text',
-    status: TICKET_STATUSES[i % TICKET_STATUSES.length],
-  }));
-
-  protected readonly totalTickets = computed(() => this.allTickets.length);
-
-  protected readonly pagedTickets = computed<Record<string, unknown>[]>(() => {
-    const start = (this.currentPage() - 1) * this.pageSize();
-    return this.allTickets.slice(start, start + this.pageSize()).map((t) => ({ ...t }));
-  });
+  protected readonly pagedTickets = computed<Record<string, unknown>[]>(() =>
+    this.tickets().map((t) => ({
+      ...t,
+      assigneesDisplay:
+        t.assignees.length > 0 ? t.assignees.map((a) => a.fullName).join(', ') : '-',
+    })),
+  );
 
   protected readonly menuItems: ActionMenuItem[] = [
     { label: 'แก้ไข', command: () => this.onEdit() },
@@ -124,6 +115,32 @@ export class PriorityDetailComponent {
 
   constructor() {
     this.loadPriority();
+  }
+
+  ngOnInit(): void {
+    this.loadTickets();
+  }
+
+  private loadTickets(): void {
+    this.ticketsLoading.set(true);
+    this.ticketService
+      .getAll({ priorityId: this.id }, this.currentPage() - 1, this.pageSize())
+      .subscribe({
+        next: (res) => {
+          this.tickets.set(res.content);
+          this.totalTickets.set(res.totalElements);
+          this.ticketsLoading.set(false);
+        },
+        error: () => {
+          this.ticketsLoading.set(false);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'เกิดข้อผิดพลาด',
+            detail: 'ไม่สามารถโหลดรายการ Ticket ได้',
+            life: 4000,
+          });
+        },
+      });
   }
 
   private loadPriority(): void {
@@ -140,12 +157,7 @@ export class PriorityDetailComponent {
           icon: SHAPE_TO_ICON_KEY[res.iconShape],
           color: COLOR_TO_COLOR_KEY[res.iconColor],
           duration: durationLabel,
-          createdAt: new Date(res.createdAt).toLocaleDateString('th-TH', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            weekday: 'long',
-          }),
+          createdAt: formatDateFull(res.createdAt),
         });
         this.loading.set(false);
       },
@@ -169,41 +181,15 @@ export class PriorityDetailComponent {
     return COLOR_HEX[color];
   }
 
-  protected statusBgColor(status: string): string {
-    const map: Record<string, string> = {
-      Open: '#dbeafe',
-      Pending: '#fed7aa',
-      Return: '#fee2e2',
-      'In Progress': '#fff7ed',
-      'In Review': '#fef3c7',
-      Done: '#dcfce7',
-      Reject: '#fee2e2',
-      Close: '#f1f5f9',
-    };
-    return map[status] ?? '#f1f5f9';
-  }
-
-  protected statusTextColor(status: string): string {
-    const map: Record<string, string> = {
-      Open: '#2563eb',
-      Pending: '#c2410c',
-      Return: '#dc2626',
-      'In Progress': '#ea580c',
-      'In Review': '#d97706',
-      Done: '#16a34a',
-      Reject: '#dc2626',
-      Close: '#64748b',
-    };
-    return map[status] ?? '#64748b';
-  }
-
   protected onPageChange(page: number): void {
     this.currentPage.set(page);
+    this.loadTickets();
   }
 
   protected onPageSizeChange(size: number): void {
     this.pageSize.set(size);
     this.currentPage.set(1);
+    this.loadTickets();
   }
 
   protected onBack(): void {

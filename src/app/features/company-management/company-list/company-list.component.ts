@@ -12,6 +12,7 @@ import { DataTableCellDirective, DataTableComponent, TableColumn } from '../../.
 import { ConfirmDialogComponent, DeleteConfirmDialogComponent } from '../../../shared/components/dialogs';
 import { CompanyResponse } from '../interfaces/company.interface';
 import { CompanyService } from '../services/company.service';
+import { formatDateShort } from '../../../shared/utils/date-format.util';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -72,7 +73,7 @@ export class CompanyListComponent implements OnInit {
     const start = (this.currentPage() - 1) * this.pageSize();
     return this.companies()
       .slice(start, start + this.pageSize())
-      .map((c) => ({ ...c }));
+      .map((c) => ({ ...c, createdAt: formatDateShort(c.createdAt) }));
   });
 
   ngOnInit(): void {

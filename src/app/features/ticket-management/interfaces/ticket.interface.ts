@@ -54,6 +54,8 @@ export interface TicketDetailResponse {
   projectName: string;
   ticketTypeId: string;
   ticketTypeName: string;
+  subCategoryId: string;
+  subCategoryName: string;
   currentStatusId: string;
   currentStatusName: string;
   currentStatusGroup: 'START' | 'PROCESS' | 'SUCCESS' | 'FAILED';
@@ -74,7 +76,7 @@ export interface TicketDetailResponse {
 
 export interface TicketTimelineItem {
   id: string;
-  type: 'COMMENT' | 'STATUS_CHANGE';
+  type: 'COMMENT' | 'STATUS_CHANGE' | 'ASSIGNEE_ADDED' | 'ASSIGNEE_REMOVED';
   createdAt: string;
   authorId: string;
   authorFullName: string;
@@ -85,6 +87,9 @@ export interface TicketTimelineItem {
   toStatusId: string | null;
   toStatusName: string | null;
   note: string | null;
+  assigneeFullName: string | null;
+  assigneeUserId: string | null;
+  assigneeProfileImageUrl: string | null;
 }
 
 export type TicketRemainingTime =

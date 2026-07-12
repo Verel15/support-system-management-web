@@ -31,6 +31,7 @@ import { TicketTypeService } from '../../services/ticket-type.service';
 import { TicketCategoryService } from '../../services/ticket-category.service';
 import { TicketSubCategoryService } from '../../services/ticket-sub-category.service';
 import { TicketTypeDateRange } from '../../interfaces/ticket-type.interface';
+import { formatDateShort } from '../../../../shared/utils/date-format.util';
 
 type TabType = 'ticket-type' | 'category' | 'sub-category';
 
@@ -153,7 +154,7 @@ export class TicketTypeListComponent {
             res.content.map((item) => ({
               id: item.id,
               name: item.name,
-              createdAt: this.formatDate(item.createdAt),
+              createdAt: formatDateShort(item.createdAt),
             })),
           );
           this.loading.set(false);
@@ -181,7 +182,7 @@ export class TicketTypeListComponent {
               name: item.name,
               statusFlowName: item.statusFlowName,
               subCategoryCount: item.subCategories.length,
-              createdAt: this.formatDate(item.createdAt),
+              createdAt: formatDateShort(item.createdAt),
             })),
           );
           this.loading.set(false);
@@ -221,14 +222,6 @@ export class TicketTypeListComponent {
         });
         this.loading.set(false);
       },
-    });
-  }
-
-  private formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('th-TH', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
     });
   }
 

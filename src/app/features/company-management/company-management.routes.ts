@@ -17,7 +17,7 @@ export const companyManagementRoutes: Routes = [
       import('./edit-company/edit-company.component').then((m) => m.EditCompanyComponent),
   },
   {
-    path: 'detail/:companyName',
+    path: 'detail/:id',
     loadComponent: () =>
       import('./company-detail/company-detail.component').then((m) => m.CompanyDetailComponent),
   },

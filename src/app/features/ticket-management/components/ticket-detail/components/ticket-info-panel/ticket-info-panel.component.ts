@@ -2,6 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
+  inject,
   input,
   output,
   signal,
@@ -15,13 +17,31 @@ import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { AssigneeUser, FeedUser } from '../../ticket-detail.types';
 import { TicketDetailResponse, StatusItemResponse } from '../../../../interfaces/ticket.interface';
+import { AssigneeSuggestionCardComponent } from '../assignee-suggestion-card/assignee-suggestion-card.component';
+import {
+  TicketTypeDialogComponent,
+  SelectedTicketType,
+} from '../../../ticket-type-dialog/ticket-type-dialog.component';
+import { TicketService } from '../../../../services/ticket.service';
+import {
+  ESuggestedAssigneeReason,
+  SuggestedAssigneeUser,
+} from '../../../../interfaces/assignee-suggestion.interface';
 
 @Component({
   selector: 'app-ticket-info-panel',
-  imports: [DatePipe, FormsModule, Avatar, AvatarGroup, Menu],
+  imports: [
+    DatePipe,
+    FormsModule,
+    Avatar,
+    AvatarGroup,
+    Menu,
+    AssigneeSuggestionCardComponent,
+    TicketTypeDialogComponent,
+  ],
   host: {
     class:
-      'flex flex-col bg-white border-t border-slate-200 lg:border-t-0 lg:border-l lg:overflow-y-auto lg:col-span-4',
+      'flex flex-col bg-white lg:overflow-y-auto lg:col-span-4 lg:ml-6',
   },
   templateUrl: './ticket-info-panel.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,6 +49,7 @@ import { TicketDetailResponse, StatusItemResponse } from '../../../../interfaces
 export class TicketInfoPanelComponent {
   private readonly statusMenu = viewChild.required<Menu>('statusMenu');
   private readonly moreMenu = viewChild.required<Menu>('moreMenu');
+  private readonly ticketService = inject(TicketService);
 
   readonly ticket = input.required<TicketDetailResponse>();
   readonly assigneeList = input.required<AssigneeUser[]>();
@@ -39,8 +60,40 @@ export class TicketInfoPanelComponent {
   readonly assigneeRemove = output<string>();
   readonly statusChange = output<string>();
   readonly deleteTicket = output<void>();
+  readonly ticketTypeChange = output<SelectedTicketType>();
 
   protected readonly showAssigneeDropdown = signal(false);
+  protected readonly showTicketTypeDialog = signal(false);
+
+  protected readonly suggestionLoading = signal(false);
+  protected readonly suggestedCandidate = signal<SuggestedAssigneeUser | null>(null);
+  protected readonly suggestionReason = signal<ESuggestedAssigneeReason | null>(null);
+  private lastSuggestionTicketId = '';
+
+  constructor() {
+    effect(() => {
+      const ticket = this.ticket();
+      const hasAssignees = this.assigneeList().length > 0;
+      if (!ticket || hasAssignees || this.lastSuggestionTicketId === ticket.id) return;
+
+      this.lastSuggestionTicketId = ticket.id;
+      this.suggestionLoading.set(true);
+      this.ticketService.getSuggestedAssignee(ticket.id).subscribe({
+        next: (res) => {
+          this.suggestedCandidate.set(res.suggested);
+          this.suggestionReason.set(res.reason);
+          this.suggestionLoading.set(false);
+        },
+        error: () => {
+          this.suggestedCandidate.set(null);
+          this.suggestionReason.set(null);
+          this.suggestionLoading.set(false);
+        },
+      });
+    });
+  }
+
+  protected readonly showSuggestionCard = computed(() => this.assigneeList().length === 0);
 
   protected readonly statusMenuItems = computed<MenuItem[]>(() =>
     this.statusItems().map((s) => ({
@@ -126,5 +179,21 @@ export class TicketInfoPanelComponent {
     } else {
       this.assigneeAdd.emit(userId);
     }
+  }
+
+  protected onAssignSuggested(userId: string): void {
+    this.assigneeAdd.emit(userId);
+  }
+
+  protected onPickManually(): void {
+    this.showAssigneeDropdown.set(true);
+  }
+
+  protected onOpenTicketTypeDialog(): void {
+    this.showTicketTypeDialog.set(true);
+  }
+
+  protected onTicketTypeConfirmed(selected: SelectedTicketType): void {
+    this.ticketTypeChange.emit(selected);
   }
 }

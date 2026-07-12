@@ -12,24 +12,14 @@ import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Select } from 'primeng/select';
 import { MessageService } from 'primeng/api';
-import {
-  ConfirmDialogComponent,
-  DeleteConfirmDialogComponent,
-} from '../../../../../shared/components/dialogs';
+import { ConfirmDialogComponent } from '../../../../../shared/components/dialogs';
 import { TicketSubCategoryService } from '../../../services/ticket-sub-category.service';
 import { PriorityService } from '../../../../../features/priority-management/services/priority.service';
 import { PositionService } from '../../../../../features/user-management/services/position.service';
 
 @Component({
   selector: 'app-edit-sub-category',
-  imports: [
-    ReactiveFormsModule,
-    Button,
-    InputText,
-    Select,
-    ConfirmDialogComponent,
-    DeleteConfirmDialogComponent,
-  ],
+  imports: [ReactiveFormsModule, Button, InputText, Select, ConfirmDialogComponent],
   templateUrl: './edit-sub-category.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -46,7 +36,6 @@ export class EditSubCategoryComponent {
 
   protected readonly submitting = signal(false);
   protected readonly showConfirmDialog = signal(false);
-  protected readonly showPasswordDialog = signal(false);
   protected readonly priorityOptions = signal<{ value: string; label: string }[]>([]);
   protected readonly positionOptions = signal<{ value: string; label: string }[]>([]);
 
@@ -136,12 +125,8 @@ export class EditSubCategoryComponent {
     this.showConfirmDialog.set(true);
   }
 
-  protected onConfirmStep1(): void {
+  protected onSaveConfirmed(): void {
     this.showConfirmDialog.set(false);
-    this.showPasswordDialog.set(true);
-  }
-
-  protected onSaveConfirmed(_password: string): void {
     this.submitting.set(true);
     this.ticketSubCategoryService
       .update(this.id, {
