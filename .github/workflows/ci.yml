@@ -5,9 +5,6 @@ on:
     tags:
       - 'v*'
 
-env:
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/support-web
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -40,5 +37,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tag }}
-            ${{ env.IMAGE_NAME }}:latest
+            ghcr.io/${{ steps.lower.outputs.owner }}/support-web:${{ steps.vars.outputs.tag }}
+            ghcr.io/${{ steps.lower.outputs.owner }}/support-web:latest
