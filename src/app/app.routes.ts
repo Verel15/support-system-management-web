@@ -149,5 +149,22 @@ export const routes: Routes = [
       ),
   },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: '**', redirectTo: 'dashboard' },
+  {
+    path: 'not-found',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./shared/components/not-found/not-found.component').then(
+            (m) => m.NotFoundComponent,
+          ),
+      },
+    ],
+  },
+  { path: '**', redirectTo: 'not-found' },
 ];
