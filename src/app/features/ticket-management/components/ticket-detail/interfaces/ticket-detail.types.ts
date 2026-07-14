@@ -20,6 +20,7 @@ export interface ActivityItem {
   statusLabel: string;
   statusGroup: 'START' | 'PROCESS' | 'SUCCESS' | 'FAILED' | null;
   timestamp: string;
+  oldValue?: string | null;
 }
 
 export type FeedItem = CommentItem | ActivityItem;

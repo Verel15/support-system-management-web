@@ -13,7 +13,7 @@
     <app-sidebar
       [(collapsed)]="sidebarCollapsed"
       [personalNav]="personalNav"
-      [mainNav]="mainNav"
+      [mainNav]="mainNav()"
       [user]="currentUser()"
       (logoutClick)="authStore.logout()"
     />

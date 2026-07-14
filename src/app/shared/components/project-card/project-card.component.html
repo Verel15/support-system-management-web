@@ -1,6 +1,17 @@
 <article
   class="bg-white rounded-2xl border border-slate-200 shadow-sm relative flex overflow-hidden w-full"
+  [class.cursor-pointer]="clickable()"
+  [class.transition-shadow]="clickable()"
+  [class.hover:shadow-md]="clickable()"
+  [class.focus-visible:outline-none]="clickable()"
+  [class.focus-visible:ring-2]="clickable()"
+  [class.focus-visible:ring-primary-500]="clickable()"
+  [attr.role]="clickable() ? 'button' : null"
+  [attr.tabindex]="clickable() ? 0 : null"
   [attr.aria-label]="project().name"
+  (click)="onCardClick()"
+  (keydown.enter)="onCardClick()"
+  (keydown.space)="$event.preventDefault(); onCardClick()"
 >
   <!-- Left accent strip -->
   <div

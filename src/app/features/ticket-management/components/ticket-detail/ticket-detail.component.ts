@@ -45,6 +45,21 @@ function avatarInitial(name: string): string {
   return name?.trim().charAt(0).toUpperCase() ?? '?';
 }
 
+const FIELD_LABELS: Record<string, string> = {
+  title: 'ชื่อเรื่อง',
+  description: 'รายละเอียด',
+  subCategory: 'ประเภทงาน',
+  priority: 'ลำดับความสำคัญ',
+  statusFlow: 'สถานะการทำงาน',
+  project: 'โครงการ',
+  dueDate: 'กำหนดเวลา',
+};
+
+function fieldLabel(fieldName: string | null): string {
+  if (!fieldName) return 'ข้อมูล';
+  return FIELD_LABELS[fieldName] ?? fieldName;
+}
+
 function formatDateTime(iso: string): string {
   const d = new Date(iso);
   const thDate = new Intl.DateTimeFormat('th-TH', {
@@ -191,6 +206,18 @@ export class TicketDetailComponent implements OnInit {
             timestamp: formatDateTime(item.createdAt),
           };
         }
+        if (item.type === 'FIELD_UPDATED') {
+          return {
+            type: 'activity',
+            id: item.id,
+            actor: item.authorFullName,
+            action: `เปลี่ยน${fieldLabel(item.fieldName)}เป็น`,
+            statusLabel: item.newValue ?? '',
+            statusGroup: null,
+            timestamp: formatDateTime(item.createdAt),
+            oldValue: item.oldValue,
+          };
+        }
         return {
           type: 'activity',
           id: item.id,
@@ -227,9 +254,7 @@ export class TicketDetailComponent implements OnInit {
       .update(this.ticketId, {
         title: draft,
         projectId: t.projectId,
-        ticketTypeId: t.ticketTypeId,
-        priorityId: t.priorityId,
-        statusFlowId: t.statusFlowId,
+        subCategoryId: t.subCategoryId,
         description: t.description ?? undefined,
       })
       .subscribe({
@@ -238,6 +263,7 @@ export class TicketDetailComponent implements OnInit {
           this.ticket.set(updated);
           this.isEditingTitle.set(false);
           this.savingTitle.set(false);
+          this.loadTimeline();
           this.messageService.add({
             severity: 'success',
             summary: 'สำเร็จ',
@@ -375,14 +401,13 @@ export class TicketDetailComponent implements OnInit {
       .update(this.ticketId, {
         title: t.title,
         projectId: t.projectId,
-        ticketTypeId: selected.subCategoryId,
-        priorityId: selected.priorityId,
-        statusFlowId: selected.statusFlowId,
+        subCategoryId: selected.subCategoryId,
         description: t.description ?? undefined,
       })
       .subscribe({
         next: (updated) => {
           this.ticket.set(updated);
+          this.loadTimeline();
           this.messageService.add({
             severity: 'success',
             summary: 'สำเร็จ',

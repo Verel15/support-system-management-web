@@ -5,6 +5,10 @@
   <p class="text-sm text-slate-600 leading-relaxed">
     <span class="font-semibold text-slate-800">{{ activity().actor }}</span>
     {{ ' ' }}{{ activity().action }}{{ ' ' }}
+    @if (activity().oldValue) {
+      <span class="text-slate-400 line-through">{{ activity().oldValue }}</span>
+      {{ ' → ' }}
+    }
     <span
       class="font-semibold"
       [class]="activity().statusGroup === 'SUCCESS' ? 'text-primary-600'

@@ -78,7 +78,7 @@ export interface TicketDetailResponse {
 
 export interface TicketTimelineItem {
   id: string;
-  type: 'COMMENT' | 'STATUS_CHANGE' | 'ASSIGNEE_ADDED' | 'ASSIGNEE_REMOVED';
+  type: 'COMMENT' | 'STATUS_CHANGE' | 'ASSIGNEE_ADDED' | 'ASSIGNEE_REMOVED' | 'FIELD_UPDATED';
   createdAt: string;
   authorId: string;
   authorFullName: string;
@@ -92,6 +92,9 @@ export interface TicketTimelineItem {
   assigneeFullName: string | null;
   assigneeUserId: string | null;
   assigneeProfileImageUrl: string | null;
+  fieldName: string | null;
+  oldValue: string | null;
+  newValue: string | null;
 }
 
 export type TicketRemainingTime =
@@ -153,9 +156,7 @@ export interface CreateTicketRequest {
 export interface UpdateTicketRequest {
   title?: string;
   projectId: string;
-  ticketTypeId: string;
-  priorityId: string;
-  statusFlowId: string;
+  subCategoryId: string;
   description?: string;
 }
 

@@ -30,6 +30,25 @@ import {
   ESuggestedAssigneeReason,
   SuggestedAssigneeUser,
 } from '../../../../interfaces/assignee-suggestion.interface';
+import { ProjectService } from '../../../../../project-management/services/project.service';
+import { ProjectMemberResponse } from '../../../../../project-management/interfaces/project.interface';
+
+const AVATAR_COLORS = [
+  '#3b82f6',
+  '#8b5cf6',
+  '#64748b',
+  '#f59e0b',
+  '#ec4899',
+  '#22c55e',
+  '#ef4444',
+  '#06b6d4',
+];
+
+function avatarColor(seed: string): string {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
 
 @Component({
   selector: 'app-ticket-info-panel',
@@ -51,6 +70,7 @@ export class TicketInfoPanelComponent {
   private readonly statusMenu = viewChild.required<Menu>('statusMenu');
   private readonly moreMenu = viewChild.required<Menu>('moreMenu');
   private readonly ticketService = inject(TicketService);
+  private readonly projectService = inject(ProjectService);
 
   readonly ticket = input.required<TicketDetailResponse>();
   readonly assigneeList = input.required<AssigneeUser[]>();
@@ -70,6 +90,9 @@ export class TicketInfoPanelComponent {
   protected readonly suggestedCandidate = signal<SuggestedAssigneeUser | null>(null);
   protected readonly suggestionReason = signal<ESuggestedAssigneeReason | null>(null);
   private lastSuggestionTicketId = '';
+
+  protected readonly projectMembers = signal<ProjectMemberResponse[]>([]);
+  private lastMembersProjectId = '';
 
   constructor() {
     effect(() => {
@@ -92,7 +115,36 @@ export class TicketInfoPanelComponent {
         },
       });
     });
+
+    effect(() => {
+      const projectId = this.ticket()?.projectId;
+      if (!projectId || this.lastMembersProjectId === projectId) return;
+
+      this.lastMembersProjectId = projectId;
+      this.projectService.getMembers(projectId).subscribe({
+        next: (members) => this.projectMembers.set(members),
+        error: () => this.projectMembers.set([]),
+      });
+    });
   }
+
+  protected readonly assigneeCandidates = computed<AssigneeUser[]>(() => {
+    const selectedIds = new Set(this.selectedAssignees().map((a) => a.userId));
+    return this.projectMembers()
+      .filter((m) => m.role === 'ASSIGNEE')
+      .map((m) => {
+        const fullName = `${m.firstName} ${m.lastName}`.trim();
+        return {
+          id: m.id,
+          userId: m.userId,
+          name: fullName,
+          role: m.role,
+          avatarInitial: fullName.charAt(0).toUpperCase() || '?',
+          avatarColor: avatarColor(m.userId),
+          selected: selectedIds.has(m.userId),
+        };
+      });
+  });
 
   protected readonly showSuggestionCard = computed(() => this.assigneeList().length === 0);
 

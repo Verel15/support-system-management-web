@@ -46,27 +46,36 @@ export class MainLayoutComponent {
     { label: 'การแจ้งเตือน', icon: 'pi-bell', route: '/notifications', badge: 5 },
   ];
 
-  protected readonly mainNav: SidebarNavItem[] = [
-    { label: 'แดชบอร์ด', icon: 'pi-chart-bar', route: '/dashboard' },
-    { label: 'จัดการ Tickets', icon: 'pi-list-check', route: '/ticket-management/list' },
-    { label: 'จัดการโครงการ', icon: 'pi-folder-open', route: '/project-management/list' },
-    {
-      label: 'จัดการผู้ใช้',
-      icon: 'pi-users',
-      children: [
-        { label: 'รายชื่อผู้ใช้ทั้งหมด', icon: '', route: '/user-management/list' },
-        { label: 'ประเภทผู้ใช้', icon: '', route: '/user-type-management/list' },
-      ],
-    },
-    { label: 'จัดการบริษัท', icon: 'pi-building', route: '/company-management/list' },
-    {
-      label: 'จัดการข้อมูล',
-      icon: 'pi-database',
-      children: [
-        { label: 'สถานะ', icon: '', route: '/status-management/list' },
-        { label: 'ประเภท Ticket', icon: '', route: '/ticket-type-management/list' },
-        { label: 'ระดับความสำคัญ', icon: '', route: '/ticket-priority-management/list' },
-      ],
-    },
-  ];
+  // Customer เห็นเฉพาะเมนูส่วนตัว (personalNav) เท่านั้น
+  private readonly isCustomer = computed(
+    () => this.authStore.user()?.accountType === 'CUSTOMER',
+  );
+
+  protected readonly mainNav = computed<SidebarNavItem[]>(() =>
+    this.isCustomer()
+      ? []
+      : [
+          { label: 'แดชบอร์ด', icon: 'pi-chart-bar', route: '/dashboard' },
+          { label: 'จัดการ Tickets', icon: 'pi-list-check', route: '/ticket-management/list' },
+          { label: 'จัดการโครงการ', icon: 'pi-folder-open', route: '/project-management/list' },
+          {
+            label: 'จัดการผู้ใช้',
+            icon: 'pi-users',
+            children: [
+              { label: 'รายชื่อผู้ใช้ทั้งหมด', icon: '', route: '/user-management/list' },
+              { label: 'ประเภทผู้ใช้', icon: '', route: '/user-type-management/list' },
+            ],
+          },
+          { label: 'จัดการบริษัท', icon: 'pi-building', route: '/company-management/list' },
+          {
+            label: 'จัดการข้อมูล',
+            icon: 'pi-database',
+            children: [
+              { label: 'สถานะ', icon: '', route: '/status-management/list' },
+              { label: 'ประเภท Ticket', icon: '', route: '/ticket-type-management/list' },
+              { label: 'ระดับความสำคัญ', icon: '', route: '/ticket-priority-management/list' },
+            ],
+          },
+        ],
+  );
 }

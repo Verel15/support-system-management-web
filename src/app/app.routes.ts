@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { nonCustomerGuard } from './core/guards/non-customer.guard';
 
 export const routes: Routes = [
   {
@@ -11,7 +12,7 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard',
-    canActivate: [authGuard],
+    canActivate: [authGuard, nonCustomerGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,
@@ -41,7 +42,7 @@ export const routes: Routes = [
   },
   {
     path: 'project-management',
-    canActivate: [authGuard],
+    canActivate: [authGuard, nonCustomerGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,
@@ -53,7 +54,7 @@ export const routes: Routes = [
   },
   {
     path: 'ticket-management',
-    canActivate: [authGuard],
+    canActivate: [authGuard, nonCustomerGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,
@@ -77,7 +78,7 @@ export const routes: Routes = [
   },
   {
     path: 'user-management',
-    canActivate: [authGuard],
+    canActivate: [authGuard, nonCustomerGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,
@@ -89,7 +90,7 @@ export const routes: Routes = [
   },
   {
     path: 'user-type-management',
-    canActivate: [authGuard],
+    canActivate: [authGuard, nonCustomerGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,
@@ -101,7 +102,7 @@ export const routes: Routes = [
   },
   {
     path: 'company-management',
-    canActivate: [authGuard],
+    canActivate: [authGuard, nonCustomerGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,
@@ -113,7 +114,7 @@ export const routes: Routes = [
   },
   {
     path: 'status-management',
-    canActivate: [authGuard],
+    canActivate: [authGuard, nonCustomerGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,
@@ -125,7 +126,7 @@ export const routes: Routes = [
   },
   {
     path: 'ticket-type-management',
-    canActivate: [authGuard],
+    canActivate: [authGuard, nonCustomerGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,
@@ -137,7 +138,7 @@ export const routes: Routes = [
   },
   {
     path: 'ticket-priority-management',
-    canActivate: [authGuard],
+    canActivate: [authGuard, nonCustomerGuard],
     loadComponent: () =>
       import('./shared/layouts/main-layout/main-layout.component').then(
         (m) => m.MainLayoutComponent,

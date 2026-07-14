@@ -81,7 +81,7 @@ export const AuthStore = signalStore(
               isLoading: false,
               error: null,
             });
-            router.navigate(['/dashboard']);
+            router.navigate(['/my-tickets']);
           },
           error: (err: unknown) => {
             const msg = (err as { error?: { message?: string } })?.error?.message ?? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';

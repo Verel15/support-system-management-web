@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { Tooltip } from 'primeng/tooltip';
 import { StatusChipComponent } from '../status-chip';
 
@@ -26,4 +26,12 @@ export interface Project {
 })
 export class ProjectCardComponent {
   readonly project = input.required<Project>();
+  readonly clickable = input(false);
+  readonly cardClick = output<Project>();
+
+  onCardClick(): void {
+    if (this.clickable()) {
+      this.cardClick.emit(this.project());
+    }
+  }
 }

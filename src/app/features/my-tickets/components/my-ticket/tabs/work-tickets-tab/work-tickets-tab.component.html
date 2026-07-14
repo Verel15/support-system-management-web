@@ -1,0 +1,47 @@
+<div class="flex flex-col gap-4">
+  <!-- Filters -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+    <div class="flex flex-col sm:flex-row gap-3 shrink-0">
+      <p-select [options]="priorityOptions()" [ngModel]="priorityFilter()"
+        (ngModelChange)="priorityFilter.set($event); onFilterChange()" optionLabel="label" optionValue="value"
+        placeholder="ลำดับความสำคัญ" class="w-full sm:w-auto sm:min-w-44" aria-label="กรองตามลำดับความสำคัญ" />
+      <p-select [options]="timeOptions" [ngModel]="timeFilter()"
+        (ngModelChange)="timeFilter.set($event); onFilterChange()" optionLabel="label" optionValue="value"
+        placeholder="ระยะเวลาที่เหลือ" class="w-full sm:w-auto sm:min-w-44" aria-label="กรองตามระยะเวลาที่เหลือ" />
+    </div>
+    <div class="sm:ml-auto w-full sm:w-72">
+      <p-icon-field class="w-full">
+        <p-inputicon class="pi pi-search" />
+        <input pInputText type="search" placeholder="ค้นหา" [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)" class="w-full h-12 appearance-none" aria-label="ค้นหา Ticket" />
+      </p-icon-field>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <app-data-table [columns]="columns" [data]="tableData()" [totalRecords]="displayTotalRecords()"
+    [currentPage]="currentPage()" [pageSize]="pageSize()" [loading]="loading()" (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)" (sortChange)="onSort($event)">
+    <ng-template dataTableCell="title" let-row let-value="value">
+      <div class="flex items-center gap-2 min-w-0">
+        @if (getPriorityIconClass(row); as iconClass) {
+        <i [class]="iconClass + ' text-xs shrink-0'" aria-hidden="true"></i>
+        }
+        <span class="truncate text-slate-700" [title]="value">{{ value }}</span>
+      </div>
+    </ng-template>
+
+    <ng-template dataTableCell="currentStatusName" let-value="value">
+      <app-status-chip [status]="$any(value)" />
+    </ng-template>
+
+    <ng-template dataTableCell="_actions" let-row>
+      <button type="button"
+        class="inline-flex items-center justify-center w-8 h-8 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+        aria-label="การดำเนินการ" (click)="actionMenu.toggle($event); $event.stopPropagation()">
+        <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+      </button>
+      <p-menu #actionMenu [model]="actionMenuItems" [popup]="true" appendTo="body" />
+    </ng-template>
+  </app-data-table>
+</div>

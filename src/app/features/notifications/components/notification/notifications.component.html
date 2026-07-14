@@ -47,8 +47,7 @@
   <div class="flex-1 overflow-y-auto px-4 sm:px-6">
     @if (displayedGroups().length === 0) {
     <div class="flex flex-col items-center justify-center py-20 text-secondary-400" role="status">
-      <i class="pi pi-bell text-4xl mb-3" aria-hidden="true"></i>
-      <p class="text-sm">ไม่มีการแจ้งเตือน</p>
+      <p class="text-sm text-medium">ไม่มีการแจ้งเตือน</p>
     </div>
     } @else {
     @for (group of displayedGroups(); track group.groupLabel) {

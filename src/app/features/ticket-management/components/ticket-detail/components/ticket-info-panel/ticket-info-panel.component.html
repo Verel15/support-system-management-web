@@ -28,10 +28,8 @@
 
     <span class="text-sm text-slate-500 flex items-center">โครงการ:</span>
     <div class="py-2">
-      <div
-        class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-800">
+      <div class="flex items-center justify-between gap-2 px-3 py-2 text-sm text-slate-800">
         <span class="truncate">{{ ticket().projectName }}</span>
-        <i class="pi pi-chevron-down text-xs text-slate-400 shrink-0" aria-hidden="true"></i>
       </div>
     </div>
 
@@ -47,33 +45,28 @@
 
     <span class="text-sm text-slate-500 flex items-center">สถานะ:</span>
     <div class="py-2">
-      <div
-        class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-800">
+      <div class="flex items-center justify-between gap-2 px-3 py-2 text-sm text-slate-800">
         <span class="truncate">{{ ticket().statusFlowName }}</span>
-        <i class="pi pi-chevron-down text-xs text-slate-400 shrink-0" aria-hidden="true"></i>
       </div>
     </div>
 
     <span class="text-sm text-slate-500 flex items-center">ลำดับความสำคัญ:</span>
     <div class="py-2">
-      <div
-        class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-800">
+      <div class="flex items-center justify-between gap-2 px-3 py-2 text-sm text-slate-800">
         <span class="truncate">{{ ticket().priorityName }}</span>
-        <i class="pi pi-chevron-down text-xs text-slate-400 shrink-0" aria-hidden="true"></i>
       </div>
     </div>
 
     <span class="text-sm text-slate-500 flex items-center">ระยะเวลาแก้ไข:</span>
     <div class="py-2">
-      <div
-        class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-800">
+      <div class="flex items-center justify-between gap-2 px-3 py-2 text-sm text-slate-800">
         <span class="truncate">{{ resolutionTimeDisplay() }}</span>
-        <i class="pi pi-chevron-down text-xs text-slate-400 shrink-0" aria-hidden="true"></i>
       </div>
     </div>
 
     <span class="text-sm text-slate-500 flex items-center">ครบกำหนด:</span>
-    <span class="py-3 text-sm flex items-center gap-1.5" [class]="isOverdue() ? 'text-error-600 font-semibold' : 'text-slate-800'">
+    <span class="py-3 text-sm flex items-center gap-1.5"
+      [class]="isOverdue() ? 'text-error-600 font-semibold' : 'text-slate-800'">
       @if (ticket().dueDate) {
       {{dueDateDisplay()}}
       } @else {
@@ -84,7 +77,8 @@
   </div>
 
   @if (isOverdue()) {
-  <div class="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-error-50 text-error-600 text-sm font-medium" role="alert">
+  <div class="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-error-50 text-error-600 text-sm font-medium"
+    role="alert">
     <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
     <span>เกินกำหนดแก้ไขปัญหา</span>
   </div>
@@ -156,7 +150,7 @@
       <div
         class="absolute left-0 right-0 z-20 mt-1 bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden"
         role="listbox" aria-label="เลือกผู้รับผิดชอบ" aria-multiselectable="true">
-        @for (user of assigneeList(); track user.id) {
+        @for (user of assigneeCandidates(); track user.userId) {
         <button type="button"
           class="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:bg-slate-50"
           role="option" [attr.aria-selected]="user.selected" (click)="onAssigneeToggle(user.userId, user.selected)">
@@ -170,6 +164,9 @@
           <i class="pi pi-check text-primary-500 text-sm shrink-0" aria-hidden="true"></i>
           }
         </button>
+        }
+        @if (assigneeCandidates().length === 0) {
+        <p class="px-3 py-3 text-sm text-slate-400 text-center">ไม่มีสมาชิกในโครงการนี้</p>
         }
       </div>
       }

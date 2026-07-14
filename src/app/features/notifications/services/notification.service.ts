@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, fromEvent, map } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import {
+  NotificationApiType,
   NotificationResponse,
   PageResponse,
   UnreadCountResponse,
@@ -14,8 +15,16 @@ export class NotificationService {
   private readonly api = inject(ApiService);
   private readonly sseUrl = `${environment.apiUrl}/notifications/subscribe`;
 
-  getFeed(page = 0, size = 50): Observable<PageResponse<NotificationResponse>> {
-    return this.api.get<PageResponse<NotificationResponse>>('/notifications', { page, size });
+  getFeed(
+    page = 0,
+    size = 50,
+    type?: NotificationApiType,
+  ): Observable<PageResponse<NotificationResponse>> {
+    return this.api.get<PageResponse<NotificationResponse>>('/notifications', {
+      page,
+      size,
+      type: type || undefined,
+    });
   }
 
   getUnreadCount(): Observable<UnreadCountResponse> {

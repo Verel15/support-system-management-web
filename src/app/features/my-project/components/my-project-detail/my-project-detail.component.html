@@ -24,7 +24,7 @@
   } @else {
     <app-project-info [project]="project()" [readOnly]="true" />
 
-    <app-project-members [readOnly]="true" />
+    <app-project-members [projectId]="project().id" [readOnly]="true" />
 
     <app-project-tickets [projectId]="project().id" [readOnly]="true" />
   }

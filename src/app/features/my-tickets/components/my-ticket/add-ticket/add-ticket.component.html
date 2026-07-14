@@ -38,7 +38,7 @@
         <label for="ticket-project" class="text-sm font-semibold text-slate-700"> โครงการ </label>
         <p-select
           inputId="ticket-project"
-          [options]="projectOptions"
+          [options]="projectOptions()"
           [ngModel]="selectedProject()"
           (ngModelChange)="selectedProject.set($event)"
           optionLabel="label"

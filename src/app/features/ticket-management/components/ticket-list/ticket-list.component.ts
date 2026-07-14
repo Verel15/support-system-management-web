@@ -5,7 +5,6 @@ import {
   computed,
   inject,
   signal,
-  viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -14,8 +13,7 @@ import { Select } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
-import { Menu } from 'primeng/menu';
-import { MenuItem, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import {
   DataTableComponent,
   DataTableCellDirective,
@@ -44,7 +42,6 @@ import {
     InputText,
     IconField,
     InputIcon,
-    Menu,
     DataTableComponent,
     DataTableCellDirective,
     StatusChipComponent,
@@ -56,9 +53,6 @@ export class TicketListComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly ticketService = inject(TicketService);
   private readonly messageService = inject(MessageService);
-
-  protected readonly actionMenu = viewChild.required<Menu>('actionMenu');
-  protected readonly activeRow = signal<Record<string, unknown> | null>(null);
 
   protected readonly statusFilter = signal<string | null>(null);
   protected readonly priorityFilter = signal<string | null>(null);
@@ -76,11 +70,6 @@ export class TicketListComponent implements OnInit {
   protected readonly priorityOptions = computed(() => buildPriorityOptions(this.priorities()));
 
   protected readonly timeOptions = TICKET_TIME_OPTIONS;
-
-  protected readonly menuItems: MenuItem[] = [
-    { label: 'ดูรายละเอียด', command: () => this.onViewTicket() },
-    { label: 'แก้ไข', command: () => this.onEditTicket() },
-  ];
 
   protected readonly columns: TableColumn[] = [
     { field: 'title', header: 'หัวข้องาน', maxWidth: '300px' },
@@ -165,26 +154,13 @@ export class TicketListComponent implements OnInit {
     this.loadTickets();
   }
 
-  protected onMenuOpen(event: MouseEvent, row: Record<string, unknown>): void {
-    event.stopPropagation();
-    this.activeRow.set(row);
-    this.actionMenu().toggle(event);
-  }
-
   protected onAddTicket(): void {
     this.router.navigate(['/ticket-management/add']);
   }
 
-  protected onViewTicket(): void {
-    const row = this.activeRow();
-    if (!row) return;
+  protected onViewTicketRow(event: MouseEvent, row: Record<string, unknown>): void {
+    event.stopPropagation();
     this.router.navigate(['/ticket-management/detail', row['id']]);
-  }
-
-  protected onEditTicket(): void {
-    const row = this.activeRow();
-    if (!row) return;
-    this.router.navigate(['/ticket-management/edit', row['id']]);
   }
 
   protected getPriorityIconClass(row: Record<string, unknown>): string {

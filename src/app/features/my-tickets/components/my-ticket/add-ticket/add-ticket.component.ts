@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Observable, Subject } from 'rxjs';
@@ -11,6 +18,7 @@ import { TicketTypeDialogComponent } from '../../../../ticket-management/compone
 import { SelectedTicketType } from '../../../../ticket-management/components/ticket-type-dialog/ticket-type-dialog.types';
 import { ConfirmDialogComponent } from '../../../../../shared/components/dialogs';
 import { CanDeactivateComponent } from '../../../../../core/guards/unsaved-changes.guard';
+import { ProjectService } from '../../../../project-management/services/project.service';
 
 @Component({
   selector: 'app-add-ticket',
@@ -26,9 +34,10 @@ import { CanDeactivateComponent } from '../../../../../core/guards/unsaved-chang
   templateUrl: './add-ticket.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AddTicketComponent implements CanDeactivateComponent {
+export class AddTicketComponent implements OnInit, CanDeactivateComponent {
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  private readonly projectService = inject(ProjectService);
   private readonly leaveSubject = new Subject<boolean>();
 
   protected readonly title = signal('');
@@ -39,12 +48,7 @@ export class AddTicketComponent implements CanDeactivateComponent {
   protected readonly showLeaveDialog = signal(false);
   protected readonly saving = signal(false);
 
-  protected readonly projectOptions = [
-    { label: 'Helpdesk', value: 'helpdesk' },
-    { label: 'Internal Tools', value: 'internal-tools' },
-    { label: 'Customer Portal', value: 'customer-portal' },
-    { label: 'Infrastructure', value: 'infrastructure' },
-  ];
+  protected readonly projectOptions = signal<{ label: string; value: string }[]>([]);
 
   protected readonly isDirty = computed(
     () =>
@@ -61,6 +65,17 @@ export class AddTicketComponent implements CanDeactivateComponent {
       !!this.selectedTicketType() &&
       this.description().trim().length > 0,
   );
+
+  ngOnInit(): void {
+    this.projectService.getMy(0, 200).subscribe({
+      next: (res) => {
+        this.projectOptions.set(
+          res.content.map((p) => ({ label: p.name, value: p.id })),
+        );
+      },
+      error: () => {},
+    });
+  }
 
   canDeactivate(): Observable<boolean> | boolean {
     if (!this.isDirty()) return true;

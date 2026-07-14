@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, of } from 'rxjs';
@@ -13,6 +13,7 @@ export interface UserDetail {
   role: string;
   initials: string;
   color: string;
+  companyId: string;
 }
 
 const AVATAR_COLORS = [
@@ -28,6 +29,7 @@ function toUserDetail(u: UserResponse, role: string, index: number): UserDetail 
     role,
     initials: u.firstName?.[0] ?? '?',
     color: AVATAR_COLORS[index % AVATAR_COLORS.length],
+    companyId: u.companyId,
   };
 }
 
@@ -72,6 +74,18 @@ export class AddProjectStore {
   readonly selectedCustomerIds = signal<string[]>([]);
   readonly selectedManagerIds = signal<string[]>([]);
 
+  constructor() {
+    // เปลี่ยนบริษัท = ล้าง customer ที่เลือกไว้ (กันค้างจากบริษัทเดิม)
+    let prevCompanyId = this.selectedCompanyId();
+    effect(() => {
+      const companyId = this.selectedCompanyId();
+      if (companyId !== prevCompanyId) {
+        prevCompanyId = companyId;
+        this.selectedCustomerIds.set([]);
+      }
+    });
+  }
+
   readonly colorOptions = [
     { value: '#3b82f6', label: 'น้ำเงิน' },
     { value: '#ef4444', label: 'แดง' },
@@ -113,9 +127,16 @@ export class AddProjectStore {
     return this.companiesRaw().find((c) => c.id === id)?.name ?? '';
   });
 
-  readonly customerUsers = computed<UserDetail[]>(() =>
-    this.customerUsersRaw().map((u, i) => toUserDetail(u, 'ลูกค้า', i)),
-  );
+  readonly selectedCompanyId = computed(() => this.formValues().companyId ?? '');
+
+  // แสดงเฉพาะ customer ที่อยู่ในบริษัทที่เลือก (ยังไม่เลือกบริษัท = ว่าง)
+  readonly customerUsers = computed<UserDetail[]>(() => {
+    const companyId = this.selectedCompanyId();
+    if (!companyId) return [];
+    return this.customerUsersRaw()
+      .filter((u) => u.companyId === companyId)
+      .map((u, i) => toUserDetail(u, 'ลูกค้า', i));
+  });
 
   readonly managerUsers = computed<UserDetail[]>(() =>
     this.assigneeUsersRaw().map((u, i) => toUserDetail(u, 'ผู้พัฒนา', i)),

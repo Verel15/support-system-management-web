@@ -1,0 +1,55 @@
+<div class="flex flex-col gap-4">
+  <!-- Filters -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+    <div class="flex flex-col sm:flex-row gap-3 shrink-0">
+      <p-select [options]="sortByOptions" [ngModel]="sortByFilter()" (ngModelChange)="sortByFilter.set($event)"
+        optionLabel="label" optionValue="value" placeholder="เรียงตาม" class="w-full sm:w-auto sm:min-w-36"
+        aria-label="เรียงตาม" />
+      <p-select [options]="feedbackDateOptions" [ngModel]="dateFilter()" (ngModelChange)="dateFilter.set($event)"
+        optionLabel="label" optionValue="value" placeholder="วันที่" class="w-full sm:w-auto sm:min-w-36"
+        aria-label="กรองตามวันที่" />
+    </div>
+    <div class="sm:ml-auto w-full sm:w-72">
+      <p-icon-field class="w-full">
+        <p-inputicon class="pi pi-search" />
+        <input pInputText type="search" placeholder="ค้นหา" [ngModel]="feedbackSearchQuery()"
+          (ngModelChange)="onFeedbackSearch($event)" class="w-full h-12 appearance-none"
+          aria-label="ค้นหาการตอบกลับ" />
+      </p-icon-field>
+    </div>
+  </div>
+
+  <!-- Feedback header -->
+  <div class="flex items-center justify-between px-2">
+    <h3 class="text-base font-semibold text-slate-800">ล่าสุด</h3>
+    <button type="button"
+      class="flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 transition-colors"
+      (click)="onMarkAllRead()">
+      <i class="pi pi-check-circle" aria-hidden="true"></i>
+      อ่านทั้งหมด
+    </button>
+  </div>
+
+  <!-- Feedback feed -->
+  @if (filteredFeedback().length > 0) {
+  <div class="flex flex-col gap-3" role="list" aria-label="รายการตอบกลับ">
+    @for (item of filteredFeedback(); track item.id) {
+    <app-notification-item [notification]="item" />
+    }
+  </div>
+  } @else {
+  <div class="flex flex-col items-center justify-center gap-2 py-10 text-slate-400">
+    <i class="pi pi-inbox text-3xl" aria-hidden="true"></i>
+    <p class="text-sm">ยังไม่มีการตอบกลับ</p>
+  </div>
+  }
+
+  <!-- Load more -->
+  <div class="flex justify-center py-4">
+    @if (filteredFeedback().length > 0) {
+    <div class="w-44">
+      <p-button label="แสดงเพิ่มเติม" severity="secondary" [outlined]="true" fluid />
+    </div>
+    }
+  </div>
+</div>
