@@ -6,6 +6,7 @@ import { RouterOutlet } from '@angular/router';
   imports: [RouterOutlet],
   templateUrl: './auth-layout.component.html',
   styleUrl: './auth-layout.component.css',
+  host: { class: 'block h-full' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AuthLayoutComponent {}

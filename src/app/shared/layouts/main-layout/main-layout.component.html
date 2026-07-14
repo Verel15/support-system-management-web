@@ -1,13 +1,13 @@
-<!-- Mobile backdrop — ปิด drawer เมื่อแตะข้างนอก -->
-@if (mobileOpen()) {
-  <div
-    class="fixed inset-0 bg-black/40 z-20 lg:hidden"
-    (click)="mobileOpen.set(false)"
-    aria-hidden="true"
-  ></div>
-}
+<div class="fixed inset-0 flex overflow-hidden bg-white">
+  <!-- Mobile backdrop — ปิด drawer เมื่อแตะข้างนอก -->
+  @if (mobileOpen()) {
+    <div
+      class="fixed inset-0 bg-black/40 z-20 lg:hidden"
+      (click)="mobileOpen.set(false)"
+      aria-hidden="true"
+    ></div>
+  }
 
-<div class="flex h-screen overflow-hidden bg-white">
   <!-- Sidebar: fixed drawer บน mobile, flex child ปกติบน lg+ -->
   <div [class]="sidebarDrawerClass()">
     <app-sidebar
@@ -43,7 +43,7 @@
       />
     </header>
 
-    <main class="flex-1 overflow-y-auto" id="main-content">
+    <main class="flex-1 min-w-0 overflow-y-auto" id="main-content">
       <router-outlet />
     </main>
   </div>

@@ -10,6 +10,7 @@ import { AuthStore } from '../../../features/authentication/store/auth.store';
   selector: 'app-main-layout',
   imports: [RouterOutlet, SidebarComponent, NgOptimizedImage],
   templateUrl: './main-layout.component.html',
+  host: { class: 'block h-full' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainLayoutComponent {

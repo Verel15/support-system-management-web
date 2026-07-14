@@ -1,6 +1,21 @@
 @import 'tailwindcss';
 @import "primeicons/primeicons.css";
 
+/* Lock the page to the viewport; scrolling happens inside <main>, not <body>.
+   Prevents the mobile "extra whitespace below content" caused by 100vh. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* app-root must fill the body so descendant h-full chains reach the viewport */
+app-root {
+  display: block;
+  height: 100%;
+}
+
 @theme {
   --font-sans: 'IBM Plex Sans Thai', ui-sans-serif, system-ui, sans-serif;
 

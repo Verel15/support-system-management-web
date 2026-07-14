@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
 
@@ -27,6 +36,30 @@ export class PaginationComponent {
   private static idCounter = 0;
   protected readonly pageSizeSelectId = `pagination-page-size-${++PaginationComponent.idCounter}`;
 
+  // Track viewport width so the number of visible page buttons adapts to screen size.
+  private readonly viewportWidth = signal(
+    typeof window !== 'undefined' ? window.innerWidth : 1024,
+  );
+
+  constructor() {
+    if (typeof window !== 'undefined') {
+      const onResize = () => this.viewportWidth.set(window.innerWidth);
+      window.addEventListener('resize', onResize, { passive: true });
+      inject(DestroyRef).onDestroy(() =>
+        window.removeEventListener('resize', onResize),
+      );
+    }
+  }
+
+  // Fewer buttons on narrow screens so the pagination never overflows horizontally.
+  private readonly maxVisiblePages = computed(() => {
+    const w = this.viewportWidth();
+    if (w < 480) return 3;
+    if (w < 640) return 5;
+    if (w < 1024) return 7;
+    return 10;
+  });
+
   protected readonly totalPages = computed(() =>
     Math.max(1, Math.ceil(this.totalRecords() / this.pageSize()))
   );
@@ -42,7 +75,7 @@ export class PaginationComponent {
   protected readonly visiblePages = computed(() => {
     const total = this.totalPages();
     const current = this.currentPage();
-    const maxVisible = 10;
+    const maxVisible = this.maxVisiblePages();
 
     if (total <= maxVisible) {
       return Array.from({ length: total }, (_, i) => i + 1);
