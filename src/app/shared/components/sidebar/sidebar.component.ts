@@ -35,6 +35,7 @@ export class SidebarComponent {
   readonly user = input.required<SidebarUser>();
   readonly collapsed = model(false);
   readonly logoutClick = output<void>();
+  readonly searchClick = output<void>();
 
   readonly userMenuItems: MenuItem[] = [
     {

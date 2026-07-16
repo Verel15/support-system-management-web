@@ -1,0 +1,89 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [dismissableMask]="true"
+  [showHeader]="false"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="w-[90vw] max-w-xl !mt-24 !mb-auto rounded-xl overflow-hidden shadow-2xl [&_.p-dialog-content]:!p-0"
+  [style]="{ 'align-self': 'flex-start' }"
+  role="dialog"
+  aria-label="ค้นหาทั่วทั้งระบบ"
+>
+  <div class="flex flex-col max-h-[70vh]">
+    <!-- Search input -->
+    <div class="flex items-center gap-3 px-5 py-4 border-b border-slate-100 shrink-0">
+      <i class="pi pi-search text-slate-400 text-lg" aria-hidden="true"></i>
+      <input
+        #searchInput
+        type="text"
+        class="flex-1 outline-none text-lg text-slate-800 placeholder:text-slate-400"
+        placeholder="ค้นหา..."
+        aria-label="ค้นหาทั่วทั้งระบบ"
+        role="combobox"
+        aria-expanded="true"
+        [value]="query()"
+        (input)="onQueryInput($any($event.target).value)"
+        (keydown)="onKeydown($event)"
+      />
+      @if (loading()) {
+        <i class="pi pi-spin pi-spinner text-slate-400" aria-hidden="true"></i>
+      }
+      <kbd class="text-xs text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">esc</kbd>
+    </div>
+
+    <!-- Results -->
+    <div class="flex-1 overflow-y-auto py-2" role="listbox" aria-label="ผลการค้นหา">
+      @if (!hasSearched()) {
+        <p class="px-5 py-8 text-center text-sm text-slate-400">
+          พิมพ์เพื่อค้นหา ticket, โครงการ หรือผู้ใช้
+        </p>
+      } @else if (!loading() && sections().length === 0) {
+        <p class="px-5 py-8 text-center text-sm text-slate-400">ไม่พบผลลัพธ์</p>
+      } @else {
+        @for (section of sections(); track section.type) {
+          <div class="px-5 pt-3 pb-1 text-xs text-slate-400">{{ section.label }}</div>
+          <ul role="list">
+            @for (row of section.rows; track row.type + row.id) {
+              <li>
+                <button
+                  type="button"
+                  class="w-full flex items-center gap-3 px-5 py-2.5 text-left transition-colors focus-visible:outline-none"
+                  [class]="row.flatIndex === activeIndex() ? 'bg-primary-50' : 'hover:bg-slate-50'"
+                  role="option"
+                  [attr.aria-selected]="row.flatIndex === activeIndex()"
+                  (mouseenter)="activeIndex.set(row.flatIndex)"
+                  (click)="select(row)"
+                >
+                  <i [class]="'pi ' + iconFor(row.type) + ' text-slate-400 text-lg w-5 text-center shrink-0'" aria-hidden="true"></i>
+                  <span class="flex-1 min-w-0">
+                    <span class="block text-[15px] text-slate-800 truncate">
+                      {{ row.titleBefore }}<span class="font-semibold text-primary-600">{{ row.titleMatch }}</span>{{ row.titleAfter }}
+                    </span>
+                    <span class="block text-sm text-slate-500 truncate">{{ row.subtitle }}</span>
+                  </span>
+                  @if (row.meta) {
+                    <span class="text-sm text-slate-400 shrink-0">{{ row.meta }}</span>
+                  }
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      }
+    </div>
+
+    <!-- Footer hint bar -->
+    <div class="flex items-center gap-4 px-5 py-2.5 border-t border-slate-100 text-xs text-slate-400 shrink-0">
+      <span class="flex items-center gap-1.5">
+        <kbd class="border border-slate-200 rounded px-1.5 py-0.5">↑↓</kbd> เลือก
+      </span>
+      <span class="flex items-center gap-1.5">
+        <kbd class="border border-slate-200 rounded px-1.5 py-0.5">↵</kbd> ไปหน้านั้น
+      </span>
+      <span class="ml-auto flex items-center gap-1.5">
+        <kbd class="border border-slate-200 rounded px-1.5 py-0.5">⌘K</kbd> เปิด/ปิดได้ทุกที่
+      </span>
+    </div>
+  </div>
+</p-dialog>

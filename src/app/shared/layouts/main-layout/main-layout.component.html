@@ -16,18 +16,20 @@
       [mainNav]="mainNav()"
       [user]="currentUser()"
       (logoutClick)="authStore.logout()"
+      (searchClick)="commandPaletteOpen.set(true)"
     />
   </div>
 
   <div class="flex flex-col flex-1 min-w-0">
-    <!-- Mobile top bar (ซ่อนบน lg+) -->
+    <!-- Top bar: hamburger + logo on mobile only -->
     <header
-      class="lg:hidden flex items-center gap-3 h-14 px-4 border-b border-slate-200 bg-white shrink-0"
+      class="flex items-center gap-3 px-4 border-b border-slate-200 bg-white shrink-0 overflow-hidden transition-[height,opacity] duration-300 lg:hidden"
+      [class]="headerHidden() ? 'h-0 opacity-0 border-b-0!' : 'h-14 opacity-100'"
       aria-label="แถบนำทางด้านบน"
     >
       <button
         type="button"
-        class="flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+        class="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
         aria-label="เปิดเมนู"
         (click)="mobileOpen.set(true)"
       >
@@ -39,12 +41,14 @@
         height="40"
         alt="Support System Management"
         priority
-        class="h-7 w-auto object-contain"
+        class="lg:hidden h-7 w-auto object-contain"
       />
     </header>
 
-    <main class="flex-1 min-w-0 overflow-y-auto" id="main-content">
+    <main class="flex-1 min-w-0 overflow-y-auto" id="main-content" (scroll)="onMainScroll($event)">
       <router-outlet />
     </main>
   </div>
 </div>
+
+<app-command-palette [(visible)]="commandPaletteOpen" />

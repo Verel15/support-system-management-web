@@ -4,21 +4,39 @@ import { NgOptimizedImage } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { SidebarComponent, SidebarNavItem, SidebarUser } from '../../components/sidebar';
+import { CommandPaletteComponent } from '../../components/command-palette';
 import { AuthStore } from '../../../features/authentication/store/auth.store';
 
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterOutlet, SidebarComponent, NgOptimizedImage],
+  imports: [RouterOutlet, SidebarComponent, CommandPaletteComponent, NgOptimizedImage],
   templateUrl: './main-layout.component.html',
-  host: { class: 'block h-full' },
+  host: {
+    class: 'block h-full',
+    '(document:keydown)': 'onGlobalKeydown($event)',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainLayoutComponent {
   protected readonly sidebarCollapsed = signal(false);
   protected readonly mobileOpen = signal(false);
+  protected readonly commandPaletteOpen = signal(false);
+  protected readonly headerHidden = signal(false);
 
   private readonly router = inject(Router);
   protected readonly authStore = inject(AuthStore);
+
+  protected onGlobalKeydown(event: KeyboardEvent): void {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      this.commandPaletteOpen.set(true);
+    }
+  }
+
+  protected onMainScroll(event: Event): void {
+    const scrollTop = (event.target as HTMLElement).scrollTop;
+    this.headerHidden.set(scrollTop > 0);
+  }
 
   // On lg+ the sidebar is a normal flex child; on mobile it's a fixed drawer
   protected readonly sidebarDrawerClass = computed(() =>

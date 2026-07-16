@@ -22,6 +22,25 @@
   }
 </div>
 
+<!-- ─── Search Trigger ──────────────────────────────────── -->
+<div class="px-3 pb-3 shrink-0">
+  <button
+    type="button"
+    [class]="
+      'flex items-center gap-2 w-full h-9 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ' +
+      (collapsed() ? 'justify-center px-0' : 'px-3')
+    "
+    aria-label="ค้นหาทั่วทั้งระบบ"
+    (click)="searchClick.emit()"
+  >
+    <i class="pi pi-search shrink-0" aria-hidden="true"></i>
+    @if (!collapsed()) {
+      <span class="flex-1 text-left truncate">ค้นหา...</span>
+      <kbd class="text-xs text-slate-400 border border-slate-200 rounded px-1.5 py-0.5 shrink-0">⌘K</kbd>
+    }
+  </button>
+</div>
+
 <!-- ─── Personal Navigation ─────────────────────────────── -->
 <nav aria-label="เมนูส่วนตัว" class="shrink-0">
   <ul class="space-y-0.5" role="list">
