@@ -41,16 +41,16 @@ export class MainLayoutComponent {
     };
   });
 
+  // Customer เห็นเฉพาะเมนูส่วนตัว (personalNav) เท่านั้น
+  private readonly isCustomer = computed(
+    () => this.authStore.user()?.accountType === 'CUSTOMER',
+  );
+
   protected readonly personalNav: SidebarNavItem[] = [
     { label: 'Tickets ของฉัน', icon: 'pi-ticket', route: '/my-tickets' },
     { label: 'โครงการของฉัน', icon: 'pi-folder', route: '/my-project' },
     { label: 'การแจ้งเตือน', icon: 'pi-bell', route: '/notifications', badge: 5 },
   ];
-
-  // Customer เห็นเฉพาะเมนูส่วนตัว (personalNav) เท่านั้น
-  private readonly isCustomer = computed(
-    () => this.authStore.user()?.accountType === 'CUSTOMER',
-  );
 
   protected readonly mainNav = computed<SidebarNavItem[]>(() =>
     this.isCustomer()

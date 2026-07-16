@@ -17,6 +17,7 @@ export interface LoginResponse {
   firstName: string;
   lastName: string;
   accountType: string;
+  companyId: string | null;
 }
 
 export interface TokenRefreshRequest {

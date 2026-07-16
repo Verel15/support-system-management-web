@@ -10,6 +10,7 @@ export interface AuthUser {
   firstName: string;
   lastName: string;
   accountType: string;
+  companyId: string | null;
 }
 
 interface AuthState {
@@ -72,6 +73,7 @@ export const AuthStore = signalStore(
               firstName: res.firstName,
               lastName: res.lastName,
               accountType: res.accountType,
+              companyId: res.companyId,
             };
             persist(res.accessToken, res.refreshToken, user);
             patchState(store, {

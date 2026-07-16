@@ -1,0 +1,182 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [closable]="false"
+  [style]="{ width: '640px' }"
+>
+  <ng-template #header>
+    <h2 class="text-lg font-bold text-slate-900">Export รายงาน</h2>
+  </ng-template>
+
+  <div class="flex flex-col gap-5 py-2">
+    <!-- Company -->
+    <div class="flex flex-col gap-2">
+      <label for="export-company" class="text-sm font-medium text-slate-700">บริษัท</label>
+      @if (scope().canSelectAllCompanies) {
+        <p-multiselect
+          inputId="export-company"
+          [options]="companyOptions()"
+          [ngModel]="selectedCompanyIds()"
+          (ngModelChange)="selectedCompanyIds.set($event); selectedProjectIds.set([])"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="ทุกบริษัท"
+          display="chip"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      } @else {
+        <div class="px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-600">
+          <i class="pi pi-lock mr-2 text-slate-400" aria-hidden="true"></i>
+          จำกัดเฉพาะบริษัทของคุณ
+        </div>
+      }
+    </div>
+
+    <!-- Project -->
+    <div class="flex flex-col gap-2">
+      <label for="export-project" class="text-sm font-medium text-slate-700">โครงการ</label>
+      <p-multiselect
+        inputId="export-project"
+        [options]="projectOptions()"
+        [ngModel]="selectedProjectIds()"
+        (ngModelChange)="selectedProjectIds.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="ทุกโครงการ"
+        display="chip"
+        styleClass="w-full"
+        appendTo="body"
+      />
+    </div>
+
+    <!-- Assignee / Priority / Status -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div class="flex flex-col gap-2">
+        <label for="export-assignee" class="text-sm font-medium text-slate-700">ผู้รับผิดชอบ</label>
+        <p-select
+          inputId="export-assignee"
+          [options]="assigneeOptions()"
+          [ngModel]="selectedAssigneeId()"
+          (ngModelChange)="selectedAssigneeId.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="ผู้รับผิดชอบทั้งหมด"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label for="export-priority" class="text-sm font-medium text-slate-700">ลำดับความสำคัญ</label>
+        <p-select
+          inputId="export-priority"
+          [options]="priorityOptions()"
+          [ngModel]="selectedPriorityId()"
+          (ngModelChange)="selectedPriorityId.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="ลำดับความสำคัญทั้งหมด"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label for="export-status" class="text-sm font-medium text-slate-700">สถานะ</label>
+        <p-select
+          inputId="export-status"
+          [options]="statusOptions"
+          [ngModel]="selectedStatusGroup()"
+          (ngModelChange)="selectedStatusGroup.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="สถานะทั้งหมด"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+    </div>
+
+    <!-- Date range -->
+    <div class="flex flex-col gap-2">
+      <label for="export-date-range" class="text-sm font-medium text-slate-700">ช่วงวันที่</label>
+      <p-datepicker
+        inputId="export-date-range"
+        [ngModel]="selectedDateRange()"
+        (ngModelChange)="selectedDateRange.set($event)"
+        selectionMode="range"
+        [readonlyInput]="true"
+        placeholder="ทุกช่วงวันที่"
+        [showIcon]="true"
+        icon="pi pi-calendar"
+        styleClass="w-full"
+        appendTo="body"
+      />
+    </div>
+
+    <!-- Fields -->
+    <div class="flex flex-col gap-2">
+      <span class="text-sm font-medium text-slate-700">คอลัมน์ที่ต้องการ Export</span>
+      <div class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
+        @for (opt of fieldOptions; track opt.field) {
+          <label class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-slate-50 cursor-pointer">
+            <p-checkbox
+              [binary]="true"
+              [ngModel]="selectedFields().includes(opt.field)"
+              (ngModelChange)="toggleField(opt.field, $event)"
+              [inputId]="'field-' + opt.field"
+            />
+            <span class="text-sm text-slate-700 select-none">{{ opt.label }}</span>
+          </label>
+        }
+      </div>
+      @if (!canConfirm()) {
+        <p class="text-xs text-error-600">เลือกอย่างน้อย 1 คอลัมน์</p>
+      }
+    </div>
+
+    <!-- Format -->
+    <div class="flex flex-col gap-2">
+      <span class="text-sm font-medium text-slate-700">รูปแบบไฟล์</span>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" role="radiogroup" aria-label="รูปแบบไฟล์">
+        @for (opt of formatOptions; track opt.value) {
+          <button
+            type="button"
+            role="radio"
+            [attr.aria-checked]="format() === opt.value"
+            (click)="format.set(opt.value)"
+            class="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary-500"
+            [class]="format() === opt.value
+              ? 'border-primary-500 bg-primary-50'
+              : 'border-slate-200 bg-white hover:bg-slate-50'"
+          >
+            <img [ngSrc]="opt.icon" width="20" height="20" [alt]="opt.label" />
+            <span class="text-sm font-medium text-slate-700">{{ opt.label }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <ng-template #footer>
+    <div class="flex gap-3 w-full sm:justify-end">
+      <p-button
+        label="ยกเลิก"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="onCancel()"
+        class="flex-1 sm:flex-none"
+        styleClass="w-full sm:w-40"
+      />
+      <p-button
+        label="Export"
+        severity="primary"
+        [disabled]="!canConfirm()"
+        [loading]="loading()"
+        (onClick)="onConfirm()"
+        class="flex-1 sm:flex-none"
+        styleClass="w-full sm:w-40"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

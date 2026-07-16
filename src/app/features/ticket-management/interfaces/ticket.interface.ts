@@ -144,6 +144,8 @@ export interface TicketFilterRequest {
   keyword?: string;
   remainingTime?: TicketRemainingTime;
   overdue?: boolean;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 export interface CreateTicketRequest {

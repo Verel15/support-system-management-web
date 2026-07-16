@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
-export type QueryParams = Record<string, string | number | boolean | null | undefined>;
+export type QueryParams = Record<string, string | number | boolean | string[] | null | undefined>;
 
 interface ApiEnvelope<T> {
   data: T;
@@ -59,8 +59,10 @@ export class ApiService {
   private buildParams(params?: QueryParams): HttpParams | undefined {
     if (!params) return undefined;
     const filtered = Object.fromEntries(
-      Object.entries(params).filter(([, v]) => v != null),
-    ) as Record<string, string>;
+      Object.entries(params).filter(
+        ([, v]) => v != null && !(Array.isArray(v) && v.length === 0),
+      ),
+    ) as Record<string, string | string[]>;
     return new HttpParams({ fromObject: filtered });
   }
 }

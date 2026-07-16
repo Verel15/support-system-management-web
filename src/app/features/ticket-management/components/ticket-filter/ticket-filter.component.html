@@ -1,0 +1,70 @@
+<p-popover #panel>
+  <div class="w-72 p-1">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-3 py-2">
+      <div class="flex items-center gap-2">
+        <i class="pi pi-sliders-h text-secondary-600" aria-hidden="true"></i>
+        <span class="font-semibold text-secondary-800">ตัวกรอง</span>
+      </div>
+      <button
+        type="button"
+        class="text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors"
+        (click)="clear()"
+      >
+        ล้าง
+      </button>
+    </div>
+
+    <p-divider styleClass="my-2" />
+
+    <!-- ลำดับความสำคัญ -->
+    <div class="px-3 pb-3">
+      <p class="text-xs font-semibold text-secondary-500 mb-2">ลำดับความสำคัญ</p>
+      <div class="flex flex-wrap gap-2">
+        @for (opt of priorityOptions(); track opt.value) {
+          <button
+            type="button"
+            class="px-3 py-1.5 text-sm rounded-full border transition-colors"
+            [class.bg-primary-100]="isPrioritySelected(opt.value)"
+            [class.border-primary-500]="isPrioritySelected(opt.value)"
+            [class.text-primary-700]="isPrioritySelected(opt.value)"
+            [class.border-secondary-300]="!isPrioritySelected(opt.value)"
+            [class.text-secondary-700]="!isPrioritySelected(opt.value)"
+            [class.hover:border-secondary-400]="!isPrioritySelected(opt.value)"
+            [attr.aria-pressed]="isPrioritySelected(opt.value)"
+            (click)="selectPriority(opt.value)"
+          >
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- ระยะเวลาที่เหลือ -->
+    <div class="px-3 pb-3">
+      <p class="text-xs font-semibold text-secondary-500 mb-2">ระยะเวลาที่เหลือ</p>
+      <div class="flex flex-wrap gap-2">
+        @for (opt of timeOptions; track opt.value) {
+          <button
+            type="button"
+            class="px-3 py-1.5 text-sm rounded-full border transition-colors"
+            [class.bg-primary-100]="isRemainingTimeSelected(opt.value)"
+            [class.border-primary-500]="isRemainingTimeSelected(opt.value)"
+            [class.text-primary-700]="isRemainingTimeSelected(opt.value)"
+            [class.border-secondary-300]="!isRemainingTimeSelected(opt.value)"
+            [class.text-secondary-700]="!isRemainingTimeSelected(opt.value)"
+            [class.hover:border-secondary-400]="!isRemainingTimeSelected(opt.value)"
+            [attr.aria-pressed]="isRemainingTimeSelected(opt.value)"
+            (click)="selectRemainingTime(opt.value)"
+          >
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="px-3 pb-1">
+      <p-button label="ค้นหา" styleClass="w-full" (onClick)="search()" />
+    </div>
+  </div>
+</p-popover>

@@ -1,0 +1,38 @@
+<p-dialog
+  [visible]="visible()"
+  [modal]="true"
+  [closable]="false"
+  [style]="{ width: '90vw', maxWidth: '900px' }"
+  [contentStyle]="{ height: '80vh', padding: '0' }"
+>
+  <ng-template #header>
+    <h2 class="text-lg font-bold text-slate-900">ตัวอย่างรายงาน PDF</h2>
+  </ng-template>
+
+  <div class="w-full h-full bg-slate-100">
+    @if (safePdfUrl(); as url) {
+      <iframe [src]="url" title="ตัวอย่างรายงาน PDF" class="w-full h-full border-0"></iframe>
+    }
+  </div>
+
+  <ng-template #footer>
+    <div class="flex gap-3 w-full sm:justify-end mt-6">
+      <p-button
+        label="ยกเลิก"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="onCancel()"
+        class="flex-1 sm:flex-none"
+        styleClass="w-full sm:w-40"
+      />
+      <p-button
+        label="ดาวน์โหลด"
+        severity="primary"
+        [loading]="downloading()"
+        (onClick)="onDownload()"
+        class="flex-1 sm:flex-none"
+        styleClass="w-full sm:w-40"
+      />
+    </div>
+  </ng-template>
+</p-dialog>
