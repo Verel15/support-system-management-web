@@ -14,6 +14,7 @@ import { InputText } from 'primeng/inputtext';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { Menu } from 'primeng/menu';
+import { Tabs, TabList, Tab } from 'primeng/tabs';
 import { MenuItem } from 'primeng/api';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, debounceTime, map, of, startWith, switchMap } from 'rxjs';
@@ -31,6 +32,9 @@ import { PageResponse } from '../../interfaces/position.interface';
 import { UserResponse } from '../../interfaces/user.interface';
 import { AuthStore } from '../../../authentication/store/auth.store';
 import { PERMISSIONS } from '../../../../core/constants/permission.constant';
+import { formatDateShort } from '../../../../shared/utils/date-format.util';
+import { CompanyService } from '../../../company-management/services/company.service';
+import { UserTypeService } from '../../../user-type-management/services/user-type.service';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -54,6 +58,9 @@ interface UserRow {
     IconField,
     InputIcon,
     Menu,
+    Tabs,
+    TabList,
+    Tab,
     DataTableComponent,
     DataTableCellDirective,
     DeleteConfirmDialogComponent,
@@ -65,6 +72,8 @@ interface UserRow {
 export class UserListComponent {
   private readonly router = inject(Router);
   private readonly userService = inject(UserService);
+  private readonly companyService = inject(CompanyService);
+  private readonly userTypeService = inject(UserTypeService);
   private readonly authStore = inject(AuthStore);
 
   protected readonly menu = viewChild.required<Menu>('actionMenu');
@@ -95,11 +104,11 @@ export class UserListComponent {
     { field: 'createdAt', header: 'วันที่สร้าง' }
   ];
 
-  protected readonly accountTypeOptions = [
-    { label: 'รูปแบบผู้ใช้', value: null },
+  protected readonly accountTypeTabs = [
+    { label: 'ทั้งหมด', value: 'ALL' },
     { label: 'ลูกค้า', value: 'CUSTOMER' as AccountType },
     { label: 'เจ้าหน้าที่', value: 'STAFF' as AccountType },
-    { label: 'ผู้ดูแลระบบ', value: 'ADMIN' as AccountType}
+    { label: 'ผู้ดูแลระบบ', value: 'ADMIN' as AccountType },
   ];
 
   protected readonly dateOptions = [
@@ -109,22 +118,59 @@ export class UserListComponent {
     { label: 'เดือนนี้', value: 'THIS_MONTH' },
   ];
 
-  protected readonly selectedAccountType = signal<AccountType | null>(null);
+  private readonly companiesRaw = toSignal(
+    this.companyService.getAll().pipe(catchError(() => of([]))),
+    { initialValue: [] },
+  );
+
+  protected readonly companyOptions = computed(() => [
+    { label: 'บริษัททั้งหมด', value: null },
+    ...this.companiesRaw().map((c) => ({ label: c.name, value: c.id })),
+  ]);
+
+  private readonly userTypesRaw = toSignal(
+    this.userTypeService.getAll(0, 200).pipe(
+      map((page) => page.content),
+      catchError(() => of([])),
+    ),
+    { initialValue: [] },
+  );
+
+  protected readonly userTypeOptions = computed(() => [
+    { label: 'ประเภทผู้ใช้ทั้งหมด', value: null },
+    ...this.userTypesRaw().map((t) => ({ label: t.name, value: t.id })),
+  ]);
+
+  protected readonly selectedAccountType = signal<AccountType | 'ALL'>('ALL');
+  protected readonly selectedCompanyId = signal<string | null>(null);
+  protected readonly selectedUserTypeId = signal<string | null>(null);
   protected readonly selectedDate = signal<number | null>(null);
   protected readonly searchQuery = signal('');
   protected readonly currentPage = signal(1);
   protected readonly pageSize = signal(10);
 
-  private readonly queryParams = computed(() => ({
-    filter: {
-      accountType: this.selectedAccountType() ?? undefined,
-      keyword: this.searchQuery() || undefined,
-      dateRange: this.selectedDate() ?? undefined,
-    } satisfies UserFilterRequest,
-    page: this.currentPage() - 1,
-    size: this.pageSize(),
-    _refresh: this.refreshTrigger(),
-  }));
+  protected readonly showCompanyFilter = computed(() =>
+    this.selectedAccountType() === 'ALL' || this.selectedAccountType() === 'CUSTOMER',
+  );
+  protected readonly showUserTypeFilter = computed(() =>
+    this.selectedAccountType() === 'ALL' || this.selectedAccountType() === 'STAFF',
+  );
+
+  private readonly queryParams = computed(() => {
+    const accountType = this.selectedAccountType();
+    return {
+      filter: {
+        accountType: accountType === 'ALL' ? undefined : accountType,
+        companyId: this.selectedCompanyId() ?? undefined,
+        userTypeId: this.selectedUserTypeId() ?? undefined,
+        keyword: this.searchQuery() || undefined,
+        dateRange: this.selectedDate() ?? undefined,
+      } satisfies UserFilterRequest,
+      page: this.currentPage() - 1,
+      size: this.pageSize(),
+      _refresh: this.refreshTrigger(),
+    };
+  });
 
   private readonly response = toSignal(
     toObservable(this.queryParams).pipe(
@@ -150,7 +196,7 @@ export class UserListComponent {
       userType: u.userTypeName,
       email: u.email,
       phone: u.phone ?? '-',
-      createdAt: u.createdAt,
+      createdAt: formatDateShort(u.createdAt),
     })),
   );
 
@@ -171,6 +217,13 @@ export class UserListComponent {
 
   protected onFilterChange(): void {
     this.currentPage.set(1);
+  }
+
+  protected onTabChange(value: string | number | undefined): void {
+    this.selectedAccountType.set(value as AccountType | 'ALL');
+    this.selectedCompanyId.set(null);
+    this.selectedUserTypeId.set(null);
+    this.onFilterChange();
   }
 
   protected onSort(_event: SortEvent): void {

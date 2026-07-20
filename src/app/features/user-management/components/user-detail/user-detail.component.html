@@ -89,7 +89,7 @@
         <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">วันที่สร้าง</dt>
         <dd class="text-sm font-medium text-slate-800">{{ u.createdAt }}</dd>
       </div>
-      @if (!isCustomer()) {
+      @if (!isCustomer() && !isAdmin()) {
         <div class="flex gap-3 items-center">
           <dt class="min-w-[7.5rem] shrink-0 text-sm text-slate-500">แผนก</dt>
           <dd><app-chip [label]="u.department" color="primary" /></dd>

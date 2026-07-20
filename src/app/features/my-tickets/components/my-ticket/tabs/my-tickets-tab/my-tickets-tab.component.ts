@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
@@ -15,12 +16,10 @@ import {
 import { TicketService } from '../../../../../ticket-management/services/ticket.service';
 import {
   TicketListResponse,
-  PriorityResponse,
   TicketFilterRequest,
   TicketRemainingTime,
   TICKET_STATUS_OPTIONS,
   TICKET_TIME_OPTIONS,
-  buildPriorityOptions,
 } from '../../../../../ticket-management/interfaces/ticket.interface';
 import { getPriorityIconClass } from '../../../../../ticket-management/utils/priority-icon.util';
 
@@ -41,13 +40,13 @@ import { getPriorityIconClass } from '../../../../../ticket-management/utils/pri
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MyTicketsTabComponent implements OnInit {
+  private readonly router = inject(Router);
   private readonly ticketService = inject(TicketService);
   private readonly messageService = inject(MessageService);
 
   protected readonly getPriorityIconClass = getPriorityIconClass;
 
   protected readonly statusFilter = signal<string | null>(null);
-  protected readonly priorityFilter = signal<string | null>(null);
   protected readonly timeFilter = signal<string | null>(null);
   protected readonly searchQuery = signal('');
   protected readonly currentPage = signal(1);
@@ -56,28 +55,23 @@ export class MyTicketsTabComponent implements OnInit {
 
   protected readonly tickets = signal<TicketListResponse[]>([]);
   protected readonly totalRecords = signal(0);
-  protected readonly priorities = signal<PriorityResponse[]>([]);
 
   protected readonly statusOptions = TICKET_STATUS_OPTIONS;
   protected readonly timeOptions = TICKET_TIME_OPTIONS;
-  protected readonly priorityOptions = computed(() => buildPriorityOptions(this.priorities()));
 
   protected readonly columns: TableColumn[] = [
     { field: 'title', header: 'หัวข้องาน', sortable: true, maxWidth: '300px' },
     { field: 'projectName', header: 'โครงการ', sortable: true },
     { field: 'assigneesDisplay', header: 'ผู้รับผิดชอบ' },
     { field: 'remainingTime', header: 'ระยะเวลาที่เหลือ' },
-    { field: 'priorityName', header: 'ลำดับความสำคัญ' },
     { field: 'currentStatusName', header: 'สถานะ' },
   ];
 
   protected readonly actionMenuItems = [
-    { label: 'ดูรายละเอียด', icon: 'pi pi-eye' },
-    { separator: true },
-    { label: 'สำคัญปานกลาง', icon: 'pi pi-circle-fill', styleClass: 'text-warning-500' },
-    { label: 'สำคัญน้อย', icon: 'pi pi-circle-fill', styleClass: 'text-primary-400' },
-    { label: 'สำคัญมาก', icon: 'pi pi-circle-fill', styleClass: 'text-error-500' },
+    { label: 'ดูรายละเอียด', icon: 'pi pi-eye', command: () => this.onViewTicket() },
   ];
+
+  private activeRow: Record<string, unknown> | null = null;
 
   protected readonly tableData = computed<Record<string, unknown>[]>(() =>
     this.tickets().map((t) => ({
@@ -87,22 +81,13 @@ export class MyTicketsTabComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    this.loadPriorities();
     this.loadTickets();
-  }
-
-  private loadPriorities(): void {
-    this.ticketService.getPriorities().subscribe({
-      next: (res) => this.priorities.set(res.content),
-      error: () => {},
-    });
   }
 
   private loadTickets(): void {
     this.loading.set(true);
     const filter: TicketFilterRequest = {};
     if (this.searchQuery().trim()) filter.keyword = this.searchQuery().trim();
-    if (this.priorityFilter()) filter.priorityId = this.priorityFilter()!;
     if (this.statusFilter()) filter.statusGroup = this.statusFilter() as TicketFilterRequest['statusGroup'];
     if (this.timeFilter()) filter.remainingTime = this.timeFilter() as TicketRemainingTime;
 
@@ -149,5 +134,22 @@ export class MyTicketsTabComponent implements OnInit {
     this.pageSize.set(size);
     this.currentPage.set(1);
     this.loadTickets();
+  }
+
+  protected onRowClick(row: Record<string, unknown>): void {
+    this.navigateToDetail(row);
+  }
+
+  protected onMenuOpen(row: Record<string, unknown>): void {
+    this.activeRow = row;
+  }
+
+  protected onViewTicket(): void {
+    if (this.activeRow) this.navigateToDetail(this.activeRow);
+  }
+
+  private navigateToDetail(row: Record<string, unknown>): void {
+    const id = row['id'] as string;
+    this.router.navigate(['/ticket-management/detail', id]);
   }
 }

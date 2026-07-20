@@ -5,7 +5,7 @@ export type ChipVariant = 'outlined' | 'filled';
 
 @Component({
   selector: 'app-chip',
-  template: `<span [class]="classes()" >{{ label() }}</span>`,
+  template: `<span [class]="classes()" [title]="label()">{{ label() }}</span>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChipComponent {
@@ -36,6 +36,6 @@ export class ChipComponent {
         filled: 'bg-blue-50 text-blue-800 font-bold',
       },
     };
-    return `inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${map[this.color()][this.variant()]}`;
+    return `inline-flex items-center max-w-full rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis ${map[this.color()][this.variant()]}`;
   });
 }

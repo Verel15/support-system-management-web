@@ -19,6 +19,7 @@ import { SelectedTicketType } from '../../../../ticket-management/components/tic
 import { ConfirmDialogComponent } from '../../../../../shared/components/dialogs';
 import { CanDeactivateComponent } from '../../../../../core/guards/unsaved-changes.guard';
 import { ProjectService } from '../../../../project-management/services/project.service';
+import { TicketService } from '../../../../ticket-management/services/ticket.service';
 
 @Component({
   selector: 'app-add-ticket',
@@ -38,6 +39,7 @@ export class AddTicketComponent implements OnInit, CanDeactivateComponent {
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
   private readonly projectService = inject(ProjectService);
+  private readonly ticketService = inject(TicketService);
   private readonly leaveSubject = new Subject<boolean>();
 
   protected readonly title = signal('');
@@ -112,19 +114,34 @@ export class AddTicketComponent implements OnInit, CanDeactivateComponent {
 
   protected onSubmit(): void {
     if (!this.isValid()) return;
+    const project = this.selectedProject();
+    const ticketType = this.selectedTicketType();
+    if (!project || !ticketType) return;
+
     this.saving.set(true);
-    // TODO: call create ticket API
-    setTimeout(() => {
-      this.saving.set(false);
-      this.resetForm();
-      this.messageService.add({
-        severity: 'success',
-        summary: 'สำเร็จ',
-        detail: 'สร้าง Ticket เรียบร้อยแล้ว',
-        life: 3000,
+    this.ticketService
+      .create({
+        title: this.title().trim(),
+        projectId: project,
+        subCategoryId: ticketType.subCategoryId,
+        description: this.description().trim() || undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.resetForm();
+          this.messageService.add({
+            severity: 'success',
+            summary: 'สำเร็จ',
+            detail: 'สร้าง Ticket เรียบร้อยแล้ว',
+            life: 3000,
+          });
+          this.router.navigate(['/my-tickets']);
+        },
+        error: () => {
+          this.saving.set(false);
+        },
       });
-      this.router.navigate(['/my-tickets']);
-    }, 600);
   }
 
   protected formatInterval(value: number, unit: string): string {

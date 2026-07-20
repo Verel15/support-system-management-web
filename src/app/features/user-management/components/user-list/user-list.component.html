@@ -13,20 +13,44 @@
     </div>
   </div>
 
+  <!-- Account type tabs -->
+  <p-tabs [value]="selectedAccountType()" (valueChange)="onTabChange($event)">
+    <p-tablist>
+      @for (tab of accountTypeTabs; track tab.value) {
+        <p-tab [value]="tab.value">{{ tab.label }}</p-tab>
+      }
+    </p-tablist>
+  </p-tabs>
+
   <!-- Filters -->
   <div class="flex flex-col sm:flex-row sm:items-center gap-3">
     <!-- Left: dropdown filters -->
     <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 shrink-0">
-      <p-select
-        [options]="accountTypeOptions"
-        [ngModel]="selectedAccountType()"
-        (ngModelChange)="selectedAccountType.set($event); onFilterChange()"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="รูปแบบผู้ใช้"
-        class="w-full sm:w-auto sm:min-w-36"
-        aria-label="กรองตามประเภทผู้ใช้"
-      />
+      @if (showCompanyFilter()) {
+        <p-select
+          [options]="companyOptions()"
+          [ngModel]="selectedCompanyId()"
+          (ngModelChange)="selectedCompanyId.set($event); onFilterChange()"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="บริษัท"
+          class="w-full sm:w-auto sm:min-w-44"
+          aria-label="กรองตามบริษัท"
+        />
+      }
+
+      @if (showUserTypeFilter()) {
+        <p-select
+          [options]="userTypeOptions()"
+          [ngModel]="selectedUserTypeId()"
+          (ngModelChange)="selectedUserTypeId.set($event); onFilterChange()"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="ประเภทผู้ใช้"
+          class="w-full sm:w-auto sm:min-w-44"
+          aria-label="กรองตามประเภทผู้ใช้"
+        />
+      }
 
       <p-select
         [options]="dateOptions"

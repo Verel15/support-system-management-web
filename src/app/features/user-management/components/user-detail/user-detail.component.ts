@@ -93,6 +93,7 @@ export class UserDetailComponent {
   });
 
   protected readonly isCustomer = computed(() => this.user()?.accountType === 'CUSTOMER');
+  protected readonly isAdmin = computed(()=> this.user()?.accountType === 'ADMIN');
 
   protected onBack(): void {
     this.router.navigate(['/user-management/list']);

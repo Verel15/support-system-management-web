@@ -37,6 +37,8 @@ export interface UserResponse {
 
 export interface UserFilterRequest {
   accountType?: AccountType;
+  companyId?: string;
+  userTypeId?: string;
   keyword?: string;
   dateRange?: number;
 }
