@@ -26,6 +26,7 @@ import { CompanyService } from '../services/company.service';
 import { CompanyResponse } from '../interfaces/company.interface';
 import { ProjectResponse } from '../../project-management/interfaces/project.interface';
 import { formatDateShort } from '../../../shared/utils/date-format.util';
+import { HasPermissionDirective } from '../../../shared/directives';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -47,6 +48,7 @@ const MEMBER_COLORS = ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444', '#
     ConfirmDialogComponent,
     DeleteConfirmDialogComponent,
     Divider,
+    HasPermissionDirective,
   ],
   templateUrl: './company-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

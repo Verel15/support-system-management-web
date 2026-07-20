@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { HasPermissionDirective } from '../../../../../../shared/directives';
 import {
   ESuggestedAssigneeReason,
   SuggestedAssigneeUser,
@@ -10,7 +11,7 @@ function avatarInitial(name: string): string {
 
 @Component({
   selector: 'app-assignee-suggestion-card',
-  imports: [],
+  imports: [HasPermissionDirective],
   templateUrl: './assignee-suggestion-card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

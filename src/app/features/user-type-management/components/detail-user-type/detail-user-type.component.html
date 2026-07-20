@@ -11,6 +11,7 @@
     </button>
     <h1 class="flex-1 text-center text-xl font-semibold text-slate-800">รายละเอียดประเภทผู้ใช้</h1>
     <button
+      *appHasPermission="'manageUserAccess'"
       type="button"
       (click)="onToggleMenu($event)"
       class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"

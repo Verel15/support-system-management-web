@@ -10,9 +10,12 @@ import { InputText } from 'primeng/inputtext';
 import { Menu } from 'primeng/menu';
 import { DataTableCellDirective, DataTableComponent, TableColumn } from '../../../shared/components/data-table';
 import { ConfirmDialogComponent, DeleteConfirmDialogComponent } from '../../../shared/components/dialogs';
+import { HasPermissionDirective } from '../../../shared/directives';
 import { CompanyResponse } from '../interfaces/company.interface';
 import { CompanyService } from '../services/company.service';
 import { formatDateShort } from '../../../shared/utils/date-format.util';
+import { AuthStore } from '../../authentication/store/auth.store';
+import { PERMISSIONS } from '../../../core/constants/permission.constant';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -31,6 +34,7 @@ interface ActionMenuItem extends MenuItem {
     DataTableCellDirective,
     ConfirmDialogComponent,
     DeleteConfirmDialogComponent,
+    HasPermissionDirective,
   ],
   templateUrl: './company-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,18 +43,24 @@ export class CompanyListComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
   private readonly companyService = inject(CompanyService);
+  private readonly authStore = inject(AuthStore);
 
   protected readonly menu = viewChild.required<Menu>('actionMenu');
   protected readonly activeRow = signal<CompanyResponse | null>(null);
   protected readonly showConfirmDeleteDialog = signal(false);
   protected readonly showDeleteDialog = signal(false);
 
-  protected readonly menuItems: ActionMenuItem[] = [
-    { label: 'ดูรายละเอียด', command: () => this.onViewCompany() },
-    { label: 'แก้ไข', command: () => this.onEditCompany() },
-    { separator: true },
-    { label: 'ลบ', danger: true, command: () => this.onDeleteCompany() },
-  ];
+  protected readonly menuItems = computed<ActionMenuItem[]>(() => {
+    const items: ActionMenuItem[] = [{ label: 'ดูรายละเอียด', command: () => this.onViewCompany() }];
+    if (this.authStore.hasPermission()(PERMISSIONS.MANAGE_COMPANY_ACCESS)) {
+      items.push(
+        { label: 'แก้ไข', command: () => this.onEditCompany() },
+        { separator: true },
+        { label: 'ลบ', danger: true, command: () => this.onDeleteCompany() },
+      );
+    }
+    return items;
+  });
 
   protected readonly columns: TableColumn[] = [
     { field: 'name', header: 'รายชื่อบริษัท' },

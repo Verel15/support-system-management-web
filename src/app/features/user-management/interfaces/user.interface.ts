@@ -1,4 +1,4 @@
-export type AccountType = 'CUSTOMER' | 'EXTERNAL';
+export type AccountType = 'CUSTOMER' | 'STAFF' | 'ADMIN';
 export type UserStatus = 'ACTIVE' | 'INACTIVE';
 
 export interface UserRequest {

@@ -8,6 +8,7 @@ import { InputText } from 'primeng/inputtext';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { ProjectCardComponent, Project } from '../../../../shared/components/project-card';
+import { HasPermissionDirective } from '../../../../shared/directives';
 import { ProjectService } from '../../services/project.service';
 import {
   PROJECT_DATE_OPTIONS,
@@ -19,7 +20,16 @@ import {
 
 @Component({
   selector: 'app-project-list',
-  imports: [FormsModule, Button, Select, InputText, IconField, InputIcon, ProjectCardComponent],
+  imports: [
+    FormsModule,
+    Button,
+    Select,
+    InputText,
+    IconField,
+    InputIcon,
+    ProjectCardComponent,
+    HasPermissionDirective,
+  ],
   templateUrl: './project-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

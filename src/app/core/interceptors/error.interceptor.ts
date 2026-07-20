@@ -9,7 +9,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       // 401 is handled by authInterceptor (redirect to login)
-      if (error.status !== 401) {
+      if (error.status === 403) {
+        const detail = error.error?.message ?? 'คุณไม่มีสิทธิ์เข้าถึงข้อมูลนี้';
+        messageService.add({ severity: 'error', summary: 'ไม่มีสิทธิ์เข้าถึง', detail, life: 4000 });
+      } else if (error.status !== 401) {
         const detail = error.error?.message ?? 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
         messageService.add({ severity: 'error', summary: 'เกิดข้อผิดพลาด', detail, life: 4000 });
       }

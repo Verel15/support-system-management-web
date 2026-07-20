@@ -20,6 +20,7 @@
     </ng-template>
   </p-menu>
   <p-button
+    *appHasPermission="'manageCompanyAccess'"
     icon="pi pi-ellipsis-h"
     [text]="true"
     severity="secondary"

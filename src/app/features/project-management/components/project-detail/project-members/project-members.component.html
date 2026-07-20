@@ -9,7 +9,7 @@
         ผู้ใช้ทั้งหมด
       </h2>
       @if (!readOnly()) {
-        <div class="w-full sm:w-auto md:w-44">
+        <div class="w-full sm:w-auto md:w-44" *appHasPermission="'manageProjectAccess'">
           <p-button
             label="เพิ่มสมาชิก"
             icon="pi pi-plus"
@@ -84,7 +84,7 @@
 </section>
 
 <!-- Action menu -->
-<p-menu #actionMenu [model]="menuItems" [popup]="true" appendTo="body">
+<p-menu #actionMenu [model]="menuItems()" [popup]="true" appendTo="body">
   <ng-template #item let-item pTemplate="item">
     <a class="p-menu-item-link" role="menuitem">
       <span class="p-menu-item-label" [class.text-error-600]="item.label === 'ลบ'">{{

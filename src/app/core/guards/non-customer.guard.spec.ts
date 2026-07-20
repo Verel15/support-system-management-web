@@ -41,8 +41,8 @@ describe('nonCustomerGuard', () => {
     expect(router.createUrlTree).toHaveBeenCalledWith(['/my-tickets']);
   });
 
-  it('allows EXTERNAL users', () => {
-    const { result, router } = setup('EXTERNAL');
+  it('allows STAFF users', () => {
+    const { result, router } = setup('STAFF');
     expect(result).toBe(true);
     expect(router.createUrlTree).not.toHaveBeenCalled();
   });

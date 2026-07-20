@@ -27,11 +27,14 @@ import {
   ConfirmDialogComponent,
   DeleteConfirmDialogComponent,
 } from '../../../../shared/components/dialogs';
+import { HasPermissionDirective } from '../../../../shared/directives';
 import { TicketTypeService } from '../../services/ticket-type.service';
 import { TicketCategoryService } from '../../services/ticket-category.service';
 import { TicketSubCategoryService } from '../../services/ticket-sub-category.service';
 import { TicketTypeDateRange } from '../../interfaces/ticket-type.interface';
 import { formatDateShort } from '../../../../shared/utils/date-format.util';
+import { AuthStore } from '../../../authentication/store/auth.store';
+import { PERMISSIONS } from '../../../../core/constants/permission.constant';
 
 type TabType = 'ticket-type' | 'category' | 'sub-category';
 
@@ -53,6 +56,7 @@ interface ActionMenuItem extends MenuItem {
     DataTableCellDirective,
     ConfirmDialogComponent,
     DeleteConfirmDialogComponent,
+    HasPermissionDirective,
   ],
   templateUrl: './ticket-type-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,6 +67,7 @@ export class TicketTypeListComponent {
   private readonly ticketTypeService = inject(TicketTypeService);
   private readonly ticketCategoryService = inject(TicketCategoryService);
   private readonly ticketSubCategoryService = inject(TicketSubCategoryService);
+  private readonly authStore = inject(AuthStore);
 
   protected readonly menu = viewChild.required<Menu>('actionMenu');
   protected readonly activeRow = signal<Record<string, unknown> | null>(null);
@@ -78,12 +83,17 @@ export class TicketTypeListComponent {
     { label: 'Sub-Category', value: 'sub-category' },
   ];
 
-  protected readonly menuItems: ActionMenuItem[] = [
-    { label: 'ดูรายละเอียด', command: () => this.onView() },
-    { label: 'แก้ไข', command: () => this.onEdit() },
-    { separator: true },
-    { label: 'ลบ', danger: true, command: () => this.onDelete() },
-  ];
+  protected readonly menuItems = computed<ActionMenuItem[]>(() => {
+    const items: ActionMenuItem[] = [{ label: 'ดูรายละเอียด', command: () => this.onView() }];
+    if (this.authStore.hasPermission()(PERMISSIONS.MANAGE_DATA_ACCESS)) {
+      items.push(
+        { label: 'แก้ไข', command: () => this.onEdit() },
+        { separator: true },
+        { label: 'ลบ', danger: true, command: () => this.onDelete() },
+      );
+    }
+    return items;
+  });
 
   protected readonly ticketTypeColumns: TableColumn[] = [
     { field: 'name', header: 'ประเภท Ticket' },

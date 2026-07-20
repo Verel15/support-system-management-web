@@ -35,7 +35,7 @@ export class UsersInSystemCardComponent {
   protected readonly accountTypeOptions = [
     { label: 'รูปแบบผู้ใช้', value: null },
     { label: 'ลูกค้า', value: 'CUSTOMER' as AccountType },
-    { label: 'บุคคลภายนอก', value: 'EXTERNAL' as AccountType },
+    { label: 'เจ้าหน้าที่', value: 'STAFF' as AccountType },
   ];
 
   protected readonly dateOptions = [
@@ -95,7 +95,8 @@ export class UsersInSystemCardComponent {
 
   protected readonly accountTypeMap = {
     'CUSTOMER': 'ลูกค้า',
-    'EXTERNAL': 'บุคคลภายนอก',
+    'STAFF': 'เจ้าหน้าที่',
+    'ADMIN': 'ผู้ดูแลระบบ'
   };
 
   protected readonly totalRecords = computed(() => this.response()?.data?.totalElements ?? 0);

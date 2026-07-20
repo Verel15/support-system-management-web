@@ -6,6 +6,7 @@ import { filter } from 'rxjs';
 import { SidebarComponent, SidebarNavItem, SidebarUser } from '../../components/sidebar';
 import { CommandPaletteComponent } from '../../components/command-palette';
 import { AuthStore } from '../../../features/authentication/store/auth.store';
+import { PERMISSIONS } from '../../../core/constants/permission.constant';
 
 @Component({
   selector: 'app-main-layout',
@@ -70,31 +71,48 @@ export class MainLayoutComponent {
     { label: 'การแจ้งเตือน', icon: 'pi-bell', route: '/notifications', badge: 5 },
   ];
 
-  protected readonly mainNav = computed<SidebarNavItem[]>(() =>
-    this.isCustomer()
-      ? []
-      : [
-          { label: 'แดชบอร์ด', icon: 'pi-chart-bar', route: '/dashboard' },
-          { label: 'จัดการ Tickets', icon: 'pi-list-check', route: '/ticket-management/list' },
-          { label: 'จัดการโครงการ', icon: 'pi-folder-open', route: '/project-management/list' },
-          {
-            label: 'จัดการผู้ใช้',
-            icon: 'pi-users',
-            children: [
-              { label: 'รายชื่อผู้ใช้ทั้งหมด', icon: '', route: '/user-management/list' },
-              { label: 'ประเภทผู้ใช้', icon: '', route: '/user-type-management/list' },
-            ],
-          },
-          { label: 'จัดการบริษัท', icon: 'pi-building', route: '/company-management/list' },
-          {
-            label: 'จัดการข้อมูล',
-            icon: 'pi-database',
-            children: [
-              { label: 'สถานะ', icon: '', route: '/status-management/list' },
-              { label: 'ประเภท Ticket', icon: '', route: '/ticket-type-management/list' },
-              { label: 'ระดับความสำคัญ', icon: '', route: '/ticket-priority-management/list' },
-            ],
-          },
+  protected readonly mainNav = computed<SidebarNavItem[]>(() => {
+    if (this.isCustomer()) {
+      return [];
+    }
+
+    const hasPermission = this.authStore.hasPermission();
+    const items: SidebarNavItem[] = [];
+
+    if (hasPermission(PERMISSIONS.DASHBOARD_ACCESS)) {
+      items.push({ label: 'แดชบอร์ด', icon: 'pi-chart-bar', route: '/dashboard' });
+    }
+    if (hasPermission(PERMISSIONS.ALL_TICKET_ACCESS)) {
+      items.push({ label: 'จัดการ Tickets', icon: 'pi-list-check', route: '/ticket-management/list' });
+    }
+    if (hasPermission(PERMISSIONS.ALL_PROJECT_ACCESS)) {
+      items.push({ label: 'จัดการโครงการ', icon: 'pi-folder-open', route: '/project-management/list' });
+    }
+    if (hasPermission(PERMISSIONS.MANAGE_USER_ACCESS)) {
+      items.push({
+        label: 'จัดการผู้ใช้',
+        icon: 'pi-users',
+        children: [
+          { label: 'รายชื่อผู้ใช้ทั้งหมด', icon: '', route: '/user-management/list' },
+          { label: 'ประเภทผู้ใช้', icon: '', route: '/user-type-management/list' },
         ],
-  );
+      });
+    }
+    if (hasPermission(PERMISSIONS.MANAGE_COMPANY_ACCESS)) {
+      items.push({ label: 'จัดการบริษัท', icon: 'pi-building', route: '/company-management/list' });
+    }
+    if (hasPermission(PERMISSIONS.MANAGE_DATA_ACCESS)) {
+      items.push({
+        label: 'จัดการข้อมูล',
+        icon: 'pi-database',
+        children: [
+          { label: 'สถานะ', icon: '', route: '/status-management/list' },
+          { label: 'ประเภท Ticket', icon: '', route: '/ticket-type-management/list' },
+          { label: 'ระดับความสำคัญ', icon: '', route: '/ticket-priority-management/list' },
+        ],
+      });
+    }
+
+    return items;
+  });
 }

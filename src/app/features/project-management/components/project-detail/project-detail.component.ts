@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   OnInit,
   signal,
@@ -16,6 +17,8 @@ import { ProjectTicketsComponent } from './project-tickets/project-tickets.compo
 import { ProjectDetail } from './project-detail.types';
 import { ProjectService } from '../../services/project.service';
 import { ProjectResponse } from '../../interfaces/project.interface';
+import { AuthStore } from '../../../authentication/store/auth.store';
+import { PERMISSIONS } from '../../../../core/constants/permission.constant';
 
 @Component({
   selector: 'app-project-detail',
@@ -33,6 +36,7 @@ export class ProjectDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly projectService = inject(ProjectService);
+  private readonly authStore = inject(AuthStore);
 
   protected readonly headerMenu = viewChild.required<Menu>('headerMenu');
   protected readonly loading = signal(true);
@@ -54,11 +58,16 @@ export class ProjectDetailComponent implements OnInit {
     totalUsers: 0,
   });
 
-  protected readonly headerMenuItems: MenuItem[] = [
-    { label: 'แก้ไขโครงการ', command: () => this.onEditProject() },
-    { separator: true },
-    { label: 'ปิดโครงการ', command: () => {} },
-  ];
+  protected readonly headerMenuItems = computed<MenuItem[]>(() => {
+    if (!this.authStore.hasPermission()(PERMISSIONS.MANAGE_PROJECT_ACCESS)) {
+      return [];
+    }
+    return [
+      { label: 'แก้ไขโครงการ', command: () => this.onEditProject() },
+      { separator: true },
+      { label: 'ปิดโครงการ', command: () => {} },
+    ];
+  });
 
   ngOnInit(): void {
     const id = this.route.snapshot.queryParamMap.get('id') ?? '';

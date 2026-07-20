@@ -42,7 +42,7 @@
       </label>
     </div>
 
-    <!-- การเข้าถึง (EXTERNAL only) -->
+    <!-- การเข้าถึง (STAFF only) -->
     @if (!isCustomer()) {
       <section aria-labelledby="access-heading">
         <h2
@@ -135,7 +135,7 @@
           }
         </div>
 
-        <!-- แผนก + ตำแหน่ง (EXTERNAL only) -->
+        <!-- แผนก + ตำแหน่ง (STAFF only) -->
         @if (!isCustomer()) {
           <div class="flex flex-col gap-1">
             <label for="department" class="text-sm font-medium text-slate-700">แผนก</label>

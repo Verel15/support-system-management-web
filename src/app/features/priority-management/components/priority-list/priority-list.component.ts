@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   signal,
@@ -26,6 +27,7 @@ import {
   ConfirmDialogComponent,
   DeleteConfirmDialogComponent,
 } from '../../../../shared/components/dialogs';
+import { HasPermissionDirective } from '../../../../shared/directives';
 import {
   type PriorityIconKey,
   type PriorityColorKey,
@@ -37,6 +39,8 @@ import {
 } from '../../interfaces/priority.interface';
 import { PriorityService } from '../../services/priority.service';
 import { formatDateTimeShort } from '../../../../shared/utils/date-format.util';
+import { AuthStore } from '../../../authentication/store/auth.store';
+import { PERMISSIONS } from '../../../../core/constants/permission.constant';
 
 interface Priority {
   id: string;
@@ -64,6 +68,7 @@ interface ActionMenuItem extends MenuItem {
     DataTableCellDirective,
     ConfirmDialogComponent,
     DeleteConfirmDialogComponent,
+    HasPermissionDirective,
   ],
   templateUrl: './priority-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -72,6 +77,7 @@ export class PriorityListComponent {
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
   private readonly priorityService = inject(PriorityService);
+  private readonly authStore = inject(AuthStore);
 
   protected readonly menu = viewChild.required<Menu>('actionMenu');
   protected readonly activeRow = signal<Record<string, unknown> | null>(null);
@@ -80,12 +86,17 @@ export class PriorityListComponent {
   protected readonly deletingPriority = signal<Priority | null>(null);
   protected readonly deleting = signal(false);
 
-  protected readonly menuItems: ActionMenuItem[] = [
-    { label: 'ดูรายละเอียด', command: () => this.onViewPriority() },
-    { label: 'แก้ไข', command: () => this.onEditPriority() },
-    { separator: true },
-    { label: 'ลบ', danger: true, command: () => this.onDeletePriority() },
-  ];
+  protected readonly menuItems = computed<ActionMenuItem[]>(() => {
+    const items: ActionMenuItem[] = [{ label: 'ดูรายละเอียด', command: () => this.onViewPriority() }];
+    if (this.authStore.hasPermission()(PERMISSIONS.MANAGE_DATA_ACCESS)) {
+      items.push(
+        { label: 'แก้ไข', command: () => this.onEditPriority() },
+        { separator: true },
+        { label: 'ลบ', danger: true, command: () => this.onDeletePriority() },
+      );
+    }
+    return items;
+  });
 
   protected readonly columns: TableColumn[] = [
     { field: 'name', header: 'ชื่อลำดับความสำคัญ', sortable: true },

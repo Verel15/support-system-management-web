@@ -10,6 +10,7 @@
   </button>
   <h1 class="flex-1 text-center text-xl font-semibold text-slate-800">รายละเอียดผู้ใช้</h1>
   <button
+    *appHasPermission="'manageUserAccess'"
     type="button"
     class="inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
     aria-label="ตัวเลือกเพิ่มเติม"

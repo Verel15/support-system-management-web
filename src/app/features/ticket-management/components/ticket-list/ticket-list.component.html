@@ -1,24 +1,15 @@
 <div class="p-6 flex flex-col gap-5">
   <!-- Header -->
-  <div class="flex items-center justify-between flex-wrap gap-3">
+  <div class="flex items-center justify-between">
     <h1 class="text-2xl font-semibold text-slate-800">จัดการ Ticket</h1>
-    <div class="flex items-center gap-2">
+    <div class="w-full sm:w-auto md:w-44" *appHasPermission="'allTicketAccess'">
       <p-button
-        label="Export รายงาน"
-        icon="pi pi-download"
-        severity="secondary"
-        outlined
-        (onClick)="showExportDialog.set(true)"
+        label="เพิ่ม Ticket"
+        icon="pi pi-plus"
+        (onClick)="onAddTicket()"
+        severity="primary"
+        fluid
       />
-      <div class="w-full sm:w-auto md:w-44">
-        <p-button
-          label="เพิ่ม Ticket"
-          icon="pi pi-plus"
-          (onClick)="onAddTicket()"
-          severity="primary"
-          fluid
-        />
-      </div>
     </div>
   </div>
 
@@ -34,46 +25,40 @@
       placeholder="สถานะ"
       aria-label="กรองตามสถานะ"
     />
-    <p-datepicker
-      [ngModel]="dateRangeFilter()"
-      (ngModelChange)="onDateRangeChange($event)"
-      selectionMode="range"
-      [readonlyInput]="true"
-      placeholder="ช่วงวันที่"
-      [showIcon]="true"
-      icon="pi pi-calendar"
-      class="w-full sm:w-auto"
-      styleClass="w-full sm:w-56"
-      aria-label="กรองตามช่วงวันที่"
+    <p-select
+      [options]="priorityOptions()"
+      [ngModel]="priorityFilter()"
+      (ngModelChange)="priorityFilter.set($event); onFilterChange()"
+      optionLabel="label"
+      optionValue="value"
+      class="w-full sm:w-auto sm:min-w-44"
+      placeholder="ลำดับความสำคัญ"
+      aria-label="กรองตามความสำคัญ"
     />
-
-    <div class="sm:flex-1"></div>
-
-    <div class="w-full sm:w-80">
-      <p-inputgroup>
+    <p-select
+      [options]="timeOptions"
+      [ngModel]="timeFilter()"
+      (ngModelChange)="onTimeFilterChange($event)"
+      optionLabel="label"
+      optionValue="value"
+      class="w-full sm:w-auto sm:min-w-44"
+      placeholder="ระยะเวลาที่เหลือ"
+      aria-label="กรองตามระยะเวลา"
+    />
+    <div class="flex items-center gap-3 w-full sm:w-80 sm:ml-auto">
+      <p-icon-field class="w-full">
+        <p-inputicon class="pi pi-search" />
         <input
           pInputText
           type="search"
           placeholder="ค้นหา"
           [ngModel]="searchQuery()"
           (ngModelChange)="searchQuery.set($event); onFilterChange()"
+          class="w-full"
           aria-label="ค้นหา ticket"
         />
-        <p-inputgroup-addon class="cursor-pointer relative" (click)="onFilterClick($event)">
-          <i class="pi pi-sliders-h mr-2 text-primary-700" aria-hidden="true"></i>
-          <span class="text-black">ตัวกรอง</span>
-          @if (activeExtraFilterCount() > 0) {
-            <span
-              class="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-4 h-4 px-1 text-[10px] font-semibold bg-primary-500 text-white rounded-full"
-              [attr.aria-label]="activeExtraFilterCount() + ' ตัวกรองที่ใช้งาน'"
-            >
-              {{ activeExtraFilterCount() }}
-            </span>
-          }
-        </p-inputgroup-addon>
-      </p-inputgroup>
+      </p-icon-field>
     </div>
-    <app-ticket-filter #filterPanel [priorities]="priorities()" (apply)="onTicketFilterApply($event)" />
   </div>
 
   <!-- Table -->
@@ -127,19 +112,4 @@
       </button>
     </ng-template>
   </app-data-table>
-
-  <app-export-report-dialog
-    [(visible)]="showExportDialog"
-    [scope]="exportScope()"
-    [baseFilter]="currentReportFilter()"
-    [loading]="exporting()"
-    (confirmed)="onExportConfirm($event)"
-  />
-
-  <app-pdf-preview-dialog
-    [visible]="showPdfPreview()"
-    [pdfUrl]="pdfPreviewUrl()"
-    (download)="onPdfPreviewDownload()"
-    (cancelled)="onPdfPreviewCancel()"
-  />
 </div>

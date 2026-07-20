@@ -111,7 +111,7 @@ export class AddProjectStore {
   );
 
   private readonly assigneeUsersRaw = toSignal(
-    this.userService.getAll({ accountType: 'EXTERNAL' }, 0, 200).pipe(
+    this.userService.getAll({ accountType: 'STAFF' }, 0, 200).pipe(
       map((page) => page.content),
       catchError(() => of([])),
     ),

@@ -29,11 +29,14 @@ import {
   SelectItemsDialogComponent,
   SelectItemOption,
 } from '../../../../../shared/components/dialogs';
+import { HasPermissionDirective } from '../../../../../shared/directives';
 import { ProjectMember } from '../project-detail.types';
 import { ProjectService } from '../../../services/project.service';
 import { ProjectMemberResponse } from '../../../interfaces/project.interface';
 import { UserService } from '../../../../user-management/services/user.service';
 import { UserResponse } from '../../../../user-management/interfaces/user.interface';
+import { AuthStore } from '../../../../authentication/store/auth.store';
+import { PERMISSIONS } from '../../../../../core/constants/permission.constant';
 
 const AVATAR_COLORS = [
   '#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6',
@@ -54,6 +57,7 @@ const AVATAR_COLORS = [
     DataTableCellDirective,
     ConfirmDialogComponent,
     SelectItemsDialogComponent,
+    HasPermissionDirective,
   ],
   templateUrl: './project-members.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,6 +67,7 @@ export class ProjectMembersComponent {
   private readonly projectService = inject(ProjectService);
   private readonly userService = inject(UserService);
   private readonly messageService = inject(MessageService);
+  private readonly authStore = inject(AuthStore);
 
   readonly readOnly = input(false);
   readonly projectId = input('');
@@ -137,13 +142,20 @@ export class ProjectMembersComponent {
     { field: 'email', header: 'อีเมล', sortable: true },
   ];
 
-  protected readonly menuItems: MenuItem[] = [
-    { label: 'ดูรายละเอียด', command: () => this.router.navigate(['/user-management/detail']) },
-    { label: 'แก้ไข', command: () => this.router.navigate(['/user-management/edit']) },
-    { label: 'เปลี่ยนรหัสผ่าน', command: () => {} },
-    { separator: true },
-    { label: 'ลบ', command: () => this.showRemoveDialog.set(true) },
-  ];
+  protected readonly menuItems = computed<MenuItem[]>(() => {
+    const items: MenuItem[] = [
+      { label: 'ดูรายละเอียด', command: () => this.router.navigate(['/user-management/detail']) },
+    ];
+    if (this.authStore.hasPermission()(PERMISSIONS.MANAGE_PROJECT_ACCESS)) {
+      items.push(
+        { label: 'แก้ไข', command: () => this.router.navigate(['/user-management/edit']) },
+        { label: 'เปลี่ยนรหัสผ่าน', command: () => {} },
+        { separator: true },
+        { label: 'ลบ', command: () => this.showRemoveDialog.set(true) },
+      );
+    }
+    return items;
+  });
 
   constructor() {
     effect(() => {
@@ -165,9 +177,9 @@ export class ProjectMembersComponent {
   private loadAllUsers(): void {
     forkJoin([
       this.userService.getAll({ accountType: 'CUSTOMER' }, 0, 200).pipe(catchError(() => of({ content: [] as UserResponse[] }))),
-      this.userService.getAll({ accountType: 'EXTERNAL' }, 0, 200).pipe(catchError(() => of({ content: [] as UserResponse[] }))),
-    ]).subscribe(([customers, externals]) => {
-      this.allUsers.set([...customers.content, ...externals.content]);
+      this.userService.getAll({ accountType: 'STAFF' }, 0, 200).pipe(catchError(() => of({ content: [] as UserResponse[] }))),
+    ]).subscribe(([customers, staffs]) => {
+      this.allUsers.set([...customers.content, ...staffs.content]);
     });
   }
 

@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <h1 class="text-2xl font-semibold text-slate-800">ลำดับความสำคัญ</h1>
-    <div class="w-full sm:w-auto md:w-56">
+    <div class="w-full sm:w-auto md:w-56" *appHasPermission="'manageDataAccess'">
       <p-button
         label="เพิ่มลำดับความสำคัญ"
         icon="pi pi-plus"
@@ -101,7 +101,7 @@
   (confirmed)="onDeleteConfirmed($event)"
 />
 
-<p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
+<p-menu #actionMenu [model]="menuItems()" [popup]="true" [appendTo]="'body'">
   <ng-template #item let-item pTemplate="item">
     <a class="p-menu-item-link" role="menuitem">
       <span class="p-menu-item-label" [class.text-error-600]="item.danger">{{ item.label }}</span>

@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <h1 class="text-2xl font-semibold text-slate-800">รายการสถานะทั้งหมด</h1>
-    <div class="w-full sm:w-auto md:w-44">
+    <div class="w-full sm:w-auto md:w-44" *appHasPermission="'manageDataAccess'">
       <p-button label="เพิ่มสถานะ" icon="pi pi-plus" (onClick)="onAddStatus()" severity="primary" fluid />
     </div>
   </div>
@@ -51,7 +51,7 @@
 <app-delete-confirm-dialog [(visible)]="showDeleteDialog" [targetLabel]="activeRow()?.name ?? ''" [loading]="deleting()"
   (confirmed)="onDeleteConfirmed($event)" />
 
-<p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
+<p-menu #actionMenu [model]="menuItems()" [popup]="true" [appendTo]="'body'">
   <ng-template #item let-item pTemplate="item">
     <a class="p-menu-item-link" role="menuitem">
       <span class="p-menu-item-label" [class.text-error-600]="item.danger">{{ item.label }}</span>

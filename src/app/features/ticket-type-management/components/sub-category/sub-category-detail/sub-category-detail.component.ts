@@ -18,6 +18,7 @@ import {
   DataTableComponent,
   TableColumn,
 } from '../../../../../shared/components/data-table';
+import { HasPermissionDirective } from '../../../../../shared/directives';
 import { TicketSubCategoryService } from '../../../services/ticket-sub-category.service';
 import {
   TicketSubCategoryResponse,
@@ -31,7 +32,14 @@ interface ActionMenuItem extends MenuItem {
 
 @Component({
   selector: 'app-sub-category-detail',
-  imports: [Button, Menu, ConfirmDialogComponent, DeleteConfirmDialogComponent, DataTableComponent],
+  imports: [
+    Button,
+    Menu,
+    ConfirmDialogComponent,
+    DeleteConfirmDialogComponent,
+    DataTableComponent,
+    HasPermissionDirective,
+  ],
   templateUrl: './sub-category-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

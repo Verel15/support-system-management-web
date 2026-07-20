@@ -24,10 +24,13 @@ import {
   SortEvent,
 } from '../../../../shared/components/data-table';
 import { DeleteConfirmDialogComponent } from '../../../../shared/components/dialogs';
+import { HasPermissionDirective } from '../../../../shared/directives';
 import { UserService } from '../../services/user.service';
 import { AccountType, UserFilterRequest } from '../../interfaces/user.interface';
 import { PageResponse } from '../../interfaces/position.interface';
 import { UserResponse } from '../../interfaces/user.interface';
+import { AuthStore } from '../../../authentication/store/auth.store';
+import { PERMISSIONS } from '../../../../core/constants/permission.constant';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -54,6 +57,7 @@ interface UserRow {
     DataTableComponent,
     DataTableCellDirective,
     DeleteConfirmDialogComponent,
+    HasPermissionDirective,
   ],
   templateUrl: './user-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -61,6 +65,7 @@ interface UserRow {
 export class UserListComponent {
   private readonly router = inject(Router);
   private readonly userService = inject(UserService);
+  private readonly authStore = inject(AuthStore);
 
   protected readonly menu = viewChild.required<Menu>('actionMenu');
   protected readonly activeRow = signal<UserRow | null>(null);
@@ -69,12 +74,17 @@ export class UserListComponent {
   private readonly deletingId = signal<string | null>(null);
   private readonly refreshTrigger = signal(0);
 
-  protected readonly menuItems: ActionMenuItem[] = [
-    { label: 'ดูรายละเอียด', command: () => this.onViewUser() },
-    { label: 'แก้ไข', command: () => this.onEditUser() },
-    { separator: true },
-    { label: 'ลบ', danger: true, command: () => this.onDeleteUser() },
-  ];
+  protected readonly menuItems = computed<ActionMenuItem[]>(() => {
+    const items: ActionMenuItem[] = [{ label: 'ดูรายละเอียด', command: () => this.onViewUser() }];
+    if (this.authStore.hasPermission()(PERMISSIONS.MANAGE_USER_ACCESS)) {
+      items.push(
+        { label: 'แก้ไข', command: () => this.onEditUser() },
+        { separator: true },
+        { label: 'ลบ', danger: true, command: () => this.onDeleteUser() },
+      );
+    }
+    return items;
+  });
 
   protected readonly columns: TableColumn[] = [
     { field: 'name', header: 'รายชื่อ' },
@@ -88,7 +98,8 @@ export class UserListComponent {
   protected readonly accountTypeOptions = [
     { label: 'รูปแบบผู้ใช้', value: null },
     { label: 'ลูกค้า', value: 'CUSTOMER' as AccountType },
-    { label: 'บุคคลภายนอก', value: 'EXTERNAL' as AccountType },
+    { label: 'เจ้าหน้าที่', value: 'STAFF' as AccountType },
+    { label: 'ผู้ดูแลระบบ', value: 'ADMIN' as AccountType}
   ];
 
   protected readonly dateOptions = [
@@ -145,7 +156,8 @@ export class UserListComponent {
 
   protected readonly accountTypeMap = {
     'CUSTOMER': 'ลูกค้า',
-    'EXTERNAL': 'บุคคลภายนอก',
+    'STAFF': 'เจ้าหน้าที่',
+    'ADMIN': 'ผู้ดูแลระบบ'
   };
 
   protected readonly totalRecords = computed(

@@ -20,14 +20,14 @@ export interface CompanyResponse {
 export type CompanyUserDateRange = 'TODAY' | 'THIS_WEEK' | 'THIS_MONTH';
 
 export interface CompanyUserFilterRequest {
-  accountType?: 'CUSTOMER' | 'EXTERNAL';
+  accountType?: 'CUSTOMER' | 'STAFF';
   dateRange?: CompanyUserDateRange;
   keyword?: string;
 }
 
 export interface CompanyUserResponse {
   id: string;
-  accountType: 'CUSTOMER' | 'EXTERNAL';
+  accountType: 'CUSTOMER' | 'STAFF';
   firstName: string;
   lastName: string;
   email: string;

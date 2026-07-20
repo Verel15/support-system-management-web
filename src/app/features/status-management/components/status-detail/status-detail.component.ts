@@ -15,6 +15,7 @@ import {
   ConfirmDialogComponent,
   DeleteConfirmDialogComponent,
 } from '../../../../shared/components/dialogs';
+import { HasPermissionDirective } from '../../../../shared/directives';
 import { StatusFlowService } from '../../services/status-flow.service';
 import { StatusFlowResponse, StatusItemResponse } from '../../interfaces/status-flow.interface';
 import { formatDateFull } from '../../../../shared/utils/date-format.util';
@@ -25,7 +26,14 @@ interface ActionMenuItem extends MenuItem {
 
 @Component({
   selector: 'app-status-detail',
-  imports: [Button, Menu, Tooltip, ConfirmDialogComponent, DeleteConfirmDialogComponent],
+  imports: [
+    Button,
+    Menu,
+    Tooltip,
+    ConfirmDialogComponent,
+    DeleteConfirmDialogComponent,
+    HasPermissionDirective,
+  ],
   templateUrl: './status-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

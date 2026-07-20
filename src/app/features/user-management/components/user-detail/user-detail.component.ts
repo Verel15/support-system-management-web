@@ -14,12 +14,14 @@ import { catchError, of } from 'rxjs';
 import { formatDate } from '@angular/common';
 import { ChipComponent } from '../../../../shared/components/chip';
 import { DeleteConfirmDialogComponent } from '../../../../shared/components/dialogs';
+import { HasPermissionDirective } from '../../../../shared/directives';
 import { UserService } from '../../services/user.service';
 import { AccountType } from '../../interfaces/user.interface';
 
 const ACCOUNT_TYPE_LABEL: Record<AccountType, string> = {
   CUSTOMER: 'ลูกค้า',
-  EXTERNAL: 'บุคคลภายนอก',
+  STAFF: 'เจ้าหน้าที่',
+  ADMIN: 'ผู้ดูแลระบบ'
 };
 
 interface UserDetail {
@@ -40,7 +42,7 @@ interface UserDetail {
 
 @Component({
   selector: 'app-user-detail',
-  imports: [Menu, ChipComponent, DeleteConfirmDialogComponent],
+  imports: [Menu, ChipComponent, DeleteConfirmDialogComponent, HasPermissionDirective],
   templateUrl: './user-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

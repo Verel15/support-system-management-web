@@ -50,13 +50,15 @@
         [attr.aria-label]="searchPlaceholder()"
       />
     </p-icon-field>
-    <p-button
-      [label]="addButtonLabel()"
-      icon="pi pi-plus"
-      severity="primary"
-      class="shrink-0"
-      (onClick)="onAdd()"
-    />
+    <div class="shrink-0" *appHasPermission="'manageDataAccess'">
+      <p-button
+        [label]="addButtonLabel()"
+        icon="pi pi-plus"
+        severity="primary"
+        class="shrink-0"
+        (onClick)="onAdd()"
+      />
+    </div>
   </div>
 
   <!-- Table -->
@@ -104,7 +106,7 @@
   (confirmed)="onDeleteConfirmed($event)"
 />
 
-<p-menu #actionMenu [model]="menuItems" [popup]="true" [appendTo]="'body'">
+<p-menu #actionMenu [model]="menuItems()" [popup]="true" [appendTo]="'body'">
   <ng-template #item let-item pTemplate="item">
     <a class="p-menu-item-link" role="menuitem">
       <span class="p-menu-item-label" [class.text-error-600]="item.danger">{{ item.label }}</span>

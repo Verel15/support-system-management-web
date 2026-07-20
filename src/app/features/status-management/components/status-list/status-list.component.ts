@@ -24,6 +24,7 @@ import {
   ConfirmDialogComponent,
   DeleteConfirmDialogComponent,
 } from '../../../../shared/components/dialogs';
+import { HasPermissionDirective } from '../../../../shared/directives';
 import { StatusFlowService } from '../../services/status-flow.service';
 import {
   StatusFlowDateRange,
@@ -34,6 +35,8 @@ import { InputText } from 'primeng/inputtext';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { formatDateShort } from '../../../../shared/utils/date-format.util';
+import { AuthStore } from '../../../authentication/store/auth.store';
+import { PERMISSIONS } from '../../../../core/constants/permission.constant';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -52,7 +55,8 @@ interface ActionMenuItem extends MenuItem {
     DeleteConfirmDialogComponent,
     InputText,
     IconField,
-    InputIcon
+    InputIcon,
+    HasPermissionDirective
   ],
   templateUrl: './status-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -61,6 +65,7 @@ export class StatusListComponent {
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
   private readonly statusFlowService = inject(StatusFlowService);
+  private readonly authStore = inject(AuthStore);
   protected readonly menu = viewChild.required<Menu>('actionMenu');
 
   protected readonly activeRow = signal<StatusFlowResponse | null>(null);
@@ -71,12 +76,17 @@ export class StatusListComponent {
   protected readonly pageSize = signal(10);
   protected readonly refreshTrigger = signal(0);
 
-  protected readonly menuItems: ActionMenuItem[] = [
-    { label: 'ดูรายละเอียด', command: () => this.onViewStatus() },
-    { label: 'แก้ไข', command: () => this.onEditStatus() },
-    { separator: true },
-    { label: 'ลบ', danger: true, command: () => this.onDeleteStatus() },
-  ];
+  protected readonly menuItems = computed<ActionMenuItem[]>(() => {
+    const items: ActionMenuItem[] = [{ label: 'ดูรายละเอียด', command: () => this.onViewStatus() }];
+    if (this.authStore.hasPermission()(PERMISSIONS.MANAGE_DATA_ACCESS)) {
+      items.push(
+        { label: 'แก้ไข', command: () => this.onEditStatus() },
+        { separator: true },
+        { label: 'ลบ', danger: true, command: () => this.onDeleteStatus() },
+      );
+    }
+    return items;
+  });
 
   protected readonly columns: TableColumn[] = [
     { field: 'name', header: 'ชื่อสถานะ' },

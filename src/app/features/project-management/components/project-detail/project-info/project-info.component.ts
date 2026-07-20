@@ -19,9 +19,12 @@ import { ArcElement, Chart, DoughnutController, Legend, Tooltip } from 'chart.js
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { ProjectDetail } from '../project-detail.types';
 import { DocumentsDialogComponent, ProjectDocument } from '../../../../../shared/components/dialogs';
+import { HasPermissionDirective } from '../../../../../shared/directives';
 import { ProjectService } from '../../../services/project.service';
 import { TicketStatusGroup } from '../../../interfaces/project.interface';
 import { pillTooltip } from '../../../../dashboard/utils/chart-tooltip.util';
+import { AuthStore } from '../../../../authentication/store/auth.store';
+import { PERMISSIONS } from '../../../../../core/constants/permission.constant';
 Chart.register(ArcElement, DoughnutController, Legend, Tooltip, ChartDataLabels);
 
 const STATUS_GROUP_META: Record<TicketStatusGroup, { label: string; color: string }> = {
@@ -34,7 +37,7 @@ const STATUS_GROUP_ORDER: TicketStatusGroup[] = ['START', 'PROCESS', 'SUCCESS', 
 
 @Component({
   selector: 'app-project-info',
-  imports: [Button, Menu, DocumentsDialogComponent],
+  imports: [Button, Menu, DocumentsDialogComponent, HasPermissionDirective],
   templateUrl: './project-info.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -46,6 +49,7 @@ export class ProjectInfoComponent {
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly projectService = inject(ProjectService);
+  private readonly authStore = inject(AuthStore);
   protected readonly cardActionMenu = viewChild.required<Menu>('cardActionMenu');
   protected readonly chartCanvas = viewChild<ElementRef<HTMLCanvasElement>>('chartCanvas');
 
@@ -58,11 +62,16 @@ export class ProjectInfoComponent {
   private lastFetchedDocId = '';
   private lastFetchedStatsId = '';
 
-  protected readonly cardMenuItems = computed<MenuItem[]>(() => [
-    { label: 'แก้ไขโครงการ', command: () => this.editClick.emit() },
-    { separator: true },
-    { label: 'ลบ', data: { danger: true }, command: () => this.deleteClick.emit() },
-  ]);
+  protected readonly cardMenuItems = computed<MenuItem[]>(() => {
+    if (!this.authStore.hasPermission()(PERMISSIONS.MANAGE_PROJECT_ACCESS)) {
+      return [];
+    }
+    return [
+      { label: 'แก้ไขโครงการ', command: () => this.editClick.emit() },
+      { separator: true },
+      { label: 'ลบ', data: { danger: true }, command: () => this.deleteClick.emit() },
+    ];
+  });
 
   protected readonly chartData = computed(() => {
     const counts = this.statusGroupCounts();

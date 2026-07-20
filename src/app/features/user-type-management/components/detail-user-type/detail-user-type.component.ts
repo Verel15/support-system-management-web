@@ -16,11 +16,18 @@ import {
   ConfirmDialogComponent,
   DeleteConfirmDialogComponent,
 } from '../../../../shared/components/dialogs';
+import { HasPermissionDirective } from '../../../../shared/directives';
 import { UserTypeService } from '../../services/user-type.service';
 
 @Component({
   selector: 'app-detail-user-type',
-  imports: [Menu, DataTableComponent, ConfirmDialogComponent, DeleteConfirmDialogComponent],
+  imports: [
+    Menu,
+    DataTableComponent,
+    ConfirmDialogComponent,
+    DeleteConfirmDialogComponent,
+    HasPermissionDirective,
+  ],
   templateUrl: './detail-user-type.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

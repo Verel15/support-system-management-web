@@ -21,6 +21,7 @@ import {
   DeleteConfirmDialogComponent,
 } from '../../../../shared/components/dialogs';
 import { StatusChipComponent } from '../../../../shared/components/status-chip';
+import { HasPermissionDirective } from '../../../../shared/directives';
 import {
   type PriorityIconKey,
   type PriorityColorKey,
@@ -58,6 +59,7 @@ interface ActionMenuItem extends MenuItem {
     ConfirmDialogComponent,
     DeleteConfirmDialogComponent,
     StatusChipComponent,
+    HasPermissionDirective,
   ],
   templateUrl: './priority-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

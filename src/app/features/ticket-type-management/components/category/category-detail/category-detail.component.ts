@@ -13,6 +13,7 @@ import {
   ConfirmDialogComponent,
   DeleteConfirmDialogComponent,
 } from '../../../../../shared/components/dialogs';
+import { HasPermissionDirective } from '../../../../../shared/directives';
 import { TicketCategoryService } from '../../../services/ticket-category.service';
 import { TicketCategoryResponse } from '../../../interfaces/ticket-type.interface';
 import { formatDateFull } from '../../../../../shared/utils/date-format.util';
@@ -23,7 +24,7 @@ interface ActionMenuItem extends MenuItem {
 
 @Component({
   selector: 'app-category-detail',
-  imports: [Button, Menu, ConfirmDialogComponent, DeleteConfirmDialogComponent],
+  imports: [Button, Menu, ConfirmDialogComponent, DeleteConfirmDialogComponent, HasPermissionDirective],
   templateUrl: './category-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

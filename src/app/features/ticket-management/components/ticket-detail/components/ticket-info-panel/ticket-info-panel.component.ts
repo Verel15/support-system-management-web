@@ -14,6 +14,7 @@ import { Avatar } from 'primeng/avatar';
 import { AvatarGroup } from 'primeng/avatargroup';
 import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
+import { HasPermissionDirective, HasRoleDirective } from '../../../../../../shared/directives';
 import { AssigneeUser, FeedUser } from '../../interfaces/ticket-detail.types';
 import {
   TicketDetailResponse,
@@ -59,6 +60,8 @@ function avatarColor(seed: string): string {
     Menu,
     AssigneeSuggestionCardComponent,
     TicketTypeDialogComponent,
+    HasPermissionDirective,
+    HasRoleDirective,
   ],
   host: {
     class: 'flex flex-col bg-white lg:overflow-y-auto lg:col-span-4',

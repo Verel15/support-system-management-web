@@ -2,6 +2,7 @@ import { computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { getCookie, removeCookie, setCookie } from '../../../core/utils/cookie.util';
+import { decodeAccessToken } from '../../../core/utils/jwt.util';
 import { AuthService, LoginRequest } from '../services/auth.service';
 
 export interface AuthUser {
@@ -11,6 +12,8 @@ export interface AuthUser {
   lastName: string;
   accountType: string;
   companyId: string | null;
+  userTypeId: string | null;
+  permissions: string[];
 }
 
 interface AuthState {
@@ -32,7 +35,17 @@ function hydrateState(): AuthState {
   const accessToken = getCookie(COOKIE_KEYS.accessToken);
   const refreshToken = getCookie(COOKIE_KEYS.refreshToken);
   const userJson = localStorage.getItem(USER_STORAGE_KEY);
-  const user = userJson ? (JSON.parse(userJson) as AuthUser) : null;
+  let user = userJson ? (JSON.parse(userJson) as AuthUser) : null;
+
+  // permissions ต้อง decode สดจาก JWT เสมอ ไม่เชื่อค่าที่ค้างใน localStorage
+  // เพราะ backend อาจเปลี่ยน permissions ระหว่าง session (แก้ UserType) ได้
+  if (user && accessToken) {
+    const payload = decodeAccessToken(accessToken);
+    user = payload
+      ? { ...user, accountType: payload.accountType, userTypeId: payload.userTypeId ?? null, permissions: payload.permissions }
+      : null;
+  }
+
   return { user, accessToken, refreshToken, isLoading: false, error: null };
 }
 
@@ -44,6 +57,14 @@ export const AuthStore = signalStore(
     fullName: computed(() => {
       const u = user();
       return u ? `${u.firstName} ${u.lastName}` : '';
+    }),
+    hasPermission: computed(() => {
+      const u = user();
+      return (perm: string): boolean => !!u && (u.accountType === 'ADMIN' || u.permissions.includes(perm));
+    }),
+    hasRole: computed(() => {
+      const u = user();
+      return (...roles: string[]): boolean => !!u && roles.includes(u.accountType);
     }),
   })),
   withMethods((store) => {
@@ -67,6 +88,7 @@ export const AuthStore = signalStore(
         patchState(store, { isLoading: true, error: null });
         authService.login(req).subscribe({
           next: (res) => {
+            const payload = decodeAccessToken(res.accessToken);
             const user: AuthUser = {
               userId: res.userId,
               email: res.email,
@@ -74,6 +96,8 @@ export const AuthStore = signalStore(
               lastName: res.lastName,
               accountType: res.accountType,
               companyId: res.companyId,
+              userTypeId: payload?.userTypeId ?? null,
+              permissions: payload?.permissions ?? [],
             };
             persist(res.accessToken, res.refreshToken, user);
             patchState(store, {

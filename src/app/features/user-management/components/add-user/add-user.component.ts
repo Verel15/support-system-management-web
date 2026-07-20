@@ -38,7 +38,7 @@ export class AddUserComponent {
 
   protected readonly userFormatOptions = [
     { label: 'ลูกค้า', value: 'CUSTOMER' },
-    { label: 'บุคคลภายนอก', value: 'EXTERNAL' },
+    { label: 'เจ้าหน้าที่', value: 'STAFF' },
   ];
 
   protected readonly companyOptions = toSignal(

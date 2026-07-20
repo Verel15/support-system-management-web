@@ -28,8 +28,11 @@ import {
   ConfirmDialogComponent,
   DeleteConfirmDialogComponent,
 } from '../../../../shared/components/dialogs';
+import { HasPermissionDirective } from '../../../../shared/directives';
 import { UserTypeService } from '../../services/user-type.service';
 import { UserTypeDateRange, UserTypePageResponse } from '../../interfaces/user-type.interface';
+import { AuthStore } from '../../../authentication/store/auth.store';
+import { PERMISSIONS } from '../../../../core/constants/permission.constant';
 
 interface ActionMenuItem extends MenuItem {
   danger?: boolean;
@@ -49,6 +52,7 @@ interface ActionMenuItem extends MenuItem {
     DataTableCellDirective,
     ConfirmDialogComponent,
     DeleteConfirmDialogComponent,
+    HasPermissionDirective,
   ],
   templateUrl: './user-type-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,6 +61,7 @@ export class UserTypeListComponent {
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
   private readonly userTypeService = inject(UserTypeService);
+  private readonly authStore = inject(AuthStore);
 
   protected readonly menu = viewChild.required<Menu>('actionMenu');
   protected readonly activeRow = signal<Record<string, unknown> | null>(null);
@@ -67,12 +72,19 @@ export class UserTypeListComponent {
   protected readonly deleting = signal(false);
   private readonly refreshTrigger = signal(0);
 
-  protected readonly menuItems: ActionMenuItem[] = [
-    { label: 'ดูรายละเอียด', command: () => this.onViewUserType() },
-    { label: 'แก้ไข', command: () => this.onEditUserType() },
-    { separator: true },
-    { label: 'ลบ', danger: true, command: () => this.onDeleteUserType() },
-  ];
+  protected readonly menuItems = computed<ActionMenuItem[]>(() => {
+    const items: ActionMenuItem[] = [
+      { label: 'ดูรายละเอียด', command: () => this.onViewUserType() },
+    ];
+    if (this.authStore.hasPermission()(PERMISSIONS.MANAGE_USER_ACCESS)) {
+      items.push(
+        { label: 'แก้ไข', command: () => this.onEditUserType() },
+        { separator: true },
+        { label: 'ลบ', danger: true, command: () => this.onDeleteUserType() },
+      );
+    }
+    return items;
+  });
 
   protected readonly columns: TableColumn[] = [
     { field: 'typeName', header: 'ประเภท' },

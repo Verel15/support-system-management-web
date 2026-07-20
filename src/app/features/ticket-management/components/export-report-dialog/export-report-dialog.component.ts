@@ -30,7 +30,7 @@ import {
 } from '../../interfaces/report.interface';
 
 export interface ExportScope {
-  /** false = locked to `lockedCompanyId` (EXTERNAL/CUSTOMER); true = any company (ADMIN/INTERNAL) */
+  /** false = locked to `lockedCompanyId` (STAFF/CUSTOMER); true = any company (ADMIN/INTERNAL) */
   canSelectAllCompanies: boolean;
   lockedCompanyId: string | null;
 }
@@ -98,7 +98,7 @@ export class ExportReportDialogComponent {
     ...this.assignees().map((u) => ({ label: `${u.firstName} ${u.lastName}`, value: u.id })),
   ]);
 
-  // Locked (EXTERNAL/CUSTOMER) always resolves to their own company regardless of UI state.
+  // Locked (STAFF/CUSTOMER) always resolves to their own company regardless of UI state.
   protected readonly effectiveCompanyIds = computed(() =>
     this.scope().canSelectAllCompanies
       ? this.selectedCompanyIds()

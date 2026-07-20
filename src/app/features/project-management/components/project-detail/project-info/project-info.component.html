@@ -10,6 +10,7 @@
       </h2>
       @if (!readOnly()) {
         <button
+          *appHasPermission="'manageProjectAccess'"
           type="button"
           class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--p-primary-500)"
           aria-label="ตัวเลือกโครงการ"
