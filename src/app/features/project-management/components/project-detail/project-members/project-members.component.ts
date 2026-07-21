@@ -102,9 +102,6 @@ export class ProjectMembersComponent {
     { label: 'ผู้พัฒนา', value: 'ผู้พัฒนา' },
   ];
 
-  protected readonly positionOptions = [
-    { label: 'ตำแหน่งทั้งหมด', value: null },
-  ];
 
   private readonly allMembers = computed<ProjectMember[]>(() =>
     this.membersRaw().map((m) => ({
@@ -136,10 +133,9 @@ export class ProjectMembersComponent {
   });
 
   protected readonly columns: TableColumn[] = [
-    { field: 'name', header: 'รายชื่อ', sortable: true },
-    { field: 'userType', header: 'ประเภทผู้ใช้', sortable: true },
-    { field: 'position', header: 'ตำแหน่ง', sortable: true },
-    { field: 'email', header: 'อีเมล', sortable: true },
+    { field: 'name', header: 'รายชื่อ' },
+    { field: 'userType', header: 'ประเภทผู้ใช้' },
+    { field: 'email', header: 'อีเมล' },
   ];
 
   protected readonly menuItems = computed<MenuItem[]>(() => {
@@ -162,7 +158,6 @@ export class ProjectMembersComponent {
       const id = this.projectId();
       if (id) {
         this.loadMembers(id);
-        this.loadAllUsers();
       }
     });
   }
@@ -171,15 +166,6 @@ export class ProjectMembersComponent {
     this.projectService.getMembers(projectId).subscribe({
       next: (members) => this.membersRaw.set(members),
       error: () => this.membersRaw.set([]),
-    });
-  }
-
-  private loadAllUsers(): void {
-    forkJoin([
-      this.userService.getAll({ accountType: 'CUSTOMER' }, 0, 200).pipe(catchError(() => of({ content: [] as UserResponse[] }))),
-      this.userService.getAll({ accountType: 'STAFF' }, 0, 200).pipe(catchError(() => of({ content: [] as UserResponse[] }))),
-    ]).subscribe(([customers, staffs]) => {
-      this.allUsers.set([...customers.content, ...staffs.content]);
     });
   }
 

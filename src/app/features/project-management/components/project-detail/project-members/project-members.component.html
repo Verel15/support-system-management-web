@@ -33,15 +33,6 @@
           class="w-full sm:w-auto sm:min-w-44"
           aria-label="กรองตามประเภทผู้ใช้"
         />
-        <p-select
-          [options]="positionOptions"
-          [ngModel]="positionFilter()"
-          (ngModelChange)="positionFilter.set($event); onFilterChange()"
-          optionLabel="label"
-          optionValue="value"
-          class="w-full sm:w-auto sm:min-w-40"
-          aria-label="กรองตามตำแหน่ง"
-        />
         <p-icon-field class="w-full sm:w-72 sm:ml-auto">
           <p-inputicon class="pi pi-search" />
           <input
