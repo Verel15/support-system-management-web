@@ -41,6 +41,7 @@ export class StatusChipComponent {
       case 'done':
       case 'เสร็จสิ้น':
       case 'สำเร็จ':
+      case 'เผยแพร่แล้ว':
         colorClasses = 'bg-[#E8F5E9] text-[#2E7D32]';
         break;
 
@@ -50,6 +51,7 @@ export class StatusChipComponent {
       case 'todo':
       case 'ปิด':
       case 'ไม่ใช้งาน':
+      case 'แบบร่าง':
         colorClasses = 'bg-[#ECEFF1] text-[#455A64]';
         break;
 

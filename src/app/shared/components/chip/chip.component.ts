@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 
 export type ChipColor = 'primary' | 'secondary' | 'error' | 'warning' | 'info';
 export type ChipVariant = 'outlined' | 'filled';
+export type ChipSize = 'sm' | 'md';
 
 @Component({
   selector: 'app-chip',
@@ -12,6 +13,7 @@ export class ChipComponent {
   readonly label = input.required<string>();
   readonly color = input<ChipColor>('secondary');
   readonly variant = input<ChipVariant>('outlined');
+  readonly size = input<ChipSize>('md');
 
   protected readonly classes = computed(() => {
     const map: Record<ChipColor, Record<ChipVariant, string>> = {
@@ -36,6 +38,7 @@ export class ChipComponent {
         filled: 'bg-blue-50 text-blue-800 font-bold',
       },
     };
-    return `inline-flex items-center max-w-full rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis ${map[this.color()][this.variant()]}`;
+    const sizeClasses = this.size() === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-sm';
+    return `inline-flex items-center max-w-full rounded-full font-medium whitespace-nowrap overflow-hidden text-ellipsis ${sizeClasses} ${map[this.color()][this.variant()]}`;
   });
 }

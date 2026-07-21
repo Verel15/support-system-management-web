@@ -1,0 +1,105 @@
+<div class="flex flex-col min-h-full">
+  <!-- Header -->
+  <div class="relative flex items-center px-6 py-4 border-b border-slate-200">
+    <p-button
+      type="button"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      variant="text"
+      [rounded]="true"
+      (onClick)="onBack()"
+      aria-label="กลับ"
+    />
+    <h1
+      class="absolute inset-0 flex items-center justify-center text-xl font-semibold text-slate-800 pointer-events-none"
+    >
+      เพิ่มบทความ FAQ
+    </h1>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 overflow-y-auto p-6">
+    <form
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+      class="max-w-xl mx-auto flex flex-col gap-6"
+    >
+      <h2 class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
+        ข้อมูลบทความ
+      </h2>
+
+      <!-- Question -->
+      <div class="flex flex-col gap-1.5">
+        <label for="question" class="text-sm font-semibold text-slate-800">คำถาม</label>
+        <input
+          pInputText
+          id="question"
+          type="text"
+          formControlName="question"
+          placeholder="กรุณากรอกคำถาม"
+          class="w-full h-12"
+          aria-required="true"
+          [attr.aria-invalid]="isQuestionInvalid()"
+          aria-describedby="questionError"
+        />
+        @if (isQuestionInvalid()) {
+          <span id="questionError" class="text-sm text-error-600">กรุณากรอกคำถาม</span>
+        }
+      </div>
+
+      <!-- Category -->
+      <div class="flex flex-col gap-1.5">
+        <label for="category" class="text-sm font-semibold text-slate-800">หมวดหมู่</label>
+        <p-autoComplete
+          inputId="category"
+          formControlName="category"
+          [suggestions]="categorySuggestions()"
+          (completeMethod)="onSearchCategory($event)"
+          [dropdown]="true"
+          [forceSelection]="false"
+          placeholder="เลือกหรือพิมพ์หมวดหมู่ใหม่"
+          fluid
+          aria-required="true"
+          [attr.aria-invalid]="isCategoryInvalid()"
+          aria-describedby="categoryError"
+        />
+        @if (isCategoryInvalid()) {
+          <span id="categoryError" class="text-sm text-error-600">กรุณากรอกหมวดหมู่</span>
+        }
+      </div>
+
+      <!-- Answer -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm font-semibold text-slate-800" id="answerLabel">คำตอบ</label>
+        <div [attr.aria-invalid]="isAnswerInvalid()" aria-labelledby="answerLabel">
+          <app-text-editor
+            [(value)]="answerHtml"
+            placeholder="กรุณากรอกคำตอบ"
+            minHeight="220px"
+          />
+        </div>
+        @if (isAnswerInvalid()) {
+          <span class="text-sm text-error-600">กรุณากรอกคำตอบ</span>
+        }
+      </div>
+
+      <!-- Published toggle -->
+      <div class="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3">
+        <div class="flex flex-col">
+          <span class="text-sm font-semibold text-slate-800" id="publishLabel">เผยแพร่ทันที</span>
+          <span class="text-xs text-slate-500">หากปิดไว้ บทความจะถูกบันทึกเป็นแบบร่าง</span>
+        </div>
+        <p-toggleswitch formControlName="isPublished" aria-labelledby="publishLabel" />
+      </div>
+
+      <!-- Submit -->
+      <p-button
+        type="submit"
+        label="บันทึก"
+        severity="primary"
+        fluid
+        [loading]="submitting()"
+      />
+    </form>
+  </div>
+</div>

@@ -12,7 +12,7 @@
   <div [class]="sidebarDrawerClass()">
     <app-sidebar
       [(collapsed)]="sidebarCollapsed"
-      [personalNav]="personalNav"
+      [personalNav]="personalNav()"
       [mainNav]="mainNav()"
       [user]="currentUser()"
       (logoutClick)="authStore.logout()"

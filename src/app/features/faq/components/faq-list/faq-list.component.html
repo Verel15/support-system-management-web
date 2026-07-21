@@ -1,0 +1,91 @@
+<div class="p-6 flex flex-col gap-5 w-full">
+  <!-- Header -->
+  <div class="flex flex-col gap-1">
+    <h1 class="text-2xl font-semibold text-slate-800">คลังความรู้ (FAQ)</h1>
+    <p class="text-sm text-slate-500">ค้นหาคำตอบสำหรับคำถามที่พบบ่อยก่อนแจ้งปัญหากับทีมงาน</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+    <div class="shrink-0">
+      <p-select
+        [options]="categoryOptions()"
+        [ngModel]="selectedCategory()"
+        (ngModelChange)="selectedCategory.set($event); onFilterChange()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="หมวดหมู่"
+        class="w-full sm:w-auto sm:min-w-44"
+        aria-label="กรองตามหมวดหมู่"
+      />
+    </div>
+
+    <div class="flex items-center gap-3 w-full sm:w-96 sm:ml-auto">
+      <p-icon-field class="w-full">
+        <p-inputicon class="pi pi-search" />
+        <input
+          pInputText
+          type="search"
+          placeholder="ค้นหาคำถาม"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)"
+          class="w-full h-12 appearance-none"
+          aria-label="ค้นหาคำถามที่พบบ่อย"
+        />
+      </p-icon-field>
+    </div>
+  </div>
+
+  <!-- Deflection CTA -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-primary-200 bg-primary-50 px-5 py-4">
+    <div class="flex flex-col">
+      <span class="text-sm font-semibold text-slate-800">ไม่พบคำตอบที่ต้องการ?</span>
+      <span class="text-sm text-slate-600">แจ้งปัญหากับทีมงานของเราได้ทันที</span>
+    </div>
+    <p-button
+      label="สร้าง Ticket"
+      icon="pi pi-plus"
+      severity="primary"
+      class="sm:ml-auto"
+      (onClick)="onCreateTicket()"
+    />
+  </div>
+
+  <!-- Results -->
+  @if (loading()) {
+    <div class="flex items-center justify-center py-12 text-slate-400" role="status" aria-live="polite">
+      <i class="pi pi-spin pi-spinner text-2xl" aria-hidden="true"></i>
+      <span class="sr-only">กำลังโหลด...</span>
+    </div>
+  } @else if (articles().length === 0) {
+    <div class="flex flex-col items-center gap-2 py-12 text-center">
+      <i class="pi pi-info-circle text-3xl text-slate-300" aria-hidden="true"></i>
+      <p class="text-slate-500">ไม่พบบทความที่ตรงกับการค้นหา ลองแจ้งปัญหากับทีมงานแทน</p>
+    </div>
+  } @else {
+    <p-accordion [multiple]="true">
+      @for (article of articles(); track article.id) {
+        <p-accordion-panel [value]="article.id">
+          <p-accordion-header>
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="truncate font-medium text-slate-800">{{ article.question }}</span>
+              <app-chip [label]="article.category" color="info" size="sm" />
+            </div>
+          </p-accordion-header>
+          <p-accordion-content>
+            <div class="prose max-w-none text-sm text-slate-700" [innerHTML]="article.answer"></div>
+          </p-accordion-content>
+        </p-accordion-panel>
+      }
+    </p-accordion>
+
+    <app-pagination
+      [totalRecords]="totalRecords()"
+      [pageSize]="pageSize()"
+      [currentPage]="currentPage()"
+      [loading]="loading()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

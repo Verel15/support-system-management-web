@@ -7,6 +7,7 @@ import { SidebarComponent, SidebarNavItem, SidebarUser } from '../../components/
 import { CommandPaletteComponent } from '../../components/command-palette';
 import { AuthStore } from '../../../features/authentication/store/auth.store';
 import { PERMISSIONS } from '../../../core/constants/permission.constant';
+import { NotificationService } from '../../../features/notifications/services/notification.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -25,7 +26,9 @@ export class MainLayoutComponent {
   protected readonly headerHidden = signal(false);
 
   private readonly router = inject(Router);
+  private readonly notificationService = inject(NotificationService);
   protected readonly authStore = inject(AuthStore);
+  protected readonly unreadCount = signal(0);
 
   protected onGlobalKeydown(event: KeyboardEvent): void {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
@@ -49,7 +52,19 @@ export class MainLayoutComponent {
   constructor() {
     this.router.events
       .pipe(filter(e => e instanceof NavigationEnd), takeUntilDestroyed())
-      .subscribe(() => this.mobileOpen.set(false));
+      .subscribe(() => {
+        this.mobileOpen.set(false);
+        this.refreshUnreadCount();
+      });
+
+    this.refreshUnreadCount();
+  }
+
+  private refreshUnreadCount(): void {
+    this.notificationService.getUnreadCount().subscribe({
+      next: (res) => this.unreadCount.set(res.count),
+      error: () => this.unreadCount.set(0),
+    });
   }
 
   protected readonly currentUser = computed<SidebarUser>(() => {
@@ -65,11 +80,20 @@ export class MainLayoutComponent {
     () => this.authStore.user()?.accountType === 'CUSTOMER',
   );
 
-  protected readonly personalNav: SidebarNavItem[] = [
-    { label: 'Tickets ของฉัน', icon: 'pi-ticket', route: '/my-tickets' },
-    { label: 'โครงการของฉัน', icon: 'pi-folder', route: '/my-project' },
-    { label: 'การแจ้งเตือน', icon: 'pi-bell', route: '/notifications', badge: 5 },
-  ];
+  protected readonly personalNav = computed<SidebarNavItem[]>(() => {
+    const count = this.unreadCount();
+    return [
+      { label: 'Tickets ของฉัน', icon: 'pi-ticket', route: '/my-tickets' },
+      { label: 'โครงการของฉัน', icon: 'pi-folder', route: '/my-project' },
+      { label: 'คลังความรู้', icon: 'pi-book', route: '/faq' },
+      {
+        label: 'การแจ้งเตือน',
+        icon: 'pi-bell',
+        route: '/notifications',
+        ...(count > 0 ? { badge: count } : {}),
+      },
+    ];
+  });
 
   protected readonly mainNav = computed<SidebarNavItem[]>(() => {
     if (this.isCustomer()) {
@@ -109,6 +133,7 @@ export class MainLayoutComponent {
           { label: 'สถานะ', icon: '', route: '/status-management/list' },
           { label: 'ประเภท Ticket', icon: '', route: '/ticket-type-management/list' },
           { label: 'ระดับความสำคัญ', icon: '', route: '/ticket-priority-management/list' },
+          { label: 'คลังความรู้ (FAQ)', icon: '', route: '/faq-management/list' },
         ],
       });
     }

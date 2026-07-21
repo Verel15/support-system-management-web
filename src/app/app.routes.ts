@@ -150,6 +150,27 @@ export const routes: Routes = [
         (m) => m.priorityManagementRoutes,
       ),
   },
+  {
+    path: 'faq-management',
+    canActivate: [authGuard, nonCustomerGuard, permissionGuard(PERMISSIONS.MANAGE_DATA_ACCESS)],
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/faq-management/faq-management.routes').then(
+        (m) => m.faqManagementRoutes,
+      ),
+  },
+  {
+    path: 'faq',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () => import('./features/faq/faq.routes').then((m) => m.faqRoutes),
+  },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   {
     path: 'not-found',

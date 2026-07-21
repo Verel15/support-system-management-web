@@ -62,7 +62,7 @@ export class SidebarComponent {
     const url = this.currentUrl() ?? '';
     const set = new Set<string>();
     for (const item of this.mainNav()) {
-      if (item.children?.some(child => !!child.route && url.startsWith(child.route))) {
+      if (item.children?.some(child => this.matchesRoute(url, child.route))) {
         set.add(item.label);
       }
     }
@@ -73,7 +73,7 @@ export class SidebarComponent {
     effect(() => {
       const url = this.currentUrl() ?? '';
       const toExpand = this.mainNav()
-        .filter(item => item.children?.some(child => !!child.route && url.startsWith(child.route)))
+        .filter(item => item.children?.some(child => this.matchesRoute(url, child.route)))
         .map(item => item.label);
 
       if (toExpand.length > 0) {
@@ -83,8 +83,12 @@ export class SidebarComponent {
   }
 
   isLinkActive(route: string | undefined): boolean {
+    return this.matchesRoute(this.currentUrl() ?? '', route);
+  }
+
+  private matchesRoute(url: string, route: string | undefined): boolean {
     if (!route) return false;
-    return (this.currentUrl() ?? '').startsWith(route);
+    return url === route || url.startsWith(`${route}/`) || url.startsWith(`${route}?`);
   }
 
   isExpanded(label: string): boolean {
