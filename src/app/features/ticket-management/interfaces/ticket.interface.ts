@@ -74,6 +74,7 @@ export interface TicketDetailResponse {
   requesterFullName: string;
   requesterProfileImageUrl: string | null;
   assignees: TicketAssigneeResponse[];
+  satisfactionRating: TicketSatisfactionResponse | null;
 }
 
 export interface TicketTimelineItem {
@@ -173,6 +174,17 @@ export interface AddCommentRequest {
 
 export interface AddAssigneeRequest {
   userId: string;
+}
+
+export interface AddSatisfactionRatingRequest {
+  score: number;
+  comment?: string;
+}
+
+export interface TicketSatisfactionResponse {
+  score: number;
+  comment: string | null;
+  ratedAt: string;
 }
 
 // Ticket Types (for selector dialog)

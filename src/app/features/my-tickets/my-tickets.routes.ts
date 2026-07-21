@@ -13,4 +13,11 @@ export const myTicketsRoutes: Routes = [
     loadComponent: () =>
       import('./components/my-ticket/add-ticket/add-ticket.component').then((m) => m.AddTicketComponent),
   },
+  {
+    path: 'detail/:id',
+    loadComponent: () =>
+      import('../ticket-management/components/ticket-detail/ticket-detail.component').then(
+        (m) => m.TicketDetailComponent,
+      ),
+  },
 ];

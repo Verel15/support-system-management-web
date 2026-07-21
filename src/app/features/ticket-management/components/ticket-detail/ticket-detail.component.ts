@@ -22,6 +22,7 @@ import {
   StatusItemResponse,
 } from '../../interfaces/ticket.interface';
 import { SelectedTicketType } from '../ticket-type-dialog/ticket-type-dialog.component';
+import { SatisfactionRatingSubmit } from './components/ticket-satisfaction-dialog/ticket-satisfaction-dialog.component';
 import { Location } from '@angular/common';
 
 const AVATAR_COLORS = [
@@ -420,6 +421,34 @@ export class TicketDetailComponent implements OnInit {
             severity: 'error',
             summary: 'เกิดข้อผิดพลาด',
             detail: 'ไม่สามารถเปลี่ยนประเภท Ticket ได้',
+            life: 3000,
+          });
+        },
+      });
+  }
+
+  protected onSatisfactionSubmit(submission: SatisfactionRatingSubmit): void {
+    this.ticketService
+      .addSatisfactionRating(this.ticketId, {
+        score: submission.score,
+        comment: submission.comment || undefined,
+      })
+      .subscribe({
+        next: (rating) => {
+          const t = this.ticket();
+          if (t) this.ticket.set({ ...t, satisfactionRating: rating });
+          this.messageService.add({
+            severity: 'success',
+            summary: 'สำเร็จ',
+            detail: 'ขอบคุณสำหรับคะแนนความพึงพอใจ',
+            life: 3000,
+          });
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'เกิดข้อผิดพลาด',
+            detail: 'ไม่สามารถส่งคะแนนความพึงพอใจได้',
             life: 3000,
           });
         },

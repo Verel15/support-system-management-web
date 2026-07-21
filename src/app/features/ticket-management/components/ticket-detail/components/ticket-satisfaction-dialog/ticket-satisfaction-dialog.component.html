@@ -1,0 +1,58 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  (onHide)="onHide()"
+  [modal]="true"
+  [closable]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '440px', maxWidth: '95vw' }"
+  [contentStyle]="{ padding: '0' }"
+>
+  <ng-template #header>
+    <div class="flex items-center gap-2.5">
+      <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-500" aria-hidden="true">
+        <i class="pi pi-check text-white text-xs"></i>
+      </span>
+      <h2 class="text-lg font-bold text-slate-900">Ticket ปิดเรียบร้อยแล้ว</h2>
+    </div>
+  </ng-template>
+
+  <div class="flex flex-col items-center text-center gap-1 px-8 pb-8 pt-1">
+    <p class="text-sm text-secondary-600 mb-5">
+      ทีมงานแก้ปัญหาให้คุณเสร็จแล้ว บอกเราหน่อยว่าเป็นยังไงบ้าง
+    </p>
+
+    <p-rating
+      [ngModel]="score()"
+      (ngModelChange)="score.set($event)"
+      [stars]="5"
+      [style]="{ '--p-rating-icon-size': '2rem', '--p-rating-gap': '0.5rem' }"
+      aria-label="ให้คะแนนความพึงพอใจ 1 ถึง 5 ดาว"
+    />
+
+    <p
+      class="h-5 text-sm font-medium text-primary-700 mt-2 transition-opacity duration-200 motion-reduce:transition-none"
+      [class.opacity-0]="!scoreLabel()"
+    >
+      {{ scoreLabel() }}&nbsp;
+    </p>
+
+    <textarea
+      pTextarea
+      rows="3"
+      class="w-full resize-none mt-3"
+      placeholder="อยากบอกอะไรเราเพิ่มเติมไหม? (ไม่บังคับ)"
+      [ngModel]="comment()"
+      (ngModelChange)="comment.set($event)"
+      aria-label="ความคิดเห็นเพิ่มเติม"
+    ></textarea>
+
+    <p-button
+      label="ส่งคะแนน"
+      severity="primary"
+      styleClass="w-full mt-5"
+      [disabled]="score() === 0"
+      (onClick)="onSubmit()"
+    />
+  </div>
+</p-dialog>

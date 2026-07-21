@@ -20,11 +20,16 @@ import {
 } from '../../../core/services/global-search.service';
 
 const TYPE_META: Record<GlobalSearchEntityType, { icon: string; sectionLabel: string }> = {
-  TICKET: { icon: 'pi-ticket', sectionLabel: 'tickets' },
-  PROJECT: { icon: 'pi-folder', sectionLabel: 'projects' },
-  USER: { icon: 'pi-user', sectionLabel: 'users' },
+  TICKET: { icon: 'pi-ticket', sectionLabel: 'Tickets' },
+  PROJECT: { icon: 'pi-folder', sectionLabel: 'โครงการ' },
+  USER: { icon: 'pi-user', sectionLabel: 'ผู้ใช้งาน' },
 };
 const TYPE_ORDER: GlobalSearchEntityType[] = ['TICKET', 'PROJECT', 'USER'];
+const ACCOUNT_TYPE_LABEL: Record<string, string> = {
+  ADMIN: 'ผู้ดูแลระบบ',
+  STAFF: 'เจ้าหน้าที่',
+  CUSTOMER: 'ลูกค้า',
+};
 
 export interface CommandPaletteResultRow extends GlobalSearchResult {
   /** Index within the flat results() array — drives keyboard nav + active state */
@@ -72,6 +77,7 @@ export class CommandPaletteComponent {
         .map(({ result, flatIndex }) => ({
           ...result,
           flatIndex,
+          meta: type === 'USER' && result.meta ? (ACCOUNT_TYPE_LABEL[result.meta] ?? result.meta) : result.meta,
           ...this.splitTitle(result.title, q),
         })),
     })).filter((section) => section.rows.length > 0);

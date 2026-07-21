@@ -84,6 +84,25 @@
   </div>
   }
 
+  @if (showSatisfactionPrompt()) {
+  <div class="mt-4 flex flex-col items-center gap-3 px-4 py-5 rounded-lg bg-primary-50 text-center">
+    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-500" aria-hidden="true">
+      <i class="pi pi-check text-white text-sm"></i>
+    </span>
+    <p class="text-sm font-medium text-primary-800">Ticket นี้ปิดแล้ว บอกเราหน่อยว่าพอใจแค่ไหน</p>
+    <p-button label="ให้คะแนนความพึงพอใจ" severity="primary" size="small" (onClick)="onOpenSatisfactionDialog()" />
+  </div>
+  } @else if (isRequester() && satisfactionRating(); as rating) {
+  <div class="mt-4 flex flex-col gap-2 px-4 py-4 rounded-lg border border-slate-200">
+    <p class="text-sm text-slate-500">คะแนนความพึงพอใจของคุณ</p>
+    <p-rating [ngModel]="rating.score" [readonly]="true" [stars]="5"
+      [style]="{ '--p-rating-icon-size': '1.125rem' }" aria-label="คะแนนความพึงพอใจที่ให้ไว้" />
+    @if (rating.comment) {
+    <p class="text-sm text-slate-600 mt-1">{{ rating.comment }}</p>
+    }
+  </div>
+  }
+
   <!-- <hr class="border-slate-100 mx-4" /> -->
 
   <ng-container *appHasRole="['STAFF', 'ADMIN']">
@@ -196,3 +215,6 @@
 
 <app-ticket-type-dialog [(visible)]="showTicketTypeDialog" [initialSubCategoryId]="ticket().subCategoryId"
   (confirmed)="onTicketTypeConfirmed($event)" />
+
+<app-ticket-satisfaction-dialog [(visible)]="showSatisfactionDialog"
+  (submitted)="onSatisfactionSubmitted($event)" />

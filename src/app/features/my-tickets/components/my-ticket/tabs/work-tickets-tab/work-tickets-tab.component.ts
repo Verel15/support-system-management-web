@@ -21,6 +21,7 @@ import {
   TICKET_TIME_OPTIONS,
 } from '../../../../../ticket-management/interfaces/ticket.interface';
 import { getPriorityIconClass } from '../../../../../ticket-management/utils/priority-icon.util';
+import { AuthStore } from '../../../../../authentication/store/auth.store';
 
 @Component({
   selector: 'app-work-tickets-tab',
@@ -40,6 +41,7 @@ import { getPriorityIconClass } from '../../../../../ticket-management/utils/pri
 })
 export class WorkTicketsTabComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly authStore = inject(AuthStore);
   private readonly ticketService = inject(TicketService);
   private readonly messageService = inject(MessageService);
 
@@ -152,6 +154,7 @@ export class WorkTicketsTabComponent implements OnInit {
 
   private navigateToDetail(row: Record<string, unknown>): void {
     const id = row['id'] as string;
-    this.router.navigate(['/ticket-management/detail', id]);
+    const base = this.authStore.user()?.accountType === 'CUSTOMER' ? '/my-tickets' : '/ticket-management';
+    this.router.navigate([base, 'detail', id]);
   }
 }

@@ -13,6 +13,8 @@ import {
   ChangeTicketStatusRequest,
   AddCommentRequest,
   AddAssigneeRequest,
+  AddSatisfactionRatingRequest,
+  TicketSatisfactionResponse,
   TicketTypeSelectorResponse,
   TicketSubCategoryDetail,
   PriorityResponse,
@@ -92,6 +94,14 @@ export class TicketService {
 
   getSuggestedAssignee(ticketId: string): Observable<SuggestedAssigneeResponse> {
     return this.api.get<SuggestedAssigneeResponse>(`/tickets/${ticketId}/suggested-assignee`);
+  }
+
+  // Satisfaction rating (CSAT)
+  addSatisfactionRating(
+    ticketId: string,
+    payload: AddSatisfactionRatingRequest,
+  ): Observable<TicketSatisfactionResponse> {
+    return this.api.post<TicketSatisfactionResponse>(`/tickets/${ticketId}/satisfaction`, payload);
   }
 
   // Ticket types (for selector dialog)

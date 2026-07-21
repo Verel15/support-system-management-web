@@ -12,9 +12,12 @@ import {
 import { FormsModule } from '@angular/forms';
 import { Avatar } from 'primeng/avatar';
 import { AvatarGroup } from 'primeng/avatargroup';
+import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
+import { Rating } from 'primeng/rating';
 import { MenuItem } from 'primeng/api';
 import { HasPermissionDirective, HasRoleDirective } from '../../../../../../shared/directives';
+import { AuthStore } from '../../../../../authentication/store/auth.store';
 import { AssigneeUser, FeedUser } from '../../interfaces/ticket-detail.types';
 import {
   TicketDetailResponse,
@@ -26,6 +29,10 @@ import {
   TicketTypeDialogComponent,
   SelectedTicketType,
 } from '../../../ticket-type-dialog/ticket-type-dialog.component';
+import {
+  TicketSatisfactionDialogComponent,
+  SatisfactionRatingSubmit,
+} from '../ticket-satisfaction-dialog/ticket-satisfaction-dialog.component';
 import { TicketService } from '../../../../services/ticket.service';
 import {
   ESuggestedAssigneeReason,
@@ -57,9 +64,12 @@ function avatarColor(seed: string): string {
     FormsModule,
     Avatar,
     AvatarGroup,
+    Button,
     Menu,
+    Rating,
     AssigneeSuggestionCardComponent,
     TicketTypeDialogComponent,
+    TicketSatisfactionDialogComponent,
     HasPermissionDirective,
     HasRoleDirective,
   ],
@@ -74,6 +84,7 @@ export class TicketInfoPanelComponent {
   private readonly moreMenu = viewChild.required<Menu>('moreMenu');
   private readonly ticketService = inject(TicketService);
   private readonly projectService = inject(ProjectService);
+  private readonly authStore = inject(AuthStore);
 
   readonly ticket = input.required<TicketDetailResponse>();
   readonly assigneeList = input.required<AssigneeUser[]>();
@@ -85,9 +96,31 @@ export class TicketInfoPanelComponent {
   readonly statusChange = output<string>();
   readonly deleteTicket = output<void>();
   readonly ticketTypeChange = output<SelectedTicketType>();
+  readonly satisfactionSubmit = output<SatisfactionRatingSubmit>();
 
   protected readonly showAssigneeDropdown = signal(false);
   protected readonly showTicketTypeDialog = signal(false);
+  protected readonly showSatisfactionDialog = signal(false);
+
+  protected readonly isCustomer = computed(() => this.authStore.hasRole()('CUSTOMER'));
+
+  protected readonly isRequester = computed(
+    () => this.authStore.user()?.userId === this.ticket().requesterId,
+  );
+
+  protected readonly isClosed = computed(() => {
+    const closedGroups: TicketStatusGroup[] = ['SUCCESS', 'FAILED'];
+    return closedGroups.includes(this.ticket().currentStatusGroup);
+  });
+
+  protected readonly satisfactionRating = computed(() => this.ticket().satisfactionRating);
+
+  protected readonly showSatisfactionPrompt = computed(
+    () =>
+      this.isRequester() &&
+      this.ticket().currentStatusGroup === 'SUCCESS' &&
+      !this.satisfactionRating(),
+  );
 
   protected readonly suggestionLoading = signal(false);
   protected readonly suggestedCandidate = signal<SuggestedAssigneeUser | null>(null);
@@ -101,7 +134,7 @@ export class TicketInfoPanelComponent {
     effect(() => {
       const ticket = this.ticket();
       const hasAssignees = this.assigneeList().length > 0;
-      if (!ticket || hasAssignees || this.lastSuggestionTicketId === ticket.id) return;
+      if (this.isCustomer() || !ticket || hasAssignees || this.lastSuggestionTicketId === ticket.id) return;
 
       this.lastSuggestionTicketId = ticket.id;
       this.suggestionLoading.set(true);
@@ -121,7 +154,7 @@ export class TicketInfoPanelComponent {
 
     effect(() => {
       const projectId = this.ticket()?.projectId;
-      if (!projectId || this.lastMembersProjectId === projectId) return;
+      if (this.isCustomer() || !projectId || this.lastMembersProjectId === projectId) return;
 
       this.lastMembersProjectId = projectId;
       this.projectService.getMembers(projectId).subscribe({
@@ -264,5 +297,14 @@ export class TicketInfoPanelComponent {
 
   protected onTicketTypeConfirmed(selected: SelectedTicketType): void {
     this.ticketTypeChange.emit(selected);
+  }
+
+  protected onOpenSatisfactionDialog(): void {
+    this.showSatisfactionDialog.set(true);
+  }
+
+  protected onSatisfactionSubmitted(submission: SatisfactionRatingSubmit): void {
+    this.showSatisfactionDialog.set(false);
+    this.satisfactionSubmit.emit(submission);
   }
 }
