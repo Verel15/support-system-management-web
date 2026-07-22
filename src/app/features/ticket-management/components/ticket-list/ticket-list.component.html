@@ -1,15 +1,24 @@
 <div class="p-6 flex flex-col gap-5">
   <!-- Header -->
-  <div class="flex items-center justify-between">
+  <div class="flex items-center justify-between flex-wrap gap-3">
     <h1 class="text-2xl font-semibold text-slate-800">จัดการ Ticket</h1>
-    <div class="w-full sm:w-auto md:w-44" *appHasPermission="'allTicketAccess'">
+    <div class="flex items-center gap-2">
       <p-button
-        label="เพิ่ม Ticket"
-        icon="pi pi-plus"
-        (onClick)="onAddTicket()"
-        severity="primary"
-        fluid
+        label="Export รายงาน"
+        icon="pi pi-download"
+        severity="secondary"
+        outlined
+        (onClick)="showExportDialog.set(true)"
       />
+      <div class="w-full sm:w-auto md:w-44" *appHasPermission="'allTicketAccess'">
+        <p-button
+          label="เพิ่ม Ticket"
+          icon="pi pi-plus"
+          (onClick)="onAddTicket()"
+          severity="primary"
+          fluid
+        />
+      </div>
     </div>
   </div>
 
@@ -112,4 +121,19 @@
       </button>
     </ng-template>
   </app-data-table>
+
+  <app-export-report-dialog
+    [(visible)]="showExportDialog"
+    [scope]="exportScope()"
+    [baseFilter]="currentReportFilter()"
+    [loading]="exporting()"
+    (confirmed)="onExportConfirm($event)"
+  />
+
+  <app-pdf-preview-dialog
+    [visible]="showPdfPreview()"
+    [pdfUrl]="pdfPreviewUrl()"
+    (download)="onPdfPreviewDownload()"
+    (cancelled)="onPdfPreviewCancel()"
+  />
 </div>

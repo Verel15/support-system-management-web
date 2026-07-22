@@ -93,7 +93,7 @@
     <p-button label="ให้คะแนนความพึงพอใจ" severity="primary" size="small" (onClick)="onOpenSatisfactionDialog()" />
   </div>
   } @else if (isRequester() && satisfactionRating(); as rating) {
-  <div class="mt-4 flex flex-col gap-2 px-4 py-4 rounded-lg border border-slate-200">
+  <div class="mt-4 flex flex-col gap-2 mb-6">
     <p class="text-sm text-slate-500">คะแนนความพึงพอใจของคุณ</p>
     <p-rating [ngModel]="rating.score" [readonly]="true" [stars]="5"
       [style]="{ '--p-rating-icon-size': '1.125rem' }" aria-label="คะแนนความพึงพอใจที่ให้ไว้" />

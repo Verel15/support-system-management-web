@@ -23,12 +23,21 @@ import {
 import { StatusChipComponent } from '../../../../shared/components/status-chip';
 import { HasPermissionDirective } from '../../../../shared/directives';
 import { TicketService } from '../../services/ticket.service';
+import { ReportService } from '../../services/report.service';
+import { AuthStore } from '../../../authentication/store/auth.store';
+import {
+  ExportReportDialogComponent,
+  ExportScope,
+} from '../export-report-dialog/export-report-dialog.component';
+import { PdfPreviewDialogComponent } from '../pdf-preview-dialog/pdf-preview-dialog.component';
+import { ReportExportRequest, ReportFilterRequest } from '../../interfaces/report.interface';
 import {
   TicketListResponse,
   PriorityResponse,
   PriorityIconColor,
   TicketFilterRequest,
   TicketRemainingTime,
+  TicketStatusGroup,
   TICKET_STATUS_OPTIONS,
   TICKET_TIME_OPTIONS,
   buildPriorityOptions,
@@ -47,6 +56,8 @@ import {
     DataTableCellDirective,
     StatusChipComponent,
     HasPermissionDirective,
+    ExportReportDialogComponent,
+    PdfPreviewDialogComponent,
   ],
   templateUrl: './ticket-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,7 +65,9 @@ import {
 export class TicketListComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly ticketService = inject(TicketService);
+  private readonly reportService = inject(ReportService);
   private readonly messageService = inject(MessageService);
+  private readonly authStore = inject(AuthStore);
 
   protected readonly statusFilter = signal<string | null>(null);
   protected readonly priorityFilter = signal<string | null>(null);
@@ -66,6 +79,27 @@ export class TicketListComponent implements OnInit {
   protected readonly totalRecords = signal(0);
   protected readonly tickets = signal<TicketListResponse[]>([]);
   protected readonly priorities = signal<PriorityResponse[]>([]);
+  protected readonly showExportDialog = signal(false);
+  protected readonly exporting = signal(false);
+  protected readonly showPdfPreview = signal(false);
+  protected readonly pdfPreviewUrl = signal<string | null>(null);
+  private pdfPreviewBlob: Blob | null = null;
+
+  // EXTERNAL (staff) may export any company; CUSTOMER locked to their own.
+  protected readonly exportScope = computed<ExportScope>(() => {
+    const user = this.authStore.user();
+    return {
+      canSelectAllCompanies: !!user && user.accountType === 'EXTERNAL',
+      lockedCompanyId: user?.companyId ?? null,
+    };
+  });
+
+  protected readonly currentReportFilter = computed<ReportFilterRequest>(() => {
+    const filter: ReportFilterRequest = {};
+    if (this.priorityFilter()) filter.priorityId = this.priorityFilter()!;
+    if (this.statusFilter()) filter.statusGroup = this.statusFilter() as TicketStatusGroup;
+    return filter;
+  });
 
   protected readonly statusOptions = TICKET_STATUS_OPTIONS;
 
@@ -158,6 +192,65 @@ export class TicketListComponent implements OnInit {
 
   protected onAddTicket(): void {
     this.router.navigate(['/ticket-management/add']);
+  }
+
+  protected onExportConfirm(request: ReportExportRequest): void {
+    this.exporting.set(true);
+    this.reportService.export(request).subscribe({
+      next: (blob) => {
+        this.exporting.set(false);
+        if (request.format === 'pdf') {
+          this.showExportDialog.set(false);
+          this.openPdfPreview(blob);
+        } else {
+          this.showExportDialog.set(false);
+          this.downloadFile(blob, request.format);
+        }
+      },
+      error: () => {
+        this.exporting.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'เกิดข้อผิดพลาด',
+          detail: 'ไม่สามารถ Export รายงานได้',
+          life: 3000,
+        });
+      },
+    });
+  }
+
+  private openPdfPreview(blob: Blob): void {
+    this.pdfPreviewBlob = blob;
+    this.pdfPreviewUrl.set(URL.createObjectURL(blob));
+    this.showPdfPreview.set(true);
+  }
+
+  protected onPdfPreviewDownload(): void {
+    if (!this.pdfPreviewBlob) return;
+    this.downloadFile(this.pdfPreviewBlob, 'pdf');
+    this.closePdfPreview();
+  }
+
+  protected onPdfPreviewCancel(): void {
+    this.closePdfPreview();
+  }
+
+  private closePdfPreview(): void {
+    this.showPdfPreview.set(false);
+    const url = this.pdfPreviewUrl();
+    if (url) URL.revokeObjectURL(url);
+    this.pdfPreviewUrl.set(null);
+    this.pdfPreviewBlob = null;
+  }
+
+  private downloadFile(blob: Blob, format: ReportExportRequest['format']): void {
+    const extension = format === 'excel' ? 'xlsx' : 'pdf';
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ticket-report.${extension}`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   protected onViewTicketRow(event: MouseEvent, row: Record<string, unknown>): void {
