@@ -171,6 +171,16 @@ export const routes: Routes = [
       ),
     loadChildren: () => import('./features/faq/faq.routes').then((m) => m.faqRoutes),
   },
+  {
+    path: 'audit-log',
+    canActivate: [authGuard, nonCustomerGuard, permissionGuard(PERMISSIONS.SYSTEM_LOG_ACCESS)],
+    loadComponent: () =>
+      import('./shared/layouts/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
+    loadChildren: () =>
+      import('./features/audit-log/audit-log.routes').then((m) => m.auditLogRoutes),
+  },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   {
     path: 'not-found',

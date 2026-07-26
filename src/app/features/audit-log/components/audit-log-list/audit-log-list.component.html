@@ -1,0 +1,76 @@
+<div class="p-6 flex flex-col gap-5">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-semibold text-slate-800">Audit Log</h1>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+    <p-select
+      [options]="moduleOptions"
+      [ngModel]="selectedModule()"
+      (ngModelChange)="selectedModule.set($event); onFilterChange()"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="โมดูล"
+      class="w-full sm:w-auto sm:min-w-44"
+      aria-label="กรองตามโมดูล"
+    />
+    <p-select
+      [options]="actionOptions"
+      [ngModel]="selectedAction()"
+      (ngModelChange)="selectedAction.set($event); onFilterChange()"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="การกระทำ"
+      class="w-full sm:w-auto sm:min-w-40"
+      aria-label="กรองตามการกระทำ"
+    />
+    <p-select
+      [options]="dateOptions"
+      [ngModel]="selectedDate()"
+      (ngModelChange)="selectedDate.set($event); onFilterChange()"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="ช่วงเวลา"
+      class="w-full sm:w-auto sm:min-w-40"
+      aria-label="กรองตามช่วงเวลา"
+    />
+
+    <div class="flex items-center gap-3 w-full sm:w-80 sm:ml-auto">
+      <p-icon-field class="w-full">
+        <p-inputicon class="pi pi-search" />
+        <input
+          pInputText
+          type="search"
+          placeholder="ค้นหาผู้ทำรายการ, รายละเอียด, เป้าหมาย"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)"
+          class="w-full h-12 appearance-none"
+          aria-label="ค้นหา Audit Log"
+        />
+      </p-icon-field>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <app-data-table
+    [columns]="columns"
+    [data]="tableRows()"
+    [totalRecords]="totalRecords()"
+    [currentPage]="currentPage()"
+    [pageSize]="pageSize()"
+    [loading]="loading()"
+    [showActions]="false"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (sortChange)="onSort($event)"
+    (rowClick)="onRowClick($event)"
+  >
+    <ng-template dataTableCell="actionLabel" let-row let-value="value">
+      <p-tag [value]="value" [severity]="actionSeverity(row.action)" />
+    </ng-template>
+  </app-data-table>
+</div>
+
+<app-audit-log-detail-dialog [(visible)]="showDetailDialog" [logId]="selectedLogId()" />

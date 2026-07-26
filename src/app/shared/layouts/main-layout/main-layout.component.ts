@@ -137,6 +137,9 @@ export class MainLayoutComponent {
         ],
       });
     }
+    if (hasPermission(PERMISSIONS.SYSTEM_LOG_ACCESS)) {
+      items.push({ label: 'Audit Log', icon: 'pi-history', route: '/audit-log/list' });
+    }
 
     return items;
   });

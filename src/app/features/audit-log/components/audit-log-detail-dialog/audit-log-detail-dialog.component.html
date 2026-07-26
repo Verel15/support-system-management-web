@@ -1,0 +1,76 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [style]="{ width: '640px', maxWidth: '95vw' }"
+  header="รายละเอียด Audit Log"
+>
+  @if (loading()) {
+    <div class="flex items-center justify-center h-48">
+      <i class="pi pi-spin pi-spinner text-2xl text-primary-500" aria-label="กำลังโหลด"></i>
+    </div>
+  } @else if (detail(); as log) {
+    <div class="flex flex-col gap-5">
+      <!-- Summary -->
+      <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 items-baseline">
+        <span class="text-sm text-slate-500 whitespace-nowrap">การกระทำ</span>
+        <p-tag [value]="log.action" [severity]="actionSeverity(log.action)" styleClass="w-fit" />
+
+        <span class="text-sm text-slate-500 whitespace-nowrap">รายละเอียด</span>
+        <span class="text-sm font-medium text-slate-800">{{ log.description }}</span>
+
+        <span class="text-sm text-slate-500 whitespace-nowrap">ผู้ทำรายการ</span>
+        <span class="text-sm font-medium text-slate-800">
+          {{ log.actor.name }} <span class="text-slate-400">({{ log.actor.email }})</span>
+        </span>
+
+        <span class="text-sm text-slate-500 whitespace-nowrap">เป้าหมาย</span>
+        <span class="text-sm font-medium text-slate-800">{{ log.targetLabel ?? '-' }}</span>
+
+        <span class="text-sm text-slate-500 whitespace-nowrap">เวลา</span>
+        <span class="text-sm font-medium text-slate-800">{{ formatDateTime(log.createdAt) }}</span>
+
+        <span class="text-sm text-slate-500 whitespace-nowrap">IP Address</span>
+        <span class="text-sm font-medium text-slate-800">{{ log.ipAddress }}</span>
+
+        <span class="text-sm text-slate-500 whitespace-nowrap">User Agent</span>
+        <span class="text-sm font-medium text-slate-800 break-all">{{ log.userAgent }}</span>
+      </div>
+
+      <!-- Field changes -->
+      @if (log.changes.length) {
+        <div class="flex flex-col gap-2">
+          <h3 class="text-sm font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
+            การเปลี่ยนแปลงข้อมูล
+          </h3>
+          <div class="rounded-lg border border-slate-200 overflow-hidden">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 text-slate-500">
+                <tr>
+                  <th class="text-left font-medium px-3 py-2">ฟิลด์</th>
+                  <th class="text-left font-medium px-3 py-2">ค่าเดิม</th>
+                  <th class="text-left font-medium px-3 py-2">ค่าใหม่</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (change of log.changes; track change.field) {
+                  <tr class="border-t border-slate-100">
+                    <td class="px-3 py-2 text-slate-700">{{ change.fieldLabel }}</td>
+                    <td class="px-3 py-2 text-error-600">{{ change.oldValue ?? '-' }}</td>
+                    <td class="px-3 py-2 text-primary-600">{{ change.newValue ?? '-' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <ng-template #footer>
+    <div class="flex justify-end pt-4">
+      <p-button label="ปิด" severity="secondary" [outlined]="true" (onClick)="onClose()" />
+    </div>
+  </ng-template>
+</p-dialog>
