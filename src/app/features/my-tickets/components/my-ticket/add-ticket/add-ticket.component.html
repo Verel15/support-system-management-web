@@ -94,7 +94,21 @@
       <!-- รายละเอียด -->
       <div class="flex flex-col gap-1.5">
         <span class="text-sm font-semibold text-slate-700">รายละเอียด</span>
-        <app-text-editor [(value)]="description" placeholder="รายละเอียด" />
+        <app-text-editor
+          [(value)]="description"
+          placeholder="รายละเอียด"
+          [showAttach]="true"
+          [attachAccept]="attachmentAccept"
+          [filePreviews]="filePreviews()"
+          (filesSelected)="onFilesSelected($event)"
+          (filePreviewRemoved)="onRemoveFile($event)"
+        />
+        @if (uploadingAttachments()) {
+          <p class="text-sm text-slate-400 flex items-center gap-2 mt-1">
+            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+            กำลังแนบไฟล์...
+          </p>
+        }
       </div>
 
       <!-- Submit -->

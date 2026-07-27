@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, input, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, signal, viewChild } from '@angular/core';
 import { Menu } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { CommentItem } from '../../interfaces/ticket-detail.types';
+import { ApiService } from '../../../../../../core/services/api.service';
+import { TicketAttachmentResponse } from '../../../../interfaces/ticket.interface';
 
 @Component({
   selector: 'app-ticket-comment-card',
@@ -65,12 +67,39 @@ import { CommentItem } from '../../interfaces/ticket-detail.types';
 })
 export class TicketCommentCardComponent {
   private readonly menu = viewChild.required<Menu>('menu');
+  private readonly api = inject(ApiService);
 
   readonly comment = input.required<CommentItem>();
 
   protected readonly menuItems: MenuItem[] = [{ label: 'แก้ไข' }, { label: 'ลบ' }];
+  protected readonly downloadingId = signal<string | null>(null);
 
   protected onMenuOpen(event: MouseEvent): void {
     this.menu().toggle(event);
+  }
+
+  protected getFileIcon(fileName: string): string {
+    const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
+    if (ext === 'pdf') return 'pi-file-pdf';
+    if (['doc', 'docx'].includes(ext)) return 'pi-file-word';
+    if (['png', 'jpg', 'jpeg'].includes(ext)) return 'pi-image';
+    return 'pi-file';
+  }
+
+  protected download(attachment: TicketAttachmentResponse): void {
+    if (this.downloadingId()) return;
+    this.downloadingId.set(attachment.id);
+    this.api.downloadBlob(attachment.fileUrl).subscribe({
+      next: (blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = objectUrl;
+        anchor.download = attachment.fileName;
+        anchor.click();
+        URL.revokeObjectURL(objectUrl);
+        this.downloadingId.set(null);
+      },
+      error: () => this.downloadingId.set(null),
+    });
   }
 }

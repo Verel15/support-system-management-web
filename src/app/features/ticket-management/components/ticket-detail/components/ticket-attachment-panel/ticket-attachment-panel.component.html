@@ -1,0 +1,31 @@
+<div class="py-4">
+  <p class="text-sm text-slate-500 mb-3">ไฟล์แนบ</p>
+
+  @if (attachments().length > 0) {
+    <ul class="flex flex-col gap-2 list-none p-0 m-0" role="list">
+      @for (attachment of attachments(); track attachment.id) {
+        <li class="flex items-center gap-3 px-3 py-2 rounded-lg border border-slate-200">
+          <i [class]="'pi ' + getFileIcon(attachment.fileName) + ' text-primary-500 shrink-0'" aria-hidden="true"></i>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-slate-800 truncate">{{ attachment.fileName }}</p>
+            <p class="text-xs text-slate-400">{{ formatSize(attachment.fileSize) }}</p>
+          </div>
+          <button
+            type="button"
+            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+            [attr.aria-label]="'ดาวน์โหลด ' + attachment.fileName"
+            [disabled]="downloadingId() !== null"
+            (click)="download(attachment)"
+          >
+            <i
+              [class]="'pi ' + (downloadingId() === attachment.id ? 'pi-spin pi-spinner' : 'pi-download') + ' text-sm'"
+              aria-hidden="true"
+            ></i>
+          </button>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="text-sm text-slate-400">ไม่มีไฟล์แนบ</p>
+  }
+</div>

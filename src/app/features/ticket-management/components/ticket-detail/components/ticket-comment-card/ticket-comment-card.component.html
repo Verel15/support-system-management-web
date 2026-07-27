@@ -22,6 +22,29 @@
             </button>
           </div>
           <div class="rich-content mt-3 text-sm text-slate-700 leading-relaxed" [innerHTML]="comment().content"></div>
+
+          @if (comment().attachments.length > 0) {
+            <ul class="flex flex-col gap-2 list-none p-0 m-0 mt-3" role="list">
+              @for (attachment of comment().attachments; track attachment.id) {
+                <li class="flex items-center gap-3 px-3 py-2 rounded-lg border border-slate-200">
+                  <i [class]="'pi ' + getFileIcon(attachment.fileName) + ' text-primary-500 shrink-0'" aria-hidden="true"></i>
+                  <span class="flex-1 min-w-0 text-sm text-slate-700 truncate">{{ attachment.fileName }}</span>
+                  <button
+                    type="button"
+                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                    [attr.aria-label]="'ดาวน์โหลด ' + attachment.fileName"
+                    [disabled]="downloadingId() !== null"
+                    (click)="download(attachment)"
+                  >
+                    <i
+                      [class]="'pi ' + (downloadingId() === attachment.id ? 'pi-spin pi-spinner' : 'pi-download') + ' text-sm'"
+                      aria-hidden="true"
+                    ></i>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
         </div>
       </div>
     </article>

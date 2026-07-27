@@ -6,17 +6,27 @@ import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Select } from 'primeng/select';
 import { MessageService } from 'primeng/api';
-import { TextEditorComponent } from '../../../../shared/components/text-editor';
+import { EditorFilePreview, TextEditorComponent } from '../../../../shared/components/text-editor';
 import { TicketTypeDialogComponent } from '../ticket-type-dialog/ticket-type-dialog.component';
 import { SelectedTicketType } from '../ticket-type-dialog/ticket-type-dialog.types';
 import { ConfirmDialogComponent } from '../../../../shared/components/dialogs';
 import { CanDeactivateComponent } from '../../../../core/guards/unsaved-changes.guard';
 import { TicketService } from '../../services/ticket.service';
 import { ProjectService } from '../../../project-management/services/project.service';
+import {
+  TICKET_ATTACHMENT_ACCEPT,
+  TICKET_ATTACHMENT_MAX_SIZE_MB,
+} from '../../interfaces/ticket.interface';
 
 interface ProjectOption {
   label: string;
   value: string;
+}
+
+interface StagedFile {
+  id: string;
+  file: File;
+  url: string;
 }
 
 @Component({
@@ -49,6 +59,10 @@ export class AddTicketComponent implements CanDeactivateComponent, OnInit {
   protected readonly saving = signal(false);
   protected readonly projectOptions = signal<ProjectOption[]>([]);
   protected readonly loadingProjects = signal(false);
+  protected readonly stagedFiles = signal<StagedFile[]>([]);
+  protected readonly filePreviews = signal<EditorFilePreview[]>([]);
+  protected readonly uploadingAttachments = signal(false);
+  protected readonly attachmentAccept = TICKET_ATTACHMENT_ACCEPT;
 
   protected readonly isDirty = computed(
     () =>
@@ -100,6 +114,43 @@ export class AddTicketComponent implements CanDeactivateComponent, OnInit {
     this.selectedTicketType.set(selection);
   }
 
+  protected onFilesSelected(files: File[]): void {
+    const maxBytes = TICKET_ATTACHMENT_MAX_SIZE_MB * 1024 * 1024;
+    for (const file of files) {
+      if (file.size > maxBytes) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'ไฟล์ใหญ่เกินไป',
+          detail: `${file.name} มีขนาดเกิน ${TICKET_ATTACHMENT_MAX_SIZE_MB}MB`,
+          life: 4000,
+        });
+        continue;
+      }
+      const id = crypto.randomUUID();
+      const url = URL.createObjectURL(file);
+      this.stagedFiles.update((current) => [...current, { id, file, url }]);
+      this.syncPreviews();
+    }
+  }
+
+  protected onRemoveFile(id: string): void {
+    const removed = this.stagedFiles().find((f) => f.id === id);
+    if (removed) URL.revokeObjectURL(removed.url);
+    this.stagedFiles.update((current) => current.filter((f) => f.id !== id));
+    this.syncPreviews();
+  }
+
+  private syncPreviews(): void {
+    this.filePreviews.set(
+      this.stagedFiles().map((f) => ({
+        id: f.id,
+        name: f.file.name,
+        url: f.url,
+        isImage: f.file.type.startsWith('image/'),
+      })),
+    );
+  }
+
   protected onLeaveConfirmed(): void {
     this.showLeaveDialog.set(false);
     this.leaveSubject.next(true);
@@ -124,15 +175,16 @@ export class AddTicketComponent implements CanDeactivateComponent, OnInit {
         description: this.description().trim() || undefined,
       })
       .subscribe({
-        next: () => {
+        next: (created) => {
           this.saving.set(false);
-          this.resetForm();
           this.messageService.add({
             severity: 'success',
             summary: 'สำเร็จ',
             detail: 'สร้าง Ticket เรียบร้อยแล้ว',
             life: 3000,
           });
+          this.uploadAttachments(created.id);
+          this.resetForm();
           this.router.navigate(['/ticket-management/list']);
         },
         error: () => {
@@ -145,6 +197,32 @@ export class AddTicketComponent implements CanDeactivateComponent, OnInit {
           });
         },
       });
+  }
+
+  private uploadAttachments(ticketId: string): void {
+    const files = this.stagedFiles().map((f) => f.file);
+    if (files.length === 0) return;
+
+    this.uploadingAttachments.set(true);
+    let remaining = files.length;
+    for (const file of files) {
+      this.ticketService.uploadAttachment(ticketId, file).subscribe({
+        next: () => {
+          remaining -= 1;
+          if (remaining === 0) this.uploadingAttachments.set(false);
+        },
+        error: () => {
+          remaining -= 1;
+          if (remaining === 0) this.uploadingAttachments.set(false);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'แนบไฟล์ไม่สำเร็จ',
+            detail: `ไม่สามารถแนบไฟล์ ${file.name} ได้ กรุณาแนบใหม่ในหน้ารายละเอียด Ticket`,
+            life: 5000,
+          });
+        },
+      });
+    }
   }
 
   protected formatInterval(value: number, unit: string): string {
@@ -160,5 +238,8 @@ export class AddTicketComponent implements CanDeactivateComponent, OnInit {
     this.selectedProjectId.set(null);
     this.selectedTicketType.set(null);
     this.description.set('');
+    for (const f of this.stagedFiles()) URL.revokeObjectURL(f.url);
+    this.stagedFiles.set([]);
+    this.filePreviews.set([]);
   }
 }

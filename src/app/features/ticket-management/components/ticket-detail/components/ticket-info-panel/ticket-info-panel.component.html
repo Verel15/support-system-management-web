@@ -84,6 +84,14 @@
   </div>
   }
 
+  @if (ticket().description) {
+  <hr class="border-slate-100 my-4" />
+  <div>
+    <p class="text-sm text-slate-500 mb-2">รายละเอียด</p>
+    <div class="rich-content text-sm text-slate-700 leading-relaxed" [innerHTML]="ticket().description"></div>
+  </div>
+  }
+
   @if (showSatisfactionPrompt()) {
   <div class="mt-4 flex flex-col items-center gap-3 px-4 py-5 rounded-lg bg-primary-50 text-center">
     <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-500" aria-hidden="true">
@@ -208,6 +216,11 @@
       </div>
     </div>
   </div>
+
+  <hr class="border-slate-100" />
+
+  <!-- ไฟล์แนบ -->
+  <app-ticket-attachment-panel [attachments]="attachments()" />
 </div>
 <!-- Popup menus -->
 <p-menu #statusMenu [model]="statusMenuItems()" [popup]="true" />

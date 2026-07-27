@@ -1,3 +1,40 @@
+@if (filePreviews().length > 0) {
+  <ul class="flex flex-wrap gap-2 list-none p-0 m-0 mb-2" role="list">
+    @for (file of filePreviews(); track file.id; let i = $index) {
+      <li class="inline-flex items-center gap-2 pl-2 pr-1.5 py-1.5 rounded-lg bg-slate-100 text-sm text-slate-700">
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
+          [attr.aria-label]="'ดูตัวอย่าง ' + file.name"
+          (click)="openPreview(i)"
+        >
+          @if (file.isImage) {
+            <img [src]="file.url" [alt]="file.name" class="w-6 h-6 rounded object-cover shrink-0" />
+          } @else {
+            <i [class]="'pi ' + getFileIcon(file.name) + ' text-slate-400 shrink-0'" aria-hidden="true"></i>
+          }
+          <span class="max-w-40 truncate">{{ file.name }}</span>
+        </button>
+        <button
+          type="button"
+          class="inline-flex items-center justify-center w-5 h-5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+          [attr.aria-label]="'ลบไฟล์ ' + file.name"
+          (click)="onRemovePreview(file.id)"
+        >
+          <i class="pi pi-times text-xs" aria-hidden="true"></i>
+        </button>
+      </li>
+    }
+  </ul>
+}
+
+<app-file-preview-lightbox
+  [files]="filePreviews()"
+  [activeIndex]="previewIndex()"
+  (indexChange)="openPreview($event)"
+  (closed)="closePreview()"
+/>
+
 <p-editor
   [ngModel]="value()"
   (ngModelChange)="value.set($event)"
@@ -16,16 +53,23 @@
     <span class="ql-formats">
       <button type="button" class="ql-bold" aria-label="Bold"></button>
       <button type="button" class="ql-italic" aria-label="Italic"></button>
-    </span>
-    <span class="ql-formats">
-      <button type="button" class="ql-link" aria-label="Link"></button>
-      <button type="button" class="ql-image" aria-label="Image"></button>
-    </span>
-    <span class="ql-formats">
       <button type="button" class="ql-blockquote" aria-label="Blockquote"></button>
-    </span>
-    <span class="ql-formats">
+    @if (showAttach()) {
+        <button type="button" aria-label="แนบไฟล์" title="แนบไฟล์" (click)="fileInput.click()">
+          <i class="pi pi-paperclip" aria-hidden="true"></i>
+        </button>
+        <input
+          #fileInput
+          type="file"
+          class="hidden"
+          [accept]="attachAccept()"
+          multiple
+          (change)="onFileInputChange($event)"
+          aria-hidden="true"
+          tabindex="-1"
+        />
+    }
       <button type="button" class="ql-clean" aria-label="Remove formatting"></button>
     </span>
-  </ng-template>
+</ng-template>
 </p-editor>

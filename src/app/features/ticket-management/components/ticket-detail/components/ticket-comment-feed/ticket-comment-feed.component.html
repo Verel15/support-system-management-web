@@ -15,7 +15,17 @@
 
 <!-- Comment editor (sticky bottom) -->
 <div class="shrink-0 bg-white p-4">
-  <app-text-editor [(value)]="commentText" placeholder="พิมพ์ความคิดเห็น..." minHeight="140px" />
+  <app-text-editor
+    [(value)]="commentText"
+    placeholder="พิมพ์ความคิดเห็น..."
+    minHeight="140px"
+    [showAttach]="true"
+    [attachAccept]="attachmentAccept"
+    [filePreviews]="filePreviews()"
+    (filesSelected)="onFilesSelected($event)"
+    (filePreviewRemoved)="onRemoveFile($event)"
+  />
+
   <div class="flex justify-end mt-3">
     <p-button
       label="ส่ง"

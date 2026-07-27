@@ -1,6 +1,9 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ApiService } from '../../../core/services/api.service';
+import { environment } from '../../../../environments/environment';
 import {
   PageResponse,
   TicketListResponse,
@@ -19,12 +22,15 @@ import {
   TicketSubCategoryDetail,
   PriorityResponse,
   StatusFlowResponse,
+  TicketAttachmentResponse,
 } from '../interfaces/ticket.interface';
 import { SuggestedAssigneeResponse } from '../interfaces/assignee-suggestion.interface';
 
 @Injectable({ providedIn: 'root' })
 export class TicketService {
   private readonly api = inject(ApiService);
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = environment.apiUrl;
 
   getAll(
     filter: TicketFilterRequest = {},
@@ -129,5 +135,51 @@ export class TicketService {
 
   getStatusFlow(id: string): Observable<StatusFlowResponse> {
     return this.api.get<StatusFlowResponse>(`/status-flows/${id}`);
+  }
+
+  // Attachments
+  getAttachments(ticketId: string): Observable<TicketAttachmentResponse[]> {
+    return this.api.get<TicketAttachmentResponse[]>(`/tickets/${ticketId}/attachments`);
+  }
+
+  uploadAttachment(ticketId: string, file: File): Observable<TicketAttachmentResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http
+      .post<{ data: TicketAttachmentResponse }>(
+        `${this.baseUrl}/tickets/${ticketId}/attachments`,
+        formData,
+      )
+      .pipe(map((res) => res.data));
+  }
+
+  deleteAttachment(ticketId: string, attachmentId: string): Observable<void> {
+    return this.api.delete<void>(`/tickets/${ticketId}/attachments/${attachmentId}`);
+  }
+
+  // Comment attachments
+  uploadCommentAttachment(
+    ticketId: string,
+    commentId: string,
+    file: File,
+  ): Observable<TicketAttachmentResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http
+      .post<{ data: TicketAttachmentResponse }>(
+        `${this.baseUrl}/tickets/${ticketId}/comments/${commentId}/attachments`,
+        formData,
+      )
+      .pipe(map((res) => res.data));
+  }
+
+  deleteCommentAttachment(
+    ticketId: string,
+    commentId: string,
+    attachmentId: string,
+  ): Observable<void> {
+    return this.api.delete<void>(
+      `/tickets/${ticketId}/comments/${commentId}/attachments/${attachmentId}`,
+    );
   }
 }

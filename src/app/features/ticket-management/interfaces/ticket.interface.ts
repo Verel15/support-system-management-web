@@ -96,6 +96,7 @@ export interface TicketTimelineItem {
   fieldName: string | null;
   oldValue: string | null;
   newValue: string | null;
+  attachments: TicketAttachmentResponse[];
 }
 
 export type TicketRemainingTime =
@@ -185,6 +186,23 @@ export interface TicketSatisfactionResponse {
   score: number;
   comment: string | null;
   ratedAt: string;
+}
+
+// Attachments
+export const TICKET_ATTACHMENT_MAX_SIZE_MB = 10;
+export const TICKET_ATTACHMENT_MAX_COUNT = 50;
+export const TICKET_ATTACHMENT_ACCEPT =
+  '.jpg,.jpeg,.png,.pdf,.doc,.docx,image/jpeg,image/png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+export interface TicketAttachmentResponse {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  contentType: string;
+  fileSize: number;
+  uploadedById: string;
+  uploadedByFullName: string;
+  createdAt: string;
 }
 
 // Ticket Types (for selector dialog)

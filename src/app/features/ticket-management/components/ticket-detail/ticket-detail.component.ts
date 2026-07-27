@@ -13,13 +13,17 @@ import { Button } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { MessageService } from 'primeng/api';
 import { FeedItem, CommentItem, AssigneeUser, FeedUser } from './interfaces/ticket-detail.types';
-import { TicketCommentFeedComponent } from './components/ticket-comment-feed/ticket-comment-feed.component';
+import {
+  TicketCommentFeedComponent,
+  CommentSubmit,
+} from './components/ticket-comment-feed/ticket-comment-feed.component';
 import { TicketInfoPanelComponent } from './components/ticket-info-panel/ticket-info-panel.component';
 import { TicketService } from '../../services/ticket.service';
 import {
   TicketDetailResponse,
   TicketTimelineItem,
   StatusItemResponse,
+  TicketAttachmentResponse,
 } from '../../interfaces/ticket.interface';
 import { SelectedTicketType } from '../ticket-type-dialog/ticket-type-dialog.component';
 import { SatisfactionRatingSubmit } from './components/ticket-satisfaction-dialog/ticket-satisfaction-dialog.component';
@@ -99,6 +103,7 @@ export class TicketDetailComponent implements OnInit {
   protected readonly feedItems = signal<FeedItem[]>([]);
   protected readonly assigneeList = signal<AssigneeUser[]>([]);
   protected readonly statusItems = signal<StatusItemResponse[]>([]);
+  protected readonly attachments = signal<TicketAttachmentResponse[]>([]);
   private rawTimeline: TicketTimelineItem[] = [];
 
   protected readonly requester = computed<FeedUser>(() => {
@@ -121,10 +126,12 @@ export class TicketDetailComponent implements OnInit {
     forkJoin({
       detail: this.ticketService.getById(this.ticketId),
       timeline: this.ticketService.getTimeline(this.ticketId),
+      attachments: this.ticketService.getAttachments(this.ticketId),
     }).subscribe({
-      next: ({ detail, timeline }) => {
+      next: ({ detail, timeline, attachments }) => {
         this.applyDetail(detail);
         this.applyTimeline(timeline);
+        this.attachments.set(attachments);
         // load status flow statuses, then re-enrich timeline with group info
         this.ticketService.getStatusFlow(detail.statusFlowId).subscribe({
           next: (sf) => {
@@ -194,6 +201,7 @@ export class TicketDetailComponent implements OnInit {
             },
             content: item.content ?? '',
             timestamp: formatDateTime(item.createdAt),
+            attachments: item.attachments ?? [],
           } satisfies CommentItem;
         }
         if (item.type === 'ASSIGNEE_ADDED' || item.type === 'ASSIGNEE_REMOVED') {
@@ -284,9 +292,9 @@ export class TicketDetailComponent implements OnInit {
       });
   }
 
-  protected onCommentSubmit(text: string): void {
+  protected onCommentSubmit(submission: CommentSubmit): void {
     this.submittingComment.set(true);
-    this.ticketService.addComment(this.ticketId, { content: text }).subscribe({
+    this.ticketService.addComment(this.ticketId, { content: submission.content }).subscribe({
       next: (item) => {
         this.feedItems.update((items) => [
           ...items,
@@ -298,11 +306,13 @@ export class TicketDetailComponent implements OnInit {
               avatarInitial: avatarInitial(item.authorFullName),
               avatarColor: avatarColor(item.authorId),
             },
-            content: item.content ?? text,
+            content: item.content ?? submission.content,
             timestamp: formatDateTime(item.createdAt),
+            attachments: [],
           } satisfies CommentItem,
         ]);
         this.submittingComment.set(false);
+        this.uploadCommentAttachments(item.id, submission.files);
       },
       error: () => {
         this.submittingComment.set(false);
@@ -314,6 +324,32 @@ export class TicketDetailComponent implements OnInit {
         });
       },
     });
+  }
+
+  private uploadCommentAttachments(commentId: string, files: File[]): void {
+    if (files.length === 0) return;
+
+    for (const file of files) {
+      this.ticketService.uploadCommentAttachment(this.ticketId, commentId, file).subscribe({
+        next: (attachment) => {
+          this.feedItems.update((items) =>
+            items.map((it) =>
+              it.type === 'comment' && it.id === commentId
+                ? { ...it, attachments: [...it.attachments, attachment] }
+                : it,
+            ),
+          );
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'แนบไฟล์ไม่สำเร็จ',
+            detail: `ไม่สามารถแนบไฟล์ ${file.name} ได้`,
+            life: 4000,
+          });
+        },
+      });
+    }
   }
 
   protected onAssigneeAdd(userId: string): void {

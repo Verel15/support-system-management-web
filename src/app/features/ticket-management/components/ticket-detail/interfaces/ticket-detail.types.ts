@@ -1,3 +1,5 @@
+import { TicketAttachmentResponse } from '../../../interfaces/ticket.interface';
+
 export interface FeedUser {
   name: string;
   avatarInitial: string;
@@ -10,6 +12,7 @@ export interface CommentItem {
   author: FeedUser;
   content: string;
   timestamp: string;
+  attachments: TicketAttachmentResponse[];
 }
 
 export interface ActivityItem {
