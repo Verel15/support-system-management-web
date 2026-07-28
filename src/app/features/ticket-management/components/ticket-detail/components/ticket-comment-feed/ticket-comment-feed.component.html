@@ -30,6 +30,8 @@
     <p-button
       label="ส่ง"
       severity="primary"
+      class="w-full sm:w-auto"
+      styleClass="w-full sm:!w-[120px]"
       [loading]="submitting()"
       [disabled]="!commentText().trim() || submitting()"
       (onClick)="onSubmit()"
