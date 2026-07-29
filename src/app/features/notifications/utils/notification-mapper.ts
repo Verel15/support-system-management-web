@@ -12,12 +12,12 @@ function getInitial(name: string): string {
 function getCategoryInfo(category: NotificationApiCategory): { icon: string; label: string } {
   switch (category) {
     case 'MY_TICKETS':
-      return { icon: 'pi-envelope', label: 'Tickets ของฉัน' };
+      return { icon: 'pi-ticket', label: 'Tickets ของฉัน' };
     case 'PROJECT':
-      return { icon: 'pi-briefcase', label: 'โครงการ' };
+      return { icon: 'pi-folder', label: 'โครงการ' };
     case 'TICKETS':
     default:
-      return { icon: 'pi-file', label: 'Tickets ทั้งหมด' };
+      return { icon: 'pi-ticket', label: 'Tickets ทั้งหมด' };
   }
 }
 
@@ -109,5 +109,7 @@ export function toNotificationItem(n: NotificationResponse, todayBase: Date): No
     avatarUrl: n.actorProfileImageUrl || undefined,
     timestamp,
     timeLabel: formatNotificationTimeLabel(timestamp, todayBase),
+    entityType: n.entityType,
+    entityId: n.entityId,
   };
 }

@@ -106,7 +106,7 @@ export class EditFaqComponent {
         question: question!,
         category: category!,
         answer: this.answerHtml(),
-        published: !!isPublished,
+        isPublished: !!isPublished,
       })
       .subscribe({
         next: () => {

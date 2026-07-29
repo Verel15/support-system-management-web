@@ -51,8 +51,8 @@
             @for (change of log.changes; track change.field) {
             <tr class="border-t border-slate-100">
               <td class="px-3 py-2 text-slate-700">{{ change.fieldLabel }}</td>
-              <td class="px-3 py-2 text-error-600">{{ change.oldValue ?? '-' }}</td>
-              <td class="px-3 py-2 text-primary-600">{{ change.newValue ?? '-' }}</td>
+              <td class="px-3 py-2 text-error-600">{{ formatChangeValue(change, change.oldValue) }}</td>
+              <td class="px-3 py-2 text-primary-600">{{ formatChangeValue(change, change.newValue) }}</td>
             </tr>
             }
           </tbody>

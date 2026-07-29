@@ -3,7 +3,7 @@ import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
 import { Tag } from 'primeng/tag';
 import { AuditLogService } from '../../services/audit-log.service';
-import { AuditLogAction, AuditLogDetailResponse } from '../../interfaces/audit-log.interface';
+import { AuditLogAction, AuditLogDetailResponse, AuditLogFieldChange } from '../../interfaces/audit-log.interface';
 import { formatDateTimeShort } from '../../../../shared/utils/date-format.util';
 
 @Component({
@@ -40,6 +40,14 @@ export class AuditLogDetailDialogComponent {
 
   protected formatDateTime(iso: string): string {
     return formatDateTimeShort(iso);
+  }
+
+  protected formatChangeValue(change: AuditLogFieldChange, value: string | null): string {
+    if (value === null) return '-';
+    const field = change.field.toLowerCase();
+    return field.endsWith('at') || field.endsWith('date')
+      ? formatDateTimeShort(value)
+      : value;
   }
 
   protected actionSeverity(action: AuditLogAction): 'success' | 'info' | 'danger' | 'warn' | 'secondary' {

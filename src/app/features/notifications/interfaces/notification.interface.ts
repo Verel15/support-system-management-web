@@ -33,6 +33,8 @@ export interface NotificationItem {
   avatarUrl?: string;
   timestamp: Date;
   timeLabel: string;
+  entityType: string;
+  entityId: string;
 }
 
 export interface NotificationGroup {

@@ -9,6 +9,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthStore } from '../../../authentication/store/auth.store';
+import { PERMISSIONS } from '../../../../core/constants/permission.constant';
 import { Tabs, TabList, Tab } from 'primeng/tabs';
 import { Select } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
@@ -46,6 +49,8 @@ import { toNotificationItem } from '../../utils/notification-mapper';
 export class NotificationsComponent implements OnInit, OnDestroy {
   private readonly filterPanel = viewChild.required<NotificationFilterComponent>('filterPanel');
   private readonly notificationService = inject(NotificationService);
+  private readonly router = inject(Router);
+  private readonly authStore = inject(AuthStore);
 
   private readonly _now = new Date();
   private readonly _todayBase = new Date(
@@ -172,12 +177,37 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   protected onItemClick(id: string): void {
     const item = this._notifications().find((n) => n.id === id);
-    if (!item || item.isRead) return;
+    if (!item) return;
 
-    this._notifications.update((list) =>
-      list.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
-    );
+    if (!item.isRead) {
+      this._notifications.update((list) =>
+        list.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
+      );
+      this.notificationService.markAsRead(id).subscribe();
+    }
 
-    this.notificationService.markAsRead(id).subscribe();
+    this.navigateToEntity(item.entityType, item.entityId);
+  }
+
+  private navigateToEntity(entityType: string, entityId: string): void {
+    if (!entityId) return;
+
+    switch (entityType.toUpperCase()) {
+      case 'TICKET': {
+        const canManageTickets = this.authStore.hasPermission()(PERMISSIONS.ALL_TICKET_ACCESS);
+        const base = canManageTickets ? '/ticket-management' : '/my-tickets';
+        this.router.navigate([`${base}/detail`, entityId]);
+        break;
+      }
+      case 'PROJECT': {
+        const canManageProjects = this.authStore.hasPermission()(PERMISSIONS.ALL_PROJECT_ACCESS);
+        if (canManageProjects) {
+          this.router.navigate(['/project-management/detail'], { queryParams: { id: entityId } });
+        } else {
+          this.router.navigate(['/my-project/detail'], { queryParams: { id: entityId } });
+        }
+        break;
+      }
+    }
   }
 }

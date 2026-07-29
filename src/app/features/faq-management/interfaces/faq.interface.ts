@@ -4,7 +4,7 @@ export interface FaqArticleRequest {
   question: string;
   answer: string;
   category: string;
-  published: boolean;
+  isPublished: boolean;
 }
 
 export interface FaqArticleResponse {

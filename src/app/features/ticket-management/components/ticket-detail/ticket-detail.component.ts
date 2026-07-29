@@ -65,6 +65,13 @@ function fieldLabel(fieldName: string | null): string {
   return FIELD_LABELS[fieldName] ?? fieldName;
 }
 
+const DATE_FIELDS = new Set(['dueDate']);
+
+function fieldValue(fieldName: string | null, value: string | null): string | null {
+  if (value === null) return null;
+  return fieldName && DATE_FIELDS.has(fieldName) ? formatDateTime(value) : value;
+}
+
 function formatDateTime(iso: string): string {
   const d = new Date(iso);
   const thDate = new Intl.DateTimeFormat('th-TH', {
@@ -221,10 +228,10 @@ export class TicketDetailComponent implements OnInit {
             id: item.id,
             actor: item.authorFullName,
             action: `เปลี่ยน${fieldLabel(item.fieldName)}เป็น`,
-            statusLabel: item.newValue ?? '',
+            statusLabel: fieldValue(item.fieldName, item.newValue) ?? '',
             statusGroup: null,
             timestamp: formatDateTime(item.createdAt),
-            oldValue: item.oldValue,
+            oldValue: fieldValue(item.fieldName, item.oldValue),
           };
         }
         return {

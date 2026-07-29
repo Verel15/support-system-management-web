@@ -22,7 +22,9 @@ Angular 21 application using **standalone components only** (no NgModules). All 
 - PrimeNG 21 + `@primeuix/themes` Aura preset — primary UI library
 - Angular Material 21 — installed but use PrimeNG first; Angular Material is secondary
 - Tailwind CSS 4 — layout and spacing only, no PrimeFlex
+- `@ngrx/signals` — `signalStore` for cross-feature state (currently only `AuthStore`)
 - Vitest — test runner (via `@angular/build:unit-test`)
+- Other notable deps: `chart.js` + `chartjs-plugin-datalabels` (dashboard charts), `date-fns` (date formatting), `jwt-decode` (JWT payload parsing), `quill` (rich text editor)
 
 **Entry points:**
 - `src/main.ts` — bootstraps `AppComponent`
@@ -113,22 +115,50 @@ The PrimeNG primary palette is mapped to the same green values (`{green.*}` in `
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
 
+## Authentication & Authorization
+
+State lives in `AuthStore` (`features/authentication/store/auth.store.ts`), an `@ngrx/signals` `signalStore` (`providedIn: 'root'`). Access/refresh tokens are stored as cookies (`core/utils/cookie.util.ts`); the user profile is cached in `localStorage`, but `permissions`/`accountType`/`userTypeId` are always re-decoded fresh from the JWT on hydration (backend can change a user's role mid-session).
+
+- `store.isAuthenticated()`, `store.hasPermission()(permission)`, `store.hasRole()(...roles)` — computed signals, called as functions
+- Permission flags are defined in `core/constants/permission.constant.ts` (`PERMISSIONS.*`); `accountType === 'ADMIN'` always passes `hasPermission`
+- `authInterceptor` attaches `Authorization: Bearer` from the cookie and clears the session on `401`
+- `errorInterceptor` toasts `403`/other errors via `MessageService` (401 is left to `authInterceptor`)
+
+**Route guards** (`core/guards/`):
+- `authGuard` — requires an authenticated session
+- `guestGuard` — blocks authenticated users from auth pages (login, etc.)
+- `nonCustomerGuard` — blocks `accountType === 'CUSTOMER'` from admin/management routes
+- `permissionGuard(permission)` — factory guard checking a specific `PERMISSIONS` flag
+- `unsavedChangesGuard` — `CanDeactivate`; component must implement `canDeactivate(): Observable<boolean> | boolean`
+
+**Template-level gating** (`shared/directives/`): `*appHasPermission="'manageUserAccess'"` and `*appHasRole="['STAFF', 'ADMIN']"` show/hide elements reactively. All of the above are UX-only — the backend enforces authorization on every request; client-side checks are defense-in-depth, not the source of truth.
+
+## API Layer
+
+`ApiService` (`core/services/api.service.ts`, `providedIn: 'root'`) wraps `HttpClient` and unwraps the backend's `{ data, message, success }` envelope automatically — `get/post/put/patch/delete` all return `Observable<T>` of the unwrapped `data`. Use `downloadBlob(fileUrl)` for file downloads. Feature services should call `ApiService` rather than injecting `HttpClient` directly.
+
 ## Project Structure
 
 ```
 src/app/
-├── core/                          # Guards, interceptors, singleton services
-│   ├── guards/auth.guard.ts
-│   └── interceptors/auth.interceptor.ts
+├── core/
+│   ├── constants/permission.constant.ts   # PERMISSIONS map used by permissionGuard + directives
+│   ├── guards/                            # auth, guest, non-customer, permission, unsaved-changes
+│   ├── interceptors/                      # auth (token + 401), error (toast on failure)
+│   ├── services/api.service.ts            # HttpClient wrapper, unwraps API envelope
+│   └── utils/                             # cookie.util, jwt.util
 ├── shared/
 │   ├── components/
 │   │   ├── data-table/            # Reusable table + pagination component (see below)
-│   │   ├── sidebar/               # Collapsible nav sidebar (see below)
+│   │   ├── sidebar/                # Collapsible nav sidebar (see below)
 │   │   ├── chip/                  # Generic chip/tag display
 │   │   ├── status-chip/           # Status-specific chip with color coding
 │   │   ├── project-card/          # Project summary card (shared)
-│   │   ├── text-editor/           # Rich text editor wrapper
+│   │   ├── text-editor/           # Rich text editor wrapper (Quill)
 │   │   ├── file-upload/           # File upload component
+│   │   ├── file-preview-lightbox/ # Image/attachment preview lightbox
+│   │   ├── command-palette/       # Global command/search palette
+│   │   ├── not-found/             # 404 page component
 │   │   └── dialogs/               # All dialog components
 │   │       ├── alert-dialog/      # Info/success/warning/error notification dialog (1 button)
 │   │       ├── confirm-dialog/    # Two-button confirm/cancel dialog
@@ -138,8 +168,8 @@ src/app/
 │   ├── layouts/
 │   │   ├── auth-layout/           # Layout wrapper for auth pages
 │   │   └── main-layout/           # Authenticated layout: sidebar + router-outlet
-│   ├── directives/
-│   └── pipes/
+│   ├── directives/                # has-permission, has-role (see Authentication & Authorization)
+│   └── utils/date-format.util.ts
 └── features/
     ├── authentication/            # /auth — uses AuthLayoutComponent
     │   ├── components/            # login, forgot-password, check-email, reset-password
@@ -156,35 +186,42 @@ src/app/
     ├── company-management/        # /company-management
     ├── status-management/         # /status-management
     ├── ticket-type-management/    # /ticket-type-management
-    └── priority-management/       # /ticket-priority-management
+    ├── priority-management/       # /ticket-priority-management
+    ├── faq/                       # /faq
+    ├── faq-management/            # /faq-management
+    └── audit-log/                 # /audit-log
 ```
 
 ### Structure Conventions
 
 - **Core**: Guards, interceptors, and singleton services shared across the entire app.
-- **Shared**: Reusable standalone components, directives, and pipes.
+- **Shared**: Reusable standalone components and directives.
 - **Features**: Each feature is self-contained with its own components, services, and routes. Features are lazy-loaded via the router — never eagerly imported.
 - **File placement**: Place files in the folder matching their role. Do not create files at the wrong level of the hierarchy.
 
 ### Route Structure
 
-`MainLayoutComponent` (sidebar + router-outlet) is the shell for all authenticated routes. Every feature except `/auth` uses it as a parent shell.
+`MainLayoutComponent` (sidebar + router-outlet) is the shell for all authenticated routes. Every feature except `/auth` uses it as a parent shell. Most management routes are gated by `nonCustomerGuard` plus a `permissionGuard(PERMISSIONS.*)` — check `app.routes.ts` for the exact flag per route.
 
 ```
-/                            → redirectTo /auth
-/auth                        → authentication feature (AuthLayoutComponent)
-/dashboard                   → MainLayoutComponent
-/my-tickets                  → MainLayoutComponent
-/my-project                  → MainLayoutComponent
-/project-management          → MainLayoutComponent
-/ticket-management           → MainLayoutComponent
-/notifications               → MainLayoutComponent
-/user-management             → MainLayoutComponent
-/user-type-management        → MainLayoutComponent
-/company-management          → MainLayoutComponent
-/status-management           → MainLayoutComponent
-/ticket-type-management      → MainLayoutComponent
-/ticket-priority-management  → MainLayoutComponent
+/                             → redirectTo /dashboard
+/auth                         → authentication feature (AuthLayoutComponent)
+/dashboard                    → MainLayoutComponent (DASHBOARD_ACCESS)
+/my-tickets                   → MainLayoutComponent
+/my-project                   → MainLayoutComponent
+/project-management           → MainLayoutComponent (ALL_PROJECT_ACCESS)
+/ticket-management            → MainLayoutComponent (ALL_TICKET_ACCESS)
+/notifications                → MainLayoutComponent
+/user-management               → MainLayoutComponent (MANAGE_USER_ACCESS)
+/user-type-management          → MainLayoutComponent (MANAGE_USER_ACCESS)
+/company-management            → MainLayoutComponent (MANAGE_COMPANY_ACCESS)
+/status-management              → MainLayoutComponent (MANAGE_DATA_ACCESS)
+/ticket-type-management         → MainLayoutComponent (MANAGE_DATA_ACCESS)
+/ticket-priority-management     → MainLayoutComponent (MANAGE_DATA_ACCESS)
+/faq-management                 → MainLayoutComponent (MANAGE_DATA_ACCESS)
+/faq                            → MainLayoutComponent
+/audit-log                      → MainLayoutComponent (SYSTEM_LOG_ACCESS)
+/not-found, /**                 → MainLayoutComponent → NotFoundComponent
 ```
 
 ## Reusable Shared Components
