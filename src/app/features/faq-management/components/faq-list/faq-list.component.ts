@@ -138,11 +138,11 @@ export class FaqListComponent {
     page: number,
     size: number,
     keyword: string,
-    published: boolean | null,
+    isPublished: boolean | null,
     dateRange: FaqDateRange | null,
   ): void {
     this.loading.set(true);
-    this.faqService.getAll(page - 1, size, keyword, null, published, dateRange).subscribe({
+    this.faqService.getAll(page - 1, size, keyword, null, isPublished, dateRange).subscribe({
       next: (res) => {
         this.pagedFaqs.set(
           res.content.map((f) => ({

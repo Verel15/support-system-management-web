@@ -17,7 +17,7 @@ export class FaqService {
     size = 10,
     keyword?: string,
     category?: string | null,
-    published?: boolean | null,
+    isPublished?: boolean | null,
     dateRange?: FaqDateRange | null,
   ): Observable<FaqArticlePageResponse> {
     return this.api.get<FaqArticlePageResponse>('/faq-articles', {
@@ -25,7 +25,7 @@ export class FaqService {
       size,
       keyword: keyword || undefined,
       category: category || undefined,
-      published: published ?? undefined,
+      isPublished: isPublished ?? undefined,
       dateRange: dateRange || undefined,
     });
   }
