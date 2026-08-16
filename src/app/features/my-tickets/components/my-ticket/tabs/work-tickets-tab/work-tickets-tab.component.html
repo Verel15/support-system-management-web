@@ -16,9 +16,10 @@
   </div>
 
   <!-- Table -->
-  <app-data-table [columns]="columns" [data]="tableData()" [totalRecords]="displayTotalRecords()"
-    [currentPage]="currentPage()" [pageSize]="pageSize()" [loading]="loading()" (pageChange)="onPageChange($event)"
-    (pageSizeChange)="onPageSizeChange($event)" (sortChange)="onSort($event)" (rowClick)="onRowClick($event)">
+  <app-data-table [columns]="columns" emptyMessage="ไม่พบ Ticket ที่กำลังดำเนินการ" [data]="tableData()"
+    [totalRecords]="displayTotalRecords()" [currentPage]="currentPage()" [pageSize]="pageSize()" [loading]="loading()"
+    (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)" (sortChange)="onSort($event)"
+    (rowClick)="onRowClick($event)">
     <ng-template dataTableCell="title" let-row let-value="value">
       <div class="flex items-center gap-2 min-w-0">
         @if (getPriorityIconClass(row); as iconClass) {

@@ -1,0 +1,36 @@
+<article class="bg-white rounded-lg border border-slate-200 p-6 flex flex-col gap-5">
+  <div class="flex items-center justify-between">
+    <h2 class="text-base font-semibold text-slate-800 border-l-4 border-primary-500 pl-3">
+      แนวโน้ม Audit Log
+    </h2>
+  </div>
+
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <p-datepicker
+      [formControl]="rangeCtrl"
+      selectionMode="range"
+      dateFormat="d M yy"
+      [readonlyInput]="true"
+      [showIcon]="true"
+      icon="pi pi-calendar"
+      styleClass="w-64"
+      inputStyleClass="text-sm"
+      placeholder="เลือกช่วงเวลา"
+      aria-label="เลือกช่วงเวลาสำหรับกราฟแนวโน้ม"
+    />
+  </div>
+
+  @if (loading()) {
+    <div class="flex h-64 items-center justify-center" aria-live="polite" aria-label="กำลังโหลด">
+      <i class="pi pi-spin pi-spinner text-2xl text-slate-400" aria-hidden="true"></i>
+    </div>
+  } @else {
+    <div class="relative h-64 w-full">
+      <canvas
+        #chartCanvas
+        role="img"
+        aria-label="กราฟเส้นแสดงจำนวน audit log ต่อวันในช่วงเวลาที่เลือก"
+      ></canvas>
+    </div>
+  }
+</article>

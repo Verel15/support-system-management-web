@@ -67,3 +67,20 @@ export interface AuditLogQuery {
   dateFrom?: string | null;
   dateTo?: string | null;
 }
+
+export interface AuditLogTrendDay {
+  date: string;
+  count: number;
+}
+
+export interface AuditLogTrendResponse {
+  days: AuditLogTrendDay[];
+  total: number;
+}
+
+export interface AuditLogTrendQuery {
+  dateFrom: string;
+  dateTo: string;
+  module?: AuditLogModule | null;
+  action?: AuditLogAction | null;
+}

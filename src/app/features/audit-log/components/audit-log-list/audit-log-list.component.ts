@@ -23,6 +23,7 @@ import {
 } from '../../interfaces/audit-log.interface';
 import { formatDateTimeShort } from '../../../../shared/utils/date-format.util';
 import { AuditLogDetailDialogComponent } from '../audit-log-detail-dialog/audit-log-detail-dialog.component';
+import { AuditLogTrendChartComponent } from '../audit-log-trend-chart/audit-log-trend-chart.component';
 
 @Component({
   selector: 'app-audit-log-list',
@@ -36,6 +37,7 @@ import { AuditLogDetailDialogComponent } from '../audit-log-detail-dialog/audit-
     DataTableComponent,
     DataTableCellDirective,
     AuditLogDetailDialogComponent,
+    AuditLogTrendChartComponent,
   ],
   templateUrl: './audit-log-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

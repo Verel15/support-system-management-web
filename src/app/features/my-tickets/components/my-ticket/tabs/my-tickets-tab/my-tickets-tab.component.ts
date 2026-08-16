@@ -62,8 +62,8 @@ export class MyTicketsTabComponent implements OnInit {
   protected readonly timeOptions = TICKET_TIME_OPTIONS;
 
   protected readonly columns: TableColumn[] = [
-    { field: 'title', header: 'หัวข้องาน', sortable: true, maxWidth: '300px' },
-    { field: 'projectName', header: 'โครงการ', sortable: true },
+    { field: 'title', header: 'หัวข้องาน', maxWidth: '300px' },
+    { field: 'projectName', header: 'โครงการ' },
     { field: 'assigneesDisplay', header: 'ผู้รับผิดชอบ' },
     { field: 'remainingTime', header: 'ระยะเวลาที่เหลือ' },
     { field: 'currentStatusName', header: 'สถานะ' },

@@ -21,6 +21,30 @@ function getTooltipEl(chart: Chart): HTMLDivElement {
 }
 
 /**
+ * Positions the pill at (x, y) centered above the caret, then clamps it back
+ * inside the chart's container so it doesn't overflow/clip at the edges.
+ */
+function positionTooltip(el: HTMLDivElement, parent: HTMLElement, x: number, y: number): void {
+  el.style.left = `${x}px`;
+  el.style.top = `${y}px`;
+  el.style.transform = 'translate(-50%, calc(-100% - 10px))';
+
+  const parentRect = parent.getBoundingClientRect();
+  const elRect = el.getBoundingClientRect();
+
+  let shiftX = 0;
+  if (elRect.left < parentRect.left) shiftX = parentRect.left - elRect.left;
+  else if (elRect.right > parentRect.right) shiftX = parentRect.right - elRect.right;
+
+  let shiftY = 0;
+  if (elRect.top < parentRect.top) shiftY = parentRect.top - elRect.top;
+
+  if (shiftX || shiftY) {
+    el.style.transform = `translate(calc(-50% + ${shiftX}px), calc(-100% - 10px + ${shiftY}px))`;
+  }
+}
+
+/**
  * Chart.js `external` tooltip callback rendering a pill: dot + label + bold value,
  * matching the shared dashboard chart tooltip design.
  */
@@ -62,9 +86,7 @@ export function pillTooltip<T extends ChartType>(context: { chart: Chart; toolti
 
   const { offsetLeft, offsetTop } = chart.canvas;
   el.style.opacity = '1';
-  el.style.left = `${offsetLeft + tooltip.caretX}px`;
-  el.style.top = `${offsetTop + tooltip.caretY}px`;
-  el.style.transform = 'translate(-50%, calc(-100% - 10px))';
+  positionTooltip(el, chart.canvas.parentNode as HTMLElement, offsetLeft + tooltip.caretX, offsetTop + tooltip.caretY);
 }
 
 /**
@@ -124,7 +146,5 @@ export function pillTooltipMulti<T extends ChartType>(context: { chart: Chart; t
 
   const { offsetLeft, offsetTop } = chart.canvas;
   el.style.opacity = '1';
-  el.style.left = `${offsetLeft + tooltip.caretX}px`;
-  el.style.top = `${offsetTop + tooltip.caretY}px`;
-  el.style.transform = 'translate(-50%, calc(-100% - 10px))';
+  positionTooltip(el, chart.canvas.parentNode as HTMLElement, offsetLeft + tooltip.caretX, offsetTop + tooltip.caretY);
 }
