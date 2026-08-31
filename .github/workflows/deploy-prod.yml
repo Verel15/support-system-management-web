@@ -1,0 +1,29 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-prod:
+    name: Deploy Production
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve latest tag
+        id: tag
+        run: |
+          TAG=$(git describe --tags --abbrev=0 --match 'v*')
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "### Deploying tag: \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy Production
+        run: |
+          echo "Deploying Production..."
+          echo "Version: ${{ steps.tag.outputs.tag }}"

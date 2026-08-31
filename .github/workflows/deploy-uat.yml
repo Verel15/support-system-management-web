@@ -1,0 +1,28 @@
+name: Deploy UAT
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-uat:
+    name: Deploy UAT
+    runs-on: ubuntu-latest
+    environment:
+      name: uat
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve latest tag
+        id: tag
+        run: |
+          TAG=$(git describe --tags --abbrev=0 --match 'v*')
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "### Deploying tag: \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy UAT
+        run: |
+          echo "Deploying to UAT..."
+          echo "Version: ${{ steps.tag.outputs.tag }}"
